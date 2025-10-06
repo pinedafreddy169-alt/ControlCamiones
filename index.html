@@ -16,11 +16,13 @@
     .save{background:#27c380;color:#102018}
     .sync{background:#3fa0ff;color:#08111f}
     .pdf{background:#23314f;color:#e8eefc}
+    .mini{padding:8px 10px;border-radius:10px;font-size:14px}
     .ok{color:#27c380;margin-left:6px}
     .err{color:#ff7b7b;margin-left:6px}
     table{width:100%;border-collapse:collapse;margin-top:10px}
     th,td{padding:10px;border-bottom:1px solid #23314f;text-align:left}
     th{color:#9ba8bf;font-weight:600}
+    .inline{display:flex;gap:8px;align-items:flex-end}
   </style>
 </head>
 <body>
@@ -30,14 +32,53 @@
     <!-- ===== Registro ===== -->
     <div class="card">
       <div class="row">
-        <div><label>Fecha</label><input id="fecha" type="date" /></div>
-        <div><label>Camión</label><input id="camion" placeholder="Camión 01" /></div>
-        <div><label>Placa</label><input id="placa" placeholder="ABC-123" /></div>
-        <div><label>Chofer</label><input id="chofer" placeholder="Braulio" /></div>
-        <div><label>Origen</label><input id="origen" placeholder="Cuyo" /></div>
-        <div><label>Destino</label><input id="destino" placeholder="Guayabito" /></div>
-        <div><label>Salida</label><input id="salida" type="time" /></div>
-        <div><label>Llegada</label><input id="llegada" type="time" /></div>
+        <div>
+          <label>Fecha</label>
+          <input id="fecha" type="date" />
+        </div>
+
+        <!-- CAMIÓN con lista -->
+        <div>
+          <label>Camión</label>
+          <div class="inline">
+            <select id="camionSel"></select>
+            <button class="mini" id="btnAddCamion">+ Camión</button>
+          </div>
+        </div>
+
+        <div>
+          <label>Placa</label>
+          <input id="placa" placeholder="ABC-123" readonly />
+        </div>
+
+        <!-- CHOFER con lista -->
+        <div>
+          <label>Chofer</label>
+          <div class="inline">
+            <select id="choferSel"></select>
+            <button class="mini" id="btnAddChofer">+ Chofer</button>
+          </div>
+        </div>
+
+        <div>
+          <label>Origen</label>
+          <input id="origen" placeholder="Cuyo" />
+        </div>
+
+        <div>
+          <label>Destino</label>
+          <input id="destino" placeholder="Guayabito" />
+        </div>
+
+        <div>
+          <label>Salida</label>
+          <input id="salida" type="time" />
+        </div>
+
+        <div>
+          <label>Llegada</label>
+          <input id="llegada" type="time" />
+        </div>
       </div>
 
       <label style="margin-top:12px;">Observaciones</label>
@@ -73,13 +114,104 @@
   const estado = document.getElementById('estado');
   const tbody  = document.querySelector('#tabla tbody');
   const queueKey = 'cc_queue_v1';
+  const CHOFERES_KEY = 'cc_choferes_v1';
+  const CAMIONES_KEY = 'cc_camiones_v1';
 
+  let choferes = [];
+  let camiones = []; // {nombre:"Camión 01", placa:"ABC-123"}
+
+  function setEstado(msg, ok=true){
+    estado.textContent = msg;
+    estado.className = ok ? 'ok' : 'err';
+  }
+
+  // ====== Listas locales (persisten en el teléfono) ======
+  function cargarListas() {
+    choferes = JSON.parse(localStorage.getItem(CHOFERES_KEY) || '[]');
+    camiones = JSON.parse(localStorage.getItem(CAMIONES_KEY) || '[]');
+
+    // Si están vacías, inicializar con ejemplos
+    if (choferes.length === 0) choferes = ["Braulio","Juan","Víctor"];
+    if (camiones.length === 0) camiones = [
+      { nombre:"Camión 01", placa:"ABC-123" },
+      { nombre:"Camión 02", placa:"XYZ-789" }
+    ];
+    guardarListas();
+  }
+
+  function guardarListas() {
+    localStorage.setItem(CHOFERES_KEY, JSON.stringify(choferes));
+    localStorage.setItem(CAMIONES_KEY, JSON.stringify(camiones));
+  }
+
+  function renderChoferes() {
+    const sel = document.getElementById('choferSel');
+    sel.innerHTML = '';
+    choferes.forEach((c, i) => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    });
+  }
+
+  function renderCamiones() {
+    const sel = document.getElementById('camionSel');
+    sel.innerHTML = '';
+    camiones.forEach((c, i) => {
+      const opt = document.createElement('option');
+      opt.value = i; 
+      opt.textContent = `${c.nombre} (${c.placa})`;
+      sel.appendChild(opt);
+    });
+    // actualizar placa según selección
+    actualizarPlaca();
+  }
+
+  function actualizarPlaca(){
+    const sel = document.getElementById('camionSel');
+    const placaInput = document.getElementById('placa');
+    const idx = parseInt(sel.value || "0", 10);
+    const item = camiones[idx];
+    placaInput.value = item ? item.placa : "";
+  }
+
+  function agregarChofer(){
+    const nombre = prompt("Nombre del chofer:");
+    if (!nombre) return;
+    if (choferes.includes(nombre.trim())) { setEstado("Chofer ya existe", false); return; }
+    choferes.push(nombre.trim());
+    guardarListas();
+    renderChoferes();
+    document.getElementById('choferSel').value = nombre.trim();
+    setEstado("Chofer agregado ✔");
+  }
+
+  function agregarCamion(){
+    const nombre = prompt("Nombre del camión (ej: Camión 03):");
+    if (!nombre) return;
+    const placa  = prompt("Placa (ej: DEF-456):");
+    if (!placa) return;
+    if (camiones.some(c => c.nombre === nombre.trim() || c.placa === placa.trim())) {
+      setEstado("Ese camión o placa ya existe", false); return;
+    }
+    camiones.push({ nombre: nombre.trim(), placa: placa.trim() });
+    guardarListas();
+    renderCamiones();
+    // seleccionar el recién agregado
+    document.getElementById('camionSel').value = String(camiones.length - 1);
+    actualizarPlaca();
+    setEstado("Camión agregado ✔");
+  }
+
+  // ====== Lectura de formulario y envío ======
   function leerFormulario() {
+    const camionIdx = parseInt(document.getElementById('camionSel').value || "0", 10);
+    const camionSel = camiones[camionIdx] || { nombre:"", placa:"" };
     return {
       fecha:   document.getElementById('fecha').value,
-      camion:  document.getElementById('camion').value.trim(),
-      placa:   document.getElementById('placa').value.trim(),
-      chofer:  document.getElementById('chofer').value.trim(),
+      camion:  camionSel.nombre,
+      placa:   camionSel.placa,
+      chofer:  document.getElementById('choferSel').value,
       origen:  document.getElementById('origen').value.trim(),
       destino: document.getElementById('destino').value.trim(),
       salida:  document.getElementById('salida').value,
@@ -103,11 +235,6 @@
     tbody.prepend(tr);
   }
 
-  function setEstado(msg, ok=true){
-    estado.textContent = msg;
-    estado.className = ok ? 'ok' : 'err';
-  }
-
   function encolar(payload){
     const q = JSON.parse(localStorage.getItem(queueKey) || '[]');
     q.push(payload);
@@ -115,6 +242,7 @@
   }
 
   async function enviar(payload){
+    // GitHub Pages → Apps Script: usar no-cors
     return fetch(ENDPOINT, {
       method: 'POST',
       mode: 'no-cors',
@@ -125,12 +253,10 @@
 
   async function guardar() {
     const datos = leerFormulario();
-
     if(!datos.fecha || !datos.camion || !datos.placa || !datos.chofer){
       setEstado('Faltan datos obligatorios (fecha/camión/placa/chofer)', false);
       return;
     }
-
     try {
       await enviar(datos);
       setEstado('Enviado a Google Sheets ✔');
@@ -144,7 +270,6 @@
   async function sincronizar(){
     const q = JSON.parse(localStorage.getItem(queueKey) || '[]');
     if(!q.length){ setEstado('No hay pendientes'); return; }
-
     let ok = 0;
     while(q.length){
       const item = q[0];
@@ -181,9 +306,18 @@ Obs: ${tds[8].textContent}
     URL.revokeObjectURL(url);
   }
 
+  // ====== Eventos ======
   document.getElementById('btnGuardar').addEventListener('click', guardar);
   document.getElementById('btnSync').addEventListener('click', sincronizar);
   document.getElementById('btnPDF').addEventListener('click', descargarPDF);
+  document.getElementById('btnAddChofer').addEventListener('click', agregarChofer);
+  document.getElementById('btnAddCamion').addEventListener('click', agregarCamion);
+  document.getElementById('camionSel').addEventListener('change', actualizarPlaca);
+
+  // Init
+  cargarListas();
+  renderChoferes();
+  renderCamiones();
   </script>
 </body>
 </html>
