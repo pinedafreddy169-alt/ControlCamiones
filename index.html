@@ -30,38 +30,14 @@
     <!-- ===== Registro ===== -->
     <div class="card">
       <div class="row">
-        <div>
-          <label>Fecha</label>
-          <input id="fecha" type="date" />
-        </div>
-        <div>
-          <label>Camión</label>
-          <input id="camion" placeholder="Camión 01" />
-        </div>
-        <div>
-          <label>Placa</label>
-          <input id="placa" placeholder="ABC-123" />
-        </div>
-        <div>
-          <label>Chofer</label>
-          <input id="chofer" placeholder="Braulio" />
-        </div>
-        <div>
-          <label>Origen</label>
-          <input id="origen" placeholder="Cuyo" />
-        </div>
-        <div>
-          <label>Destino</label>
-          <input id="destino" placeholder="Guayabito" />
-        </div>
-        <div>
-          <label>Salida</label>
-          <input id="salida" type="time" />
-        </div>
-        <div>
-          <label>Llegada</label>
-          <input id="llegada" type="time" />
-        </div>
+        <div><label>Fecha</label><input id="fecha" type="date" /></div>
+        <div><label>Camión</label><input id="camion" placeholder="Camión 01" /></div>
+        <div><label>Placa</label><input id="placa" placeholder="ABC-123" /></div>
+        <div><label>Chofer</label><input id="chofer" placeholder="Braulio" /></div>
+        <div><label>Origen</label><input id="origen" placeholder="Cuyo" /></div>
+        <div><label>Destino</label><input id="destino" placeholder="Guayabito" /></div>
+        <div><label>Salida</label><input id="salida" type="time" /></div>
+        <div><label>Llegada</label><input id="llegada" type="time" /></div>
       </div>
 
       <label style="margin-top:12px;">Observaciones</label>
@@ -70,8 +46,8 @@
       <div class="btns">
         <button class="save" id="btnGuardar">Guardar (enviar a Sheets)</button>
         <span id="estado"></span>
-        <button class="sync" id="btnSync" title="Reintentar envíos pendientes">Sincronizar</button>
-        <button class="pdf" id="btnPDF" title="Descargar PDF del registro">Descargar PDF</button>
+        <button class="sync" id="btnSync">Sincronizar</button>
+        <button class="pdf" id="btnPDF">Descargar PDF</button>
       </div>
     </div>
 
@@ -91,104 +67,103 @@
   </div>
 
   <script>
-    /* 🔗 Pega aquí tu URL del Web App (Apps Script) que termina en /exec */
-    const ENDPOINT = "PEGAR_AQUI_TU_URL_/exec";
+  /* ✅ URL de Google Apps Script */
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzLxNLhR35RZP2duUP25NliJo2qYCKKcPGU1MQMECnG96NZaAeUzwFdQ3PJGLELZXsDxQ/exec";
 
-    const estado = document.getElementById('estado');
-    const tbody  = document.querySelector('#tabla tbody');
-    const queueKey = 'cc_queue_v1';
+  const estado = document.getElementById('estado');
+  const tbody  = document.querySelector('#tabla tbody');
+  const queueKey = 'cc_queue_v1';
 
-    function leerFormulario() {
-      return {
-        fecha:   document.getElementById('fecha').value,
-        camion:  document.getElementById('camion').value.trim(),
-        placa:   document.getElementById('placa').value.trim(),
-        chofer:  document.getElementById('chofer').value.trim(),
-        origen:  document.getElementById('origen').value.trim(),
-        destino: document.getElementById('destino').value.trim(),
-        salida:  document.getElementById('salida').value,
-        llegada: document.getElementById('llegada').value,
-        obs:     document.getElementById('obs').value.trim()
-      };
+  function leerFormulario() {
+    return {
+      fecha:   document.getElementById('fecha').value,
+      camion:  document.getElementById('camion').value.trim(),
+      placa:   document.getElementById('placa').value.trim(),
+      chofer:  document.getElementById('chofer').value.trim(),
+      origen:  document.getElementById('origen').value.trim(),
+      destino: document.getElementById('destino').value.trim(),
+      salida:  document.getElementById('salida').value,
+      llegada: document.getElementById('llegada').value,
+      obs:     document.getElementById('obs').value.trim()
+    };
+  }
+
+  function agregarFilaLocal(r) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.fecha || ''}</td>
+      <td>${r.camion || ''}</td>
+      <td>${r.placa || ''}</td>
+      <td>${r.chofer || ''}</td>
+      <td>${r.origen || ''}</td>
+      <td>${r.destino || ''}</td>
+      <td>${r.salida || ''}</td>
+      <td>${r.llegada || ''}</td>
+      <td>${r.obs || ''}</td>`;
+    tbody.prepend(tr);
+  }
+
+  function setEstado(msg, ok=true){
+    estado.textContent = msg;
+    estado.className = ok ? 'ok' : 'err';
+  }
+
+  function encolar(payload){
+    const q = JSON.parse(localStorage.getItem(queueKey) || '[]');
+    q.push(payload);
+    localStorage.setItem(queueKey, JSON.stringify(q));
+  }
+
+  async function enviar(payload){
+    return fetch(ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async function guardar() {
+    const datos = leerFormulario();
+
+    if(!datos.fecha || !datos.camion || !datos.placa || !datos.chofer){
+      setEstado('Faltan datos obligatorios (fecha/camión/placa/chofer)', false);
+      return;
     }
 
-    function agregarFilaLocal(r) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${r.fecha || ''}</td>
-        <td>${r.camion || ''}</td>
-        <td>${r.placa || ''}</td>
-        <td>${r.chofer || ''}</td>
-        <td>${r.origen || ''}</td>
-        <td>${r.destino || ''}</td>
-        <td>${r.salida || ''}</td>
-        <td>${r.llegada || ''}</td>
-        <td>${r.obs || ''}</td>`;
-      tbody.prepend(tr);
+    try {
+      await enviar(datos);
+      setEstado('Enviado a Google Sheets ✔');
+    } catch (e) {
+      encolar(datos);
+      setEstado('Sin conexión. Guardado en cola.', false);
     }
+    agregarFilaLocal(datos);
+  }
 
-    function setEstado(msg, ok=true){
-      estado.textContent = msg;
-      estado.className = ok ? 'ok' : 'err';
-    }
+  async function sincronizar(){
+    const q = JSON.parse(localStorage.getItem(queueKey) || '[]');
+    if(!q.length){ setEstado('No hay pendientes'); return; }
 
-    function encolar(payload){
-      const q = JSON.parse(localStorage.getItem(queueKey) || '[]');
-      q.push(payload);
-      localStorage.setItem(queueKey, JSON.stringify(q));
-    }
-
-    async function enviar(payload){
-      // Desde GitHub Pages a Apps Script usamos no-cors
-      return fetch(ENDPOINT, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    }
-
-    async function guardar() {
-      const datos = leerFormulario();
-
-      if(!datos.fecha || !datos.camion || !datos.placa || !datos.chofer){
-        setEstado('Faltan datos obligatorios (fecha/camión/placa/chofer)', false);
-        return;
-      }
-
+    let ok = 0;
+    while(q.length){
+      const item = q[0];
       try {
-        await enviar(datos);
-        setEstado('Enviado a Google Sheets ✔');
-      } catch (e) {
-        encolar(datos);
-        setEstado('Sin conexión. Guardado en cola para sincronizar.', false);
+        await enviar(item);
+        q.shift(); ok++;
+      } catch(e){
+        break;
       }
-      agregarFilaLocal(datos);
     }
+    localStorage.setItem(queueKey, JSON.stringify(q));
+    setEstado(`Sincronizados: ${ok}. Pendientes: ${q.length}`, ok>0);
+  }
 
-    async function sincronizar(){
-      const q = JSON.parse(localStorage.getItem(queueKey) || '[]');
-      if(!q.length){ setEstado('No hay pendientes'); return; }
-
-      let ok = 0;
-      while(q.length){
-        const item = q[0];
-        try {
-          await enviar(item);
-          q.shift(); ok++;
-        } catch(e){
-          break;
-        }
-      }
-      localStorage.setItem(queueKey, JSON.stringify(q));
-      setEstado(`Sincronizados: ${ok}. Pendientes: ${q.length}${q.length? ' (reintentar luego)':''}`, ok>0);
-    }
-
-    function descargarPDF(){
-      const filas = tbody.querySelectorAll('tr');
-      if(!filas.length){ setEstado('No hay datos para PDF', false); return; }
-      const tds = filas[0].querySelectorAll('td');
-      const texto = `
+  function descargarPDF(){
+    const filas = tbody.querySelectorAll('tr');
+    if(!filas.length){ setEstado('No hay datos para PDF', false); return; }
+    const tds = filas[0].querySelectorAll('td');
+    const texto = `
 Control de Camiones
 Fecha: ${tds[0].textContent}
 Camión: ${tds[1].textContent}  Placa: ${tds[2].textContent}
@@ -196,22 +171,19 @@ Chofer: ${tds[3].textContent}
 Origen: ${tds[4].textContent}  Destino: ${tds[5].textContent}
 Salida: ${tds[6].textContent}  Llegada: ${tds[7].textContent}
 Obs: ${tds[8].textContent}
-      `.trim();
+    `.trim();
 
-      const blob = new Blob([texto], {type:'application/pdf'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `control_camiones_${Date.now()}.pdf`;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-    }
+    const blob = new Blob([texto], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `control_camiones_${Date.now()}.pdf`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
 
-    document.getElementById('btnGuardar').addEventListener('click', guardar);
-    document.getElementById('btnSync').addEventListener('click', sincronizar);
-    document.getElementById('btnPDF').addEventListener('click', descargarPDF);
-  <script>
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbzLxNLhR35RZP2duUP25NliJo2qYCKKcPGU1MQMECnG96NZaAeUzwFdQ3PJGLELZXsDxQ/exec";
-
+  document.getElementById('btnGuardar').addEventListener('click', guardar);
+  document.getElementById('btnSync').addEventListener('click', sincronizar);
+  document.getElementById('btnPDF').addEventListener('click', descargarPDF);
+  </script>
 </body>
 </html>
-
