@@ -12,9 +12,9 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
     .wrap{max-width:1000px;margin:0 auto;padding:16px 12px}
-    header{display:flex;justify-content:space-between;align-items:center}
+    header{display:flex;justify-content:space-between;align-items:center;gap:12px}
     h1{margin:10px 0 16px}
-    .user{color:#9ba8bf;font-size:14px}
+    .user{color:#9ba8bf;font-size:14px;display:flex;gap:8px;align-items:center}
     .logout{background:#c84545;color:#fff;border:0;border-radius:10px;padding:8px 12px;cursor:pointer}
     .tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
     .tabbtn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
@@ -23,7 +23,7 @@
     label{display:block;margin-top:10px;font-size:14px;color:var(--muted)}
     input,select,textarea{width:100%;padding:10px;margin-top:6px;border:1px solid var(--line);border-radius:10px;background:#0f1526;color:var(--text)}
     .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
     button{border:0;border-radius:12px;padding:12px 14px;cursor:pointer;font-weight:600}
     .save{background:var(--ok);color:#0b281c}
     .ghost{background:#32415f;color:#dfe7ff}
@@ -54,6 +54,7 @@
       <button class="tabbtn active" data-tab="viajes">Viajes</button>
       <button class="tabbtn" data-tab="camiones">Camiones</button>
       <button class="tabbtn" data-tab="choferes">Choferes</button>
+      <button class="tabbtn" data-tab="ubicaciones">Ubicaciones</button>
     </div>
 
     <!-- ====== TAB: VIAJES ====== -->
@@ -77,11 +78,11 @@
         </div>
         <div>
           <label>Origen</label>
-          <input id="origen" placeholder="Cuyo"/>
+          <input id="origen" placeholder="Escribe o elige…" list="dlUbicaciones" autocomplete="off"/>
         </div>
         <div>
           <label>Destino</label>
-          <input id="destino" placeholder="Guayabito"/>
+          <input id="destino" placeholder="Escribe o elige…" list="dlUbicaciones" autocomplete="off"/>
         </div>
         <div>
           <label>Salida</label>
@@ -93,11 +94,14 @@
         </div>
       </div>
 
+      <!-- Sugerencias compartidas -->
+      <datalist id="dlUbicaciones"></datalist>
+
       <label style="margin-top:12px;">Observaciones</label>
       <textarea id="obs" rows="2" placeholder="Notas…"></textarea>
 
       <div class="btns">
-        <button class="save" id="btnGuardar">Guardar (enviar a Sheets)</button>
+        <button class="save" id="btnGuardar">Guardar (cola local)</button>
         <button class="ghost" id="btnLimpiar">Limpiar</button>
         <span id="estado"></span>
         <div class="right">
@@ -167,35 +171,61 @@
         </table>
       </div>
     </section>
+
+    <!-- ====== TAB: UBICACIONES ====== -->
+    <section id="tab-ubicaciones" class="card" style="display:none">
+      <h3>📍 Ubicaciones (para Origen/Destino)</h3>
+      <div class="row">
+        <div>
+          <label>Nombre de la ubicación</label>
+          <input id="newUbi" placeholder="Cuyo, Guayabito, Planta A…"/>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="save mini" id="btnAddUbi">+ Agregar ubicación</button>
+        <button class="danger mini" id="btnClearUbis">Borrar todas</button>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <table>
+          <thead><tr><th>Ubicación</th><th></th></tr></thead>
+          <tbody id="tbodyUbis"></tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
   <script>
-    /* === CHECK DE SESIÓN === */
-    const user = localStorage.getItem('session_user');
-    if(!user) location.href = 'index.html';
-    document.getElementById('who').textContent = user;
+    /* === CHECK DE SESIÓN (si usas login con index.html) === */
+    const who = localStorage.getItem('session_user');
+    if(!who) { try { location.href = 'index.html'; } catch(_){} }
+    document.getElementById('who').textContent = who || 'Invitado';
     document.getElementById('btnLogout').addEventListener('click', ()=>{
-      localStorage.removeItem('session_user');
-      location.href = 'index.html';
+      localStorage.removeItem('session_user'); location.href = 'index.html';
     });
 
     /* === CONFIG === */
     const ENDPOINT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec";
 
-    /* === STATE/KEYS === */
-    const estado = document.getElementById('estado');
-    const tbody  = document.getElementById('tbody');
-    const tbodyCamiones = document.getElementById('tbodyCamiones');
-    const tbodyChoferes = document.getElementById('tbodyChoferes');
-
-    const QKEY = 'cc_queue_v1';
+    /* === KEYS/ESTADO === */
+    const QKEY   = 'cc_queue_v1';
     const CAMKEY = 'cc_camiones_v1';
     const CHOKEY = 'cc_choferes_v1';
+    const UBIKEY = 'cc_ubicaciones_v1';
 
     let camiones = [];
     let choferes = [];
+    let ubicaciones = [];
 
-    /* === TABS === */
+    /* === UI refs === */
+    const estado  = document.getElementById('estado');
+    const tbody   = document.getElementById('tbody');
+    const tCam    = document.getElementById('tbodyCamiones');
+    const tChof   = document.getElementById('tbodyChoferes');
+    const tUbis   = document.getElementById('tbodyUbis');
+    const dlUbis  = document.getElementById('dlUbicaciones');
+
+    /* === Tabs === */
     document.querySelectorAll('.tabbtn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
@@ -203,62 +233,78 @@
         const tab = btn.dataset.tab;
         document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.style.display='none');
         document.getElementById('tab-'+tab).style.display='block';
-        if(tab==='viajes'){ populateSelects(); actualizarPlaca(); }
       });
     });
 
-    /* === HELPERS === */
+    /* === Helpers === */
     function setEstado(msg, ok=true){ estado.textContent = msg; estado.className = ok ? 'success' : 'error'; }
     function hoyISO(){ return new Date().toISOString().slice(0,10); }
 
-    /* === STORAGE === */
+    /* === Lists storage === */
     function loadLists(){
-      camiones = JSON.parse(localStorage.getItem(CAMKEY) || '[]');
-      choferes = JSON.parse(localStorage.getItem(CHOKEY) || '[]');
+      camiones     = JSON.parse(localStorage.getItem(CAMKEY) || '[]');
+      choferes     = JSON.parse(localStorage.getItem(CHOKEY) || '[]');
+      ubicaciones  = JSON.parse(localStorage.getItem(UBIKEY) || '[]');
 
-      if(!camiones.length) camiones = [{nombre:'Camión 01', placa:'ABC-123'}, {nombre:'Camión 02', placa:'XYZ-789'}];
-      if(!choferes.length) choferes = ['Braulio','Juan','Víctor'];
+      if(!camiones.length) camiones = [{nombre:'Camión 01', placa:'ABC-123'}];
+      if(!choferes.length) choferes = ['Braulio'];
+      if(!ubicaciones.length) ubicaciones = ['Cuyo','Guayabito','Planta A','Patio 3'];
 
       saveLists();
     }
     function saveLists(){
       localStorage.setItem(CAMKEY, JSON.stringify(camiones));
       localStorage.setItem(CHOKEY, JSON.stringify(choferes));
+      localStorage.setItem(UBIKEY, JSON.stringify(ubicaciones));
     }
 
-    /* === RENDER LISTAS GESTIÓN === */
+    /* === Renders === */
     function renderCamionesTable(){
-      tbodyCamiones.innerHTML = '';
-      camiones.forEach((c,idx)=>{
+      tCam.innerHTML = '';
+      camiones.forEach((c,i)=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${c.nombre}</td><td>${c.placa}</td>
-                        <td class="right"><button class="danger mini" data-i="${idx}">Borrar</button></td>`;
-        tbodyCamiones.appendChild(tr);
+          <td class="right"><button class="danger mini" data-i="${i}">Borrar</button></td>`;
+        tCam.appendChild(tr);
       });
-      tbodyCamiones.querySelectorAll('button[data-i]').forEach(b=>{
-        b.addEventListener('click', ()=>{
-          const i = +b.dataset.i;
-          camiones.splice(i,1); saveLists(); renderCamionesTable(); populateSelects(); actualizarPlaca();
-        });
+      tCam.querySelectorAll('button[data-i]').forEach(b=>{
+        b.addEventListener('click', ()=>{ camiones.splice(+b.dataset.i,1); saveLists(); renderCamionesTable(); populateSelects(); actualizarPlaca(); });
       });
     }
     function renderChoferesTable(){
-      tbodyChoferes.innerHTML = '';
-      choferes.forEach((c,idx)=>{
+      tChof.innerHTML = '';
+      choferes.forEach((c,i)=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${c}</td>
-                        <td class="right"><button class="danger mini" data-i="${idx}">Borrar</button></td>`;
-        tbodyChoferes.appendChild(tr);
+          <td class="right"><button class="danger mini" data-i="${i}">Borrar</button></td>`;
+        tChof.appendChild(tr);
       });
-      tbodyChoferes.querySelectorAll('button[data-i]').forEach(b=>{
-        b.addEventListener('click', ()=>{
-          const i = +b.dataset.i;
-          choferes.splice(i,1); saveLists(); renderChoferesTable(); populateSelects();
-        });
+      tChof.querySelectorAll('button[data-i]').forEach(b=>{
+        b.addEventListener('click', ()=>{ choferes.splice(+b.dataset.i,1); saveLists(); renderChoferesTable(); populateSelects(); });
       });
     }
+    function renderUbisTable(){
+      tUbis.innerHTML = '';
+      ubicaciones.forEach((u,i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${u}</td>
+          <td class="right"><button class="danger mini" data-i="${i}">Borrar</button></td>`;
+        tUbis.appendChild(tr);
+      });
+      tUbis.querySelectorAll('button[data-i]').forEach(b=>{
+        b.addEventListener('click', ()=>{ ubicaciones.splice(+b.dataset.i,1); saveLists(); renderUbisTable(); renderUbisDatalist(); });
+      });
+    }
+    function renderUbisDatalist(){
+      dlUbis.innerHTML = '';
+      ubicaciones.slice().sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}))
+        .forEach(u=>{
+          const opt = document.createElement('option');
+          opt.value = u; dlUbis.appendChild(opt);
+        });
+    }
 
-    /* === SELECTS VIAJES === */
+    /* === Selects Viajes === */
     function populateSelects(){
       const selC = document.getElementById('camionSel');
       const selH = document.getElementById('choferSel');
@@ -276,22 +322,20 @@
       });
     }
     function actualizarPlaca(){
-      const idx = +document.getElementById('camionSel').value || 0;
-      const item = camiones[idx];
-      document.getElementById('placa').value = item ? item.placa : '';
+      const i = +document.getElementById('camionSel').value || 0;
+      const c = camiones[i]; document.getElementById('placa').value = c ? c.placa : '';
     }
     document.getElementById('camionSel').addEventListener('change', actualizarPlaca);
 
-    /* === GESTIÓN: agregar/borrar === */
+    /* === Gestión listas === */
     document.getElementById('btnAddCamion').addEventListener('click', ()=>{
       const nombre = document.getElementById('newCamion').value.trim();
       const placa  = document.getElementById('newPlaca').value.trim().toUpperCase();
-      if(!nombre || !placa) return alert('Completá nombre y placa');
+      if(!nombre || !placa) return alert('Completa nombre y placa');
       if(camiones.some(c=>c.nombre===nombre || c.placa===placa)) return alert('Ya existe ese camión o placa');
       camiones.push({nombre, placa}); saveLists();
       document.getElementById('newCamion').value=''; document.getElementById('newPlaca').value='';
-      renderCamionesTable(); populateSelects(); actualizarPlaca();
-      setEstado('Camión agregado ✔');
+      renderCamionesTable(); populateSelects(); actualizarPlaca(); setEstado('Camión agregado ✔');
     });
     document.getElementById('btnClearCamiones').addEventListener('click', ()=>{
       if(confirm('¿Borrar TODOS los camiones?')){ camiones=[]; saveLists(); renderCamionesTable(); populateSelects(); actualizarPlaca(); }
@@ -303,11 +347,22 @@
       if(choferes.includes(nombre)) return alert('Ese chofer ya existe');
       choferes.push(nombre); saveLists();
       document.getElementById('newChofer').value='';
-      renderChoferesTable(); populateSelects();
-      setEstado('Chofer agregado ✔');
+      renderChoferesTable(); populateSelects(); setEstado('Chofer agregado ✔');
     });
     document.getElementById('btnClearChoferes').addEventListener('click', ()=>{
       if(confirm('¿Borrar TODOS los choferes?')){ choferes=[]; saveLists(); renderChoferesTable(); populateSelects(); }
+    });
+
+    document.getElementById('btnAddUbi').addEventListener('click', ()=>{
+      const val = document.getElementById('newUbi').value.trim();
+      if(!val) return alert('Escribe una ubicación');
+      if(ubicaciones.some(u=>u.toLowerCase()===val.toLowerCase())) return alert('Ya existe esa ubicación');
+      ubicaciones.push(val); saveLists();
+      document.getElementById('newUbi').value='';
+      renderUbisTable(); renderUbisDatalist(); setEstado('Ubicación agregada ✔');
+    });
+    document.getElementById('btnClearUbis').addEventListener('click', ()=>{
+      if(confirm('¿Borrar TODAS las ubicaciones?')){ ubicaciones=[]; saveLists(); renderUbisTable(); renderUbisDatalist(); }
     });
 
     /* === VIAJES === */
@@ -315,7 +370,7 @@
       const i = +document.getElementById('camionSel').value || 0;
       const c = camiones[i] || {nombre:'', placa:''};
       return {
-        usuario: localStorage.getItem('session_user') || '',
+        usuario: who || '',
         fecha: document.getElementById('fecha').value,
         camion: c.nombre,
         placa: c.placa,
@@ -345,6 +400,7 @@
       actualizarPlaca();
       setEstado('Formulario limpio');
     }
+
     function enqueue(payload){
       const q = JSON.parse(localStorage.getItem(QKEY)||'[]'); q.push(payload);
       localStorage.setItem(QKEY, JSON.stringify(q));
@@ -357,32 +413,32 @@
         body: JSON.stringify(payload)
       });
     }
-    async function guardar(){
+
+    // GUARDAR: SOLO COLA LOCAL
+    function guardar(){
       const data = leerFormulario();
       if(!data.fecha || !data.camion || !data.placa || !data.chofer){
         setEstado('Falta fecha / camión / placa / chofer', false); return;
       }
-      try{
-        await enviar(data);
-        agregarFilaLocal(data);
-        setEstado('Enviado a Google Sheets ✔');
-        limpiarFormulario();
-      }catch(e){
-        enqueue(data);
-        setEstado('Sin conexión. Guardado en cola.', false);
-      }
+      enqueue(data);
+      agregarFilaLocal(data);
+      setEstado('Guardado localmente. Pendiente de sincronizar.');
+      limpiarFormulario();
     }
+
+    // SINCRONIZAR: ENVÍA COLA
     async function sincronizar(){
       const q = JSON.parse(localStorage.getItem(QKEY)||'[]');
       if(!q.length) return setEstado('No hay pendientes');
       let ok=0;
       while(q.length){
-        try{ await enviar(q[0]); q.shift(); ok++; }
-        catch(e){ break; }
+        try{ await enviar(q[0]); q.shift(); ok++; localStorage.setItem(QKEY, JSON.stringify(q)); }
+        catch(e){ setEstado('Error de red. Quedan pendientes.', false); break; }
       }
-      localStorage.setItem(QKEY, JSON.stringify(q));
       setEstado(`Sincronizados: ${ok}. Pendientes: ${q.length}`, ok>0);
     }
+
+    // PDF simple del primer registro visible
     function descargarPDF(){
       const filas = tbody.querySelectorAll('tr');
       if(!filas.length) return setEstado('No hay datos para PDF', false);
@@ -400,42 +456,29 @@ Obs: ${tds[8].textContent}`;
       document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     }
 
-    /* === EVENTOS === */
+    /* === Eventos === */
     document.getElementById('btnGuardar').addEventListener('click', guardar);
     document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
     document.getElementById('btnSync').addEventListener('click', sincronizar);
     document.getElementById('btnPDF').addEventListener('click', descargarPDF);
 
     /* === INIT === */
-    function initTabs(){
-      document.querySelector('.tabbtn[data-tab="viajes"]').click();
-      document.getElementById('tab-viajes').style.display = 'block';
+    function init(){
+      loadLists();
+      renderCamionesTable();
+      renderChoferesTable();
+      renderUbisTable();
+      renderUbisDatalist();
+      populateSelects();
+      document.getElementById('fecha').value = hoyISO();
+      actualizarPlaca();
+
+      // Dejar visible Viajes
+      document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.style.display='none');
+      document.getElementById('tab-viajes').style.display='block';
       document.querySelector('.tabbtn[data-tab="viajes"]').classList.add('active');
     }
-    function populateSelects(){
-      const selC = document.getElementById('camionSel');
-      const selH = document.getElementById('choferSel');
-      selC.innerHTML = '';
-      camiones.forEach((c,i)=>{
-        const opt = document.createElement('option');
-        opt.value = i; opt.textContent = `${c.nombre} (${c.placa})`;
-        selC.appendChild(opt);
-      });
-      selH.innerHTML = '';
-      choferes.forEach(ch=>{
-        const opt = document.createElement('option');
-        opt.value = ch; opt.textContent = ch;
-        selH.appendChild(opt);
-      });
-    }
-
-    loadLists();
-    renderCamionesTable();
-    renderChoferesTable();
-    populateSelects();
-    document.getElementById('fecha').value = hoyISO();
-    actualizarPlaca();
-    initTabs();
+    init();
   </script>
 </body>
 </html>
