@@ -28,7 +28,7 @@
     .save{background:var(--ok);color:#0b281c}
     .ghost{background:#32415f;color:#dfe7ff}
     .sync{background:var(--primary);color:#04101f}
-    .pdf{background:#23314f;color:var(--text)}
+    .pdf{background:#23314f;color:#e8eefc}
     .mini{padding:8px 10px;border-radius:10px}
     #estado{font-size:14px}
     table{width:100%;border-collapse:collapse;margin-top:10px}
@@ -37,6 +37,7 @@
     .right{display:flex;gap:8px;justify-content:flex-end}
     .danger{background:#c84545;color:#fff}
     .success{color:var(--ok)} .error{color:var(--warn)}
+    .chip{background:#23314f;color:#e8eefc;padding:4px 8px;border-radius:10px;margin:3px;display:inline-flex;gap:6px;align-items:center}
   </style>
 </head>
 <body>
@@ -54,7 +55,7 @@
       <button class="tabbtn active" data-tab="viajes">Viajes</button>
       <button class="tabbtn" data-tab="camiones">Camiones</button>
       <button class="tabbtn" data-tab="choferes">Choferes</button>
-      <button class="tabbtn" data-tab="ubicaciones">Ubicaciones</button>
+      <button class="tabbtn" data-tab="fincas">Fincas & Lotes</button>
     </div>
 
     <!-- ====== TAB: VIAJES ====== -->
@@ -76,14 +77,32 @@
           <label>Chofer</label>
           <select id="choferSel"></select>
         </div>
+
+        <!-- ORIGEN -->
         <div>
-          <label>Origen</label>
-          <input id="origen" placeholder="Escribe o elige…" list="dlUbicaciones" autocomplete="off"/>
+          <label>Origen - Finca</label>
+          <input id="origenFinca" placeholder="Escribe o elige…" list="dlFincas" autocomplete="off"/>
         </div>
         <div>
-          <label>Destino</label>
-          <input id="destino" placeholder="Escribe o elige…" list="dlUbicaciones" autocomplete="off"/>
+          <label>Origen - Lote</label>
+          <input id="origenLote" placeholder="Escribe o elige…" list="dlLotesOrigen" autocomplete="off"/>
         </div>
+
+        <!-- DESTINO -->
+        <div>
+          <label>Destino - Finca</label>
+          <input id="destinoFinca" placeholder="Escribe o elige…" list="dlFincas" autocomplete="off"/>
+        </div>
+        <div>
+          <label>Destino - Lote</label>
+          <input id="destinoLote" placeholder="Escribe o elige…" list="dlLotesDestino" autocomplete="off"/>
+        </div>
+
+        <!-- DATALISTS -->
+        <datalist id="dlFincas"></datalist>
+        <datalist id="dlLotesOrigen"></datalist>
+        <datalist id="dlLotesDestino"></datalist>
+
         <div>
           <label>Salida</label>
           <input id="salida" type="time"/>
@@ -93,9 +112,6 @@
           <input id="llegada" type="time"/>
         </div>
       </div>
-
-      <!-- Sugerencias compartidas -->
-      <datalist id="dlUbicaciones"></datalist>
 
       <label style="margin-top:12px;">Observaciones</label>
       <textarea id="obs" rows="2" placeholder="Notas…"></textarea>
@@ -172,31 +188,79 @@
       </div>
     </section>
 
-    <!-- ====== TAB: UBICACIONES ====== -->
-    <section id="tab-ubicaciones" class="card" style="display:none">
-      <h3>📍 Ubicaciones (para Origen/Destino)</h3>
+    <!-- ====== TAB: FINCAS & LOTES ====== -->
+    <section id="tab-fincas" class="card" style="display:none">
+      <h3>🏷️ Fincas & Lotes</h3>
+
       <div class="row">
         <div>
-          <label>Nombre de la ubicación</label>
-          <input id="newUbi" placeholder="Cuyo, Guayabito, Planta A…"/>
+          <label>Nueva finca</label>
+          <input id="newFinca" placeholder="Cuyo, Buenavista…"/>
         </div>
       </div>
       <div class="btns">
-        <button class="save mini" id="btnAddUbi">+ Agregar ubicación</button>
-        <button class="danger mini" id="btnClearUbis">Borrar todas</button>
+        <button class="save mini" id="btnAddFinca">+ Agregar finca</button>
+        <button class="danger mini" id="btnClearFincas">Borrar todas</button>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="row">
+          <div>
+            <label>Finca (para agregar lote)</label>
+            <select id="fincaParaLote"></select>
+          </div>
+          <div>
+            <label>Nuevo lote</label>
+            <input id="newLote" placeholder="Lote 1, Lote 2…"/>
+          </div>
+        </div>
+        <div class="btns">
+          <button class="save mini" id="btnAddLote">+ Agregar lote a finca</button>
+        </div>
       </div>
 
       <div class="card" style="margin-top:12px">
         <table>
-          <thead><tr><th>Ubicación</th><th></th></tr></thead>
-          <tbody id="tbodyUbis"></tbody>
+          <thead><tr><th>Finca</th><th>Lotes</th><th></th></tr></thead>
+          <tbody id="tbodyFincas"></tbody>
         </table>
+      </div>
+
+      <!-- Importar / Exportar CSV -->
+      <div class="card" style="margin-top:12px">
+        <h4>📥 Importar / 📤 Exportar catálogo</h4>
+        <div class="row">
+          <div>
+            <label>Archivo CSV (finca,lote)</label>
+            <input type="file" id="csvFincas" accept=".csv"/>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px">
+          <div>
+            <label>Pegar CSV (finca,lote)</label>
+            <textarea id="csvText" rows="6" placeholder="finca,lote
+Cuyo,Lote 1
+Cuyo,Lote 2
+Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;border-radius:10px;background:#0f1526;color:#e8eefc"></textarea>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="save mini" id="btnImportCSV">Importar CSV</button>
+          <button class="save mini" id="btnImportText">Importar desde texto</button>
+          <button class="ghost mini" id="btnExportCSV">Exportar CSV</button>
+          <button class="ghost mini" id="btnPlantillaCSV">Descargar plantilla</button>
+        </div>
+        <p class="msg" style="margin-top:8px">
+          Formato: <code>finca,lote</code> (con o sin encabezado). Acepta coma o punto y coma.
+        </p>
       </div>
     </section>
   </div>
 
   <script>
-    /* === CHECK DE SESIÓN (si usas login con index.html) === */
+    /* === CHECK DE SESIÓN === */
     const who = localStorage.getItem('session_user');
     if(!who) { try { location.href = 'index.html'; } catch(_){} }
     document.getElementById('who').textContent = who || 'Invitado';
@@ -211,19 +275,32 @@
     const QKEY   = 'cc_queue_v1';
     const CAMKEY = 'cc_camiones_v1';
     const CHOKEY = 'cc_choferes_v1';
-    const UBIKEY = 'cc_ubicaciones_v1';
+    const FKEY   = 'cc_fincas_v1';
 
     let camiones = [];
     let choferes = [];
-    let ubicaciones = [];
+    let fincas   = [];
 
     /* === UI refs === */
     const estado  = document.getElementById('estado');
     const tbody   = document.getElementById('tbody');
     const tCam    = document.getElementById('tbodyCamiones');
     const tChof   = document.getElementById('tbodyChoferes');
-    const tUbis   = document.getElementById('tbodyUbis');
-    const dlUbis  = document.getElementById('dlUbicaciones');
+    const tFin    = document.getElementById('tbodyFincas');
+
+    // Viajes
+    const origenFinca   = document.getElementById('origenFinca');
+    const origenLote    = document.getElementById('origenLote');
+    const destinoFinca  = document.getElementById('destinoFinca');
+    const destinoLote   = document.getElementById('destinoLote');
+
+    // Datalists
+    const dlFincas        = document.getElementById('dlFincas');
+    const dlLotesOrigen   = document.getElementById('dlLotesOrigen');
+    const dlLotesDestino  = document.getElementById('dlLotesDestino');
+
+    // Fincas tab
+    const fincaParaLote = document.getElementById('fincaParaLote');
 
     /* === Tabs === */
     document.querySelectorAll('.tabbtn').forEach(btn=>{
@@ -240,22 +317,25 @@
     function setEstado(msg, ok=true){ estado.textContent = msg; estado.className = ok ? 'success' : 'error'; }
     function hoyISO(){ return new Date().toISOString().slice(0,10); }
 
-    /* === Lists storage === */
+    /* === Storage Listas === */
     function loadLists(){
-      camiones     = JSON.parse(localStorage.getItem(CAMKEY) || '[]');
-      choferes     = JSON.parse(localStorage.getItem(CHOKEY) || '[]');
-      ubicaciones  = JSON.parse(localStorage.getItem(UBIKEY) || '[]');
+      camiones = JSON.parse(localStorage.getItem(CAMKEY) || '[]');
+      choferes = JSON.parse(localStorage.getItem(CHOKEY) || '[]');
+      fincas   = JSON.parse(localStorage.getItem(FKEY)   || '[]');
 
       if(!camiones.length) camiones = [{nombre:'Camión 01', placa:'ABC-123'}];
       if(!choferes.length) choferes = ['Braulio'];
-      if(!ubicaciones.length) ubicaciones = ['Cuyo','Guayabito','Planta A','Patio 3'];
+      if(!fincas.length) fincas = [
+        { nombre: 'Cuyo',       lotes: ['Lote 1','Lote 2','Lote 3','Lote 4'] },
+        { nombre: 'Buenavista', lotes: ['Lote 1','Lote 2','Lote 3','Lote 4'] }
+      ];
 
       saveLists();
     }
     function saveLists(){
       localStorage.setItem(CAMKEY, JSON.stringify(camiones));
       localStorage.setItem(CHOKEY, JSON.stringify(choferes));
-      localStorage.setItem(UBIKEY, JSON.stringify(ubicaciones));
+      localStorage.setItem(FKEY,   JSON.stringify(fincas));
     }
 
     /* === Renders === */
@@ -283,49 +363,95 @@
         b.addEventListener('click', ()=>{ choferes.splice(+b.dataset.i,1); saveLists(); renderChoferesTable(); populateSelects(); });
       });
     }
-    function renderUbisTable(){
-      tUbis.innerHTML = '';
-      ubicaciones.forEach((u,i)=>{
+
+    // Tabla de fincas + lotes (con borrar lote puntual)
+    function renderFincasTable(){
+      tFin.innerHTML = '';
+      fincas.forEach((f,idx)=>{
+        const lotesHtml = f.lotes.map((l, li) => `
+          <span class="chip">
+            ${l}
+            <button title="Borrar lote" class="danger mini" data-f="${idx}" data-l="${li}" style="padding:2px 6px">✕</button>
+          </span>`).join(' ');
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${u}</td>
-          <td class="right"><button class="danger mini" data-i="${i}">Borrar</button></td>`;
-        tUbis.appendChild(tr);
+        tr.innerHTML = `
+          <td>${f.nombre}</td>
+          <td>${lotesHtml}</td>
+          <td class="right"><button class="danger mini" data-i="${idx}">Borrar finca</button></td>`;
+        tFin.appendChild(tr);
       });
-      tUbis.querySelectorAll('button[data-i]').forEach(b=>{
-        b.addEventListener('click', ()=>{ ubicaciones.splice(+b.dataset.i,1); saveLists(); renderUbisTable(); renderUbisDatalist(); });
+
+      // Borrar finca
+      tFin.querySelectorAll('button[data-i]').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const i = +b.dataset.i;
+          const nombre = fincas[i]?.nombre || '';
+          fincas.splice(i,1);
+          saveLists();
+          renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote();
+          if ((origenFinca.value||'').toLowerCase() === nombre.toLowerCase()) actualizarLotesOrigen();
+          if ((destinoFinca.value||'').toLowerCase() === nombre.toLowerCase()) actualizarLotesDestino();
+        });
+      });
+
+      // Borrar lote puntual
+      tFin.querySelectorAll('button[data-f][data-l]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const fi = +btn.getAttribute('data-f');
+          const li = +btn.getAttribute('data-l');
+          const finca = fincas[fi];
+          if(!finca) return;
+          const eliminado = finca.lotes.splice(li,1)[0];
+          saveLists();
+          renderFincasTable();
+          if ((origenFinca.value||'').toLowerCase() === finca.nombre.toLowerCase()) actualizarLotesOrigen();
+          if ((destinoFinca.value||'').toLowerCase() === finca.nombre.toLowerCase()) actualizarLotesDestino();
+          setEstado(`Lote "${eliminado}" borrado de ${finca.nombre} ✔`);
+        });
       });
     }
-    function renderUbisDatalist(){
-      dlUbis.innerHTML = '';
-      ubicaciones.slice().sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}))
-        .forEach(u=>{
-          const opt = document.createElement('option');
-          opt.value = u; dlUbis.appendChild(opt);
+
+    // Datalist de Fincas
+    function renderFincasDatalist(){
+      dlFincas.innerHTML = '';
+      fincas.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre,'es',{sensitivity:'base'}))
+        .forEach(f=>{
+          const opt = document.createElement('option'); opt.value = f.nombre; dlFincas.appendChild(opt);
         });
     }
 
-    /* === Selects Viajes === */
-    function populateSelects(){
-      const selC = document.getElementById('camionSel');
-      const selH = document.getElementById('choferSel');
-      selC.innerHTML = '';
-      camiones.forEach((c,i)=>{
+    function renderFincaSelectParaLote(){
+      fincaParaLote.innerHTML = '';
+      fincas.forEach((f,i)=>{
         const opt = document.createElement('option');
-        opt.value = i; opt.textContent = `${c.nombre} (${c.placa})`;
-        selC.appendChild(opt);
-      });
-      selH.innerHTML = '';
-      choferes.forEach(ch=>{
-        const opt = document.createElement('option');
-        opt.value = ch; opt.textContent = ch;
-        selH.appendChild(opt);
+        opt.value = i; opt.textContent = f.nombre;
+        fincaParaLote.appendChild(opt);
       });
     }
-    function actualizarPlaca(){
-      const i = +document.getElementById('camionSel').value || 0;
-      const c = camiones[i]; document.getElementById('placa').value = c ? c.placa : '';
+
+    // Lotes dependientes
+    function lotesDe(nombreFinca){
+      const f = fincas.find(x => x.nombre.toLowerCase() === (nombreFinca||'').toLowerCase());
+      return f ? f.lotes : [];
     }
-    document.getElementById('camionSel').addEventListener('change', actualizarPlaca);
+    function setDatalistOptions(datalistEl, arr){
+      if(!datalistEl) return;
+      datalistEl.innerHTML = '';
+      arr.forEach(l=>{
+        const opt = document.createElement('option');
+        opt.value = l; datalistEl.appendChild(opt);
+      });
+    }
+    function actualizarLotesOrigen(){
+      const lotes = lotesDe((origenFinca.value||'').trim());
+      setDatalistOptions(dlLotesOrigen, lotes);
+    }
+    function actualizarLotesDestino(){
+      const lotes = lotesDe((destinoFinca.value||'').trim());
+      setDatalistOptions(dlLotesDestino, lotes);
+    }
+    origenFinca.addEventListener('input', actualizarLotesOrigen);
+    destinoFinca.addEventListener('input', actualizarLotesDestino);
 
     /* === Gestión listas === */
     document.getElementById('btnAddCamion').addEventListener('click', ()=>{
@@ -353,33 +479,163 @@
       if(confirm('¿Borrar TODOS los choferes?')){ choferes=[]; saveLists(); renderChoferesTable(); populateSelects(); }
     });
 
-    document.getElementById('btnAddUbi').addEventListener('click', ()=>{
-      const val = document.getElementById('newUbi').value.trim();
-      if(!val) return alert('Escribe una ubicación');
-      if(ubicaciones.some(u=>u.toLowerCase()===val.toLowerCase())) return alert('Ya existe esa ubicación');
-      ubicaciones.push(val); saveLists();
-      document.getElementById('newUbi').value='';
-      renderUbisTable(); renderUbisDatalist(); setEstado('Ubicación agregada ✔');
+    document.getElementById('btnAddFinca').addEventListener('click', ()=>{
+      const nombre = document.getElementById('newFinca').value.trim();
+      if(!nombre) return alert('Escribe el nombre de la finca');
+      if(fincas.some(f=>f.nombre.toLowerCase()===nombre.toLowerCase()))
+        return alert('Esa finca ya existe');
+      fincas.push({nombre, lotes:[]}); document.getElementById('newFinca').value='';
+      saveLists(); renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote();
+      setEstado('Finca agregada ✔');
     });
-    document.getElementById('btnClearUbis').addEventListener('click', ()=>{
-      if(confirm('¿Borrar TODAS las ubicaciones?')){ ubicaciones=[]; saveLists(); renderUbisTable(); renderUbisDatalist(); }
+    document.getElementById('btnClearFincas').addEventListener('click', ()=>{
+      if(confirm('¿Borrar TODAS las fincas y sus lotes?')){
+        fincas=[]; saveLists(); renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote();
+        actualizarLotesOrigen(); actualizarLotesDestino();
+      }
     });
+    document.getElementById('btnAddLote').addEventListener('click', ()=>{
+      const i = +fincaParaLote.value||0;
+      const f = fincas[i];
+      const lote = (document.getElementById('newLote').value||'').trim();
+      if(!f) return alert('Elige una finca');
+      if(!lote) return alert('Escribe el nombre del lote');
+      if(f.lotes.some(l=>l.toLowerCase()===lote.toLowerCase()))
+        return alert('Ese lote ya existe en la finca');
+      f.lotes.push(lote);
+      document.getElementById('newLote').value='';
+      saveLists(); renderFincasTable();
+      if((origenFinca.value||'').toLowerCase()===f.nombre.toLowerCase()) actualizarLotesOrigen();
+      if((destinoFinca.value||'').toLowerCase()===f.nombre.toLowerCase()) actualizarLotesDestino();
+      setEstado('Lote agregado ✔');
+    });
+
+    /* === CSV helpers === */
+    function readFileText(file){
+      return new Promise((res, rej)=>{
+        const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(r.error); r.readAsText(file);
+      });
+    }
+    function parseCSV(text){
+      const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      if(!lines.length) return [];
+      const header = lines[0].split(/[;,]/).map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+      const idxFinca = header.indexOf('finca');
+      const idxLote  = header.indexOf('lote');
+      let start = (idxFinca !== -1 && idxLote !== -1) ? 1 : 0;
+      const rows = [];
+      for(let i=start;i<lines.length;i++){
+        const cols = lines[i].split(/[;,]/).map(c => c.trim().replace(/^"|"$/g,''));
+        const finca = (idxFinca !== -1 ? cols[idxFinca] : cols[0]) || '';
+        const lote  = (idxLote  !== -1 ? cols[idxLote]  : cols[1]) || '';
+        if(!finca || !lote) continue;
+        rows.push({ finca, lote });
+      }
+      return rows;
+    }
+    function mergeFincas(rows){
+      let addedFincas = 0, addedLotes = 0;
+      const lookup = new Map();
+      fincas.forEach(f => lookup.set(f.nombre.toLowerCase(), f));
+      for(const {finca, lote} of rows){
+        const fn = finca.trim(); const ln = lote.trim();
+        if(!fn || !ln) continue;
+        const key = fn.toLowerCase();
+        let f = lookup.get(key);
+        if(!f){ f = { nombre: fn, lotes: [] }; fincas.push(f); lookup.set(key, f); addedFincas++; }
+        if(!f.lotes.some(x => x.toLowerCase() === ln.toLowerCase())){ f.lotes.push(ln); addedLotes++; }
+      }
+      fincas.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es',{sensitivity:'base'}));
+      fincas.forEach(f=>f.lotes.sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'})));
+      saveLists(); return { addedFincas, addedLotes };
+    }
+    function buildCSVFromFincas(){
+      const rows = [['finca','lote']];
+      fincas.forEach(f=> f.lotes.forEach(l=> rows.push([f.nombre, l])));
+      return rows.map(r => r.map(v => /[",;\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v).join(',')).join('\n');
+    }
+    function downloadText(filename, text){
+      const blob = new Blob([text], {type:'text/csv;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+    function plantillaCSV(){
+      const txt = `finca,lote
+Cuyo,Lote 1
+Cuyo,Lote 2
+Buenavista,Lote 1
+Buenavista,Lote 2`;
+      downloadText('plantilla_fincas_lotes.csv', txt);
+    }
+
+    // Eventos CSV
+    document.getElementById('btnImportCSV').addEventListener('click', async ()=>{
+      const inp = document.getElementById('csvFincas');
+      const file = inp?.files?.[0];
+      if(!file) return alert('Selecciona un archivo .csv');
+      try{
+        const text = await readFileText(file);
+        const rows = parseCSV(text);
+        if(!rows.length) return setEstado('CSV sin filas válidas', false);
+        const { addedFincas, addedLotes } = mergeFincas(rows);
+        renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote(); actualizarLotesOrigen(); actualizarLotesDestino();
+        setEstado(`Importado: fincas +${addedFincas}, lotes +${addedLotes} ✔`);
+        inp.value = '';
+      }catch(e){ console.error(e); setEstado('Error leyendo el CSV', false); }
+    });
+    document.getElementById('btnImportText').addEventListener('click', ()=>{
+      const txt = (document.getElementById('csvText').value || '').trim();
+      if(!txt) return alert('Pega alguna fila con formato finca,lote');
+      const rows = parseCSV(txt);
+      if(!rows.length) return setEstado('Texto sin filas válidas', false);
+      const { addedFincas, addedLotes } = mergeFincas(rows);
+      renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote(); actualizarLotesOrigen(); actualizarLotesDestino();
+      setEstado(`Importado (texto): fincas +${addedFincas}, lotes +${addedLotes} ✔`);
+      document.getElementById('csvText').value = '';
+    });
+    document.getElementById('btnExportCSV').addEventListener('click', ()=>{
+      const csv = buildCSVFromFincas(); downloadText('fincas_lotes.csv', csv);
+    });
+    document.getElementById('btnPlantillaCSV').addEventListener('click', plantillaCSV);
+
+    /* === Selects Viajes (camión/chofer) === */
+    function populateSelects(){
+      const selC = document.getElementById('camionSel');
+      const selH = document.getElementById('choferSel');
+      selC.innerHTML = '';
+      camiones.forEach((c,i)=>{
+        const opt = document.createElement('option'); opt.value = i; opt.textContent = `${c.nombre} (${c.placa})`;
+        selC.appendChild(opt);
+      });
+      selH.innerHTML = '';
+      choferes.forEach(ch=>{
+        const opt = document.createElement('option'); opt.value = ch; opt.textContent = ch;
+        selH.appendChild(opt);
+      });
+    }
+    function actualizarPlaca(){
+      const i = +document.getElementById('camionSel').value || 0;
+      const c = camiones[i]; document.getElementById('placa').value = c ? c.placa : '';
+    }
+    document.getElementById('camionSel').addEventListener('change', actualizarPlaca);
 
     /* === VIAJES === */
     function leerFormulario(){
       const i = +document.getElementById('camionSel').value || 0;
       const c = camiones[i] || {nombre:'', placa:''};
+      const oF = (origenFinca.value||'').trim(),  oL = (origenLote.value||'').trim();
+      const dF = (destinoFinca.value||'').trim(), dL = (destinoLote.value||'').trim();
       return {
         usuario: who || '',
         fecha: document.getElementById('fecha').value,
         camion: c.nombre,
         placa: c.placa,
         chofer: document.getElementById('choferSel').value,
-        origen: document.getElementById('origen').value.trim(),
-        destino: document.getElementById('destino').value.trim(),
+        origen:  oF ? (oL ? `${oF} - ${oL}` : oF) : '',
+        destino: dF ? (dL ? `${dF} - ${dL}` : dF) : '',
         salida: document.getElementById('salida').value,
         llegada: document.getElementById('llegada').value,
-        obs: document.getElementById('obs').value.trim()
+        obs: (document.getElementById('obs').value||'').trim()
       };
     }
     function agregarFilaLocal(d){
@@ -390,10 +646,9 @@
     }
     function limpiarFormulario(){
       document.getElementById('fecha').value = hoyISO();
-      document.getElementById('origen').value='';
-      document.getElementById('destino').value='';
-      document.getElementById('salida').value='';
-      document.getElementById('llegada').value='';
+      origenFinca.value=''; destinoFinca.value=''; origenLote.value=''; destinoLote.value='';
+      setDatalistOptions(dlLotesOrigen, []); setDatalistOptions(dlLotesDestino, []);
+      document.getElementById('salida').value=''; document.getElementById('llegada').value='';
       document.getElementById('obs').value='';
       document.getElementById('camionSel').selectedIndex = 0;
       document.getElementById('choferSel').selectedIndex = 0;
@@ -463,15 +718,33 @@ Obs: ${tds[8].textContent}`;
     document.getElementById('btnPDF').addEventListener('click', descargarPDF);
 
     /* === INIT === */
+    function populateSelects(){
+      const selC = document.getElementById('camionSel');
+      const selH = document.getElementById('choferSel');
+      selC.innerHTML = '';
+      camiones.forEach((c,i)=>{
+        const opt = document.createElement('option'); opt.value = i; opt.textContent = `${c.nombre} (${c.placa})`;
+        selC.appendChild(opt);
+      });
+      selH.innerHTML = '';
+      choferes.forEach(ch=>{
+        const opt = document.createElement('option'); opt.value = ch; opt.textContent = ch;
+        selH.appendChild(opt);
+      });
+    }
+
     function init(){
       loadLists();
       renderCamionesTable();
       renderChoferesTable();
-      renderUbisTable();
-      renderUbisDatalist();
+      renderFincasTable();
+      renderFincasDatalist();
+      renderFincaSelectParaLote();
       populateSelects();
       document.getElementById('fecha').value = hoyISO();
       actualizarPlaca();
+      actualizarLotesOrigen();
+      actualizarLotesDestino();
 
       // Dejar visible Viajes
       document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.style.display='none');
