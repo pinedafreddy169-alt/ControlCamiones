@@ -1,158 +1,411 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Control de Camiones - PWA Offline</title>
-<link rel="stylesheet" href="style.css"/>
-<link rel="manifest" href="manifest.json"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Control de Camiones - Tabs</title>
+  <style>
+    :root{
+      --bg:#0b1220;--card:#121a2b;--muted:#9ba8bf;--line:#23314f;--text:#e8eefc;
+      --ok:#27c380;--warn:#ff7b7b;--primary:#3fa0ff
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1000px;margin:0 auto;padding:16px 12px}
+    h1{margin:10px 0 16px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+    .tabbtn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
+    .tabbtn.active{outline:2px solid var(--primary)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px}
+    label{display:block;margin-top:10px;font-size:14px;color:var(--muted)}
+    input,select,textarea{width:100%;padding:10px;margin-top:6px;border:1px solid var(--line);border-radius:10px;background:#0f1526;color:var(--text)}
+    .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    button{border:0;border-radius:12px;padding:12px 14px;cursor:pointer;font-weight:600}
+    .save{background:var(--ok);color:#0b281c}
+    .ghost{background:#32415f;color:#dfe7ff}
+    .sync{background:var(--primary);color:#04101f}
+    .pdf{background:#23314f;color:var(--text)}
+    .mini{padding:8px 10px;border-radius:10px}
+    #estado{font-size:14px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+    th{color:var(--muted)}
+    .inline{display:flex;gap:8px;align-items:flex-end}
+    .right{display:flex;gap:8px;justify-content:flex-end}
+    .danger{background:#c84545;color:#fff}
+    .success{color:var(--ok)}
+    .error{color:var(--warn)}
+    @media (hover:hover){ .tabbtn:hover{filter:brightness(1.1)} }
+  </style>
 </head>
 <body>
-<div id="login-screen" class="wrap">
-<h1>🚛 Control de Camiones</h1>
-<h3>Iniciar sesión</h3>
-<label>Usuario</label>
-<input type="text" id="username"/>
-<label>Contraseña</label>
-<input type="password" id="password"/>
-<button id="btnLogin" class="save">Entrar</button>
-<span id="login-status"></span>
-</div>
- 
-  <div id="app-screen" class="wrap" style="display:none">
-<div class="top-bar">
-<button id="btnLogout" class="ghost">Cerrar sesión</button>
-<span id="sync-status"></span>
-</div>
- 
-    <!-- NAV TABS -->
-<div class="tabs">
-<button class="tabbtn active" data-tab="viajes">Viajes</button>
-<button class="tabbtn" data-tab="camiones">Camiones</button>
-<button class="tabbtn" data-tab="ubicaciones">Ubicaciones/Lotes</button>
-</div>
- 
-    <!-- TAB VIAJES -->
-<section id="tab-viajes" class="card">
-<h3>📋 Registrar Viaje</h3>
-<div class="row">
-<div>
-<label>Fecha</label>
-<input id="fecha" type="date"/>
-</div>
-<div>
-<label>Camión</label>
-<select id="camionSel"></select>
-</div>
-<div>
-<label>Placa</label>
-<input id="placa" readonly/>
-</div>
-<div>
-<label>Origen</label>
-<select id="origenSel"></select>
-</div>
-<div>
-<label>Destino</label>
-<select id="destinoSel"></select>
-</div>
-<div>
-<label>Lote</label>
-<select id="loteSel"></select>
-</div>
-<div>
-<label>Salida</label>
-<input id="salida" type="time"/>
-</div>
-<div>
-<label>Llegada</label>
-<input id="llegada" type="time"/>
-</div>
-</div>
-<label>Observaciones</label>
-<textarea id="obs" rows="2" placeholder="Notas…"></textarea>
- 
+  <div class="wrap">
+    <h1>🚛 Control de Camiones</h1>
+
+    <!-- NAV PESTAÑAS -->
+    <div class="tabs">
+      <button class="tabbtn active" data-tab="viajes">Viajes</button>
+      <button class="tabbtn" data-tab="camiones">Camiones</button>
+      <button class="tabbtn" data-tab="choferes">Choferes</button>
+    </div>
+
+    <!-- ====== TAB: VIAJES ====== -->
+    <section id="tab-viajes" class="card">
+      <div class="row">
+        <div>
+          <label>Fecha</label>
+          <input id="fecha" type="date"/>
+        </div>
+
+        <div>
+          <label>Camión</label>
+          <select id="camionSel"></select>
+        </div>
+
+        <div>
+          <label>Placa</label>
+          <input id="placa" readonly placeholder="Se llena al elegir camión"/>
+        </div>
+
+        <div>
+          <label>Chofer</label>
+          <select id="choferSel"></select>
+        </div>
+
+        <div>
+          <label>Origen</label>
+          <input id="origen" placeholder="Cuyo"/>
+        </div>
+        <div>
+          <label>Destino</label>
+          <input id="destino" placeholder="Guayabito"/>
+        </div>
+        <div>
+          <label>Salida</label>
+          <input id="salida" type="time"/>
+        </div>
+        <div>
+          <label>Llegada</label>
+          <input id="llegada" type="time"/>
+        </div>
+      </div>
+
+      <label style="margin-top:12px;">Observaciones</label>
+      <textarea id="obs" rows="2" placeholder="Notas…"></textarea>
+
       <div class="btns">
-<button id="btnGuardar" class="save">Guardar</button>
-<button id="btnLimpiar" class="ghost">Limpiar</button>
-<button id="btnSync" class="sync">Sincronizar</button>
-<button id="btnPDF" class="pdf">PDF</button>
-</div>
- 
-      <div class="card">
-<h3>Viajes Guardados (offline)</h3>
-<table>
-<thead>
-<tr>
-<th>Fecha</th><th>Camión</th><th>Placa</th><th>Origen</th>
-<th>Destino</th><th>Lote</th><th>Salida</th><th>Llegada</th><th>Obs</th><th>Acción</th>
-</tr>
-</thead>
-<tbody id="tbodyViajes"></tbody>
-</table>
-</div>
-</section>
- 
-    <!-- TAB CAMIONES -->
-<section id="tab-camiones" class="card" style="display:none">
-<h3>🚚 Catálogo de Camiones</h3>
-<div class="row">
-<div>
-<label>Nombre Camión</label>
-<input id="newCamion"/>
-</div>
-<div>
-<label>Placa</label>
-<input id="newPlaca"/>
-</div>
-</div>
-<div class="btns">
-<button id="btnAddCamion" class="save mini">Agregar</button>
-</div>
-<div class="card">
-<table>
-<thead><tr><th>Camión</th><th>Placa</th><th>Acción</th></tr></thead>
-<tbody id="tbodyCamiones"></tbody>
-</table>
-</div>
-</section>
- 
-    <!-- TAB UBICACIONES/LOTES -->
-<section id="tab-ubicaciones" class="card" style="display:none">
-<h3>📌 Catálogo de Ubicaciones / Lotes</h3>
-<div class="row">
-<div>
-<label>Ubicación</label>
-<input id="newUbicacion"/>
-</div>
-<div>
-<label>Lote</label>
-<input id="newLote"/>
-</div>
-</div>
-<div class="btns">
-<button id="btnAddUbicacion" class="save mini">Agregar Ubicación</button>
-<button id="btnAddLote" class="save mini">Agregar Lote</button>
-</div>
-<div class="card">
-<h4>Ubicaciones</h4>
-<ul id="listaUbicaciones"></ul>
-<h4>Lotes</h4>
-<ul id="listaLotes"></ul>
-</div>
-</section>
- 
+        <button class="save" id="btnGuardar">Guardar (enviar a Sheets)</button>
+        <button class="ghost" id="btnLimpiar">Limpiar</button>
+        <span id="estado"></span>
+        <div class="right">
+          <button class="sync" id="btnSync">Sincronizar</button>
+          <button class="pdf" id="btnPDF">Descargar PDF</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>📋 Últimos registros (local)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Camión</th><th>Placa</th><th>Chofer</th>
+              <th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Obs</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====== TAB: CAMIONES ====== -->
+    <section id="tab-camiones" class="card" style="display:none">
+      <h3>🚚 Camiones</h3>
+      <div class="row">
+        <div>
+          <label>Nombre del camión</label>
+          <input id="newCamion" placeholder="Camión 01"/>
+        </div>
+        <div>
+          <label>Placa</label>
+          <input id="newPlaca" placeholder="ABC-123"/>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="save mini" id="btnAddCamion">+ Agregar camión</button>
+        <button class="danger mini" id="btnClearCamiones">Borrar todos</button>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <table>
+          <thead><tr><th>Camión</th><th>Placa</th><th></th></tr></thead>
+          <tbody id="tbodyCamiones"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====== TAB: CHOFERES ====== -->
+    <section id="tab-choferes" class="card" style="display:none">
+      <h3>🧑‍✈️ Choferes</h3>
+      <div class="row">
+        <div>
+          <label>Nombre del chofer</label>
+          <input id="newChofer" placeholder="Braulio"/>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="save mini" id="btnAddChofer">+ Agregar chofer</button>
+        <button class="danger mini" id="btnClearChoferes">Borrar todos</button>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <table>
+          <thead><tr><th>Chofer</th><th></th></tr></thead>
+          <tbody id="tbodyChoferes"></tbody>
+        </table>
+      </div>
+    </section>
   </div>
- 
-  <script src="db.js"></script>
-<script src="app.js"></script>
-<script>
-    // Registrar service worker para PWA offline
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('service-worker.js')
-      .then(()=>console.log('Service Worker registrado'))
-      .catch(e=>console.error('SW error',e));
+
+  <script>
+    /* === CONFIG === */
+    const ENDPOINT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec";
+
+    /* === STATE/KEYS === */
+    const estado = document.getElementById('estado');
+    const tbody  = document.getElementById('tbody');
+    const tbodyCamiones = document.getElementById('tbodyCamiones');
+    const tbodyChoferes = document.getElementById('tbodyChoferes');
+
+    const QKEY = 'cc_queue_v1';
+    const CAMKEY = 'cc_camiones_v1'; // [{nombre, placa}]
+    const CHOKEY = 'cc_choferes_v1'; // ["Braulio", "Juan"]
+
+    let camiones = [];
+    let choferes = [];
+
+    /* === TABS === */
+    document.querySelectorAll('.tabbtn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.style.display='none');
+        document.getElementById('tab-'+tab).style.display='block';
+        if(tab==='viajes'){ populateSelects(); actualizarPlaca(); }
+      });
+    });
+
+    /* === HELPERS === */
+    function setEstado(msg, ok=true){
+      estado.textContent = msg;
+      estado.className = ok ? 'success' : 'error';
     }
-</script>
+    function hoyISO(){ return new Date().toISOString().slice(0,10); }
+
+    /* === STORAGE === */
+    function loadLists(){
+      camiones = JSON.parse(localStorage.getItem(CAMKEY) || '[]');
+      choferes = JSON.parse(localStorage.getItem(CHOKEY) || '[]');
+
+      // Si no hay datos, deja ejemplos
+      if(!camiones.length) camiones = [{nombre:'Camión 01', placa:'ABC-123'}, {nombre:'Camión 02', placa:'XYZ-789'}];
+      if(!choferes.length) choferes = ['Braulio','Juan','Víctor'];
+
+      saveLists();
+    }
+    function saveLists(){
+      localStorage.setItem(CAMKEY, JSON.stringify(camiones));
+      localStorage.setItem(CHOKEY, JSON.stringify(choferes));
+    }
+
+    /* === RENDER LISTAS GESTIÓN === */
+    function renderCamionesTable(){
+      tbodyCamiones.innerHTML = '';
+      camiones.forEach((c,idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.nombre}</td><td>${c.placa}</td>
+                        <td class="right"><button class="danger mini" data-i="${idx}">Borrar</button></td>`;
+        tbodyCamiones.appendChild(tr);
+      });
+      tbodyCamiones.querySelectorAll('button[data-i]').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const i = +b.dataset.i;
+          camiones.splice(i,1); saveLists(); renderCamionesTable(); populateSelects(); actualizarPlaca();
+        });
+      });
+    }
+    function renderChoferesTable(){
+      tbodyChoferes.innerHTML = '';
+      choferes.forEach((c,idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c}</td>
+                        <td class="right"><button class="danger mini" data-i="${idx}">Borrar</button></td>`;
+        tbodyChoferes.appendChild(tr);
+      });
+      tbodyChoferes.querySelectorAll('button[data-i]').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const i = +b.dataset.i;
+          choferes.splice(i,1); saveLists(); renderChoferesTable(); populateSelects();
+        });
+      });
+    }
+
+    /* === SELECTS VIAJES === */
+    function populateSelects(){
+      const selC = document.getElementById('camionSel');
+      const selH = document.getElementById('choferSel');
+      selC.innerHTML = '';
+      camiones.forEach((c,i)=>{
+        const opt = document.createElement('option');
+        opt.value = i; opt.textContent = `${c.nombre} (${c.placa})`;
+        selC.appendChild(opt);
+      });
+      selH.innerHTML = '';
+      choferes.forEach(ch=>{
+        const opt = document.createElement('option');
+        opt.value = ch; opt.textContent = ch;
+        selH.appendChild(opt);
+      });
+    }
+    function actualizarPlaca(){
+      const idx = +document.getElementById('camionSel').value || 0;
+      const item = camiones[idx];
+      document.getElementById('placa').value = item ? item.placa : '';
+    }
+    document.getElementById('camionSel').addEventListener('change', actualizarPlaca);
+
+    /* === GESTIÓN: agregar/borrar === */
+    document.getElementById('btnAddCamion').addEventListener('click', ()=>{
+      const nombre = document.getElementById('newCamion').value.trim();
+      const placa  = document.getElementById('newPlaca').value.trim().toUpperCase();
+      if(!nombre || !placa) return alert('Completá nombre y placa');
+      if(camiones.some(c=>c.nombre===nombre || c.placa===placa)) return alert('Ya existe ese camión o placa');
+      camiones.push({nombre, placa}); saveLists();
+      document.getElementById('newCamion').value=''; document.getElementById('newPlaca').value='';
+      renderCamionesTable(); populateSelects(); actualizarPlaca();
+      setEstado('Camión agregado ✔');
+    });
+    document.getElementById('btnClearCamiones').addEventListener('click', ()=>{
+      if(confirm('¿Borrar TODOS los camiones?')){ camiones=[]; saveLists(); renderCamionesTable(); populateSelects(); actualizarPlaca(); }
+    });
+
+    document.getElementById('btnAddChofer').addEventListener('click', ()=>{
+      const nombre = document.getElementById('newChofer').value.trim();
+      if(!nombre) return alert('Escribe el nombre del chofer');
+      if(choferes.includes(nombre)) return alert('Ese chofer ya existe');
+      choferes.push(nombre); saveLists();
+      document.getElementById('newChofer').value='';
+      renderChoferesTable(); populateSelects();
+      setEstado('Chofer agregado ✔');
+    });
+    document.getElementById('btnClearChoferes').addEventListener('click', ()=>{
+      if(confirm('¿Borrar TODOS los choferes?')){ choferes=[]; saveLists(); renderChoferesTable(); populateSelects(); }
+    });
+
+    /* === VIAJES === */
+    function leerFormulario(){
+      const i = +document.getElementById('camionSel').value || 0;
+      const c = camiones[i] || {nombre:'', placa:''};
+      return {
+        fecha: document.getElementById('fecha').value,
+        camion: c.nombre,
+        placa: c.placa,
+        chofer: document.getElementById('choferSel').value,
+        origen: document.getElementById('origen').value.trim(),
+        destino: document.getElementById('destino').value.trim(),
+        salida: document.getElementById('salida').value,
+        llegada: document.getElementById('llegada').value,
+        obs: document.getElementById('obs').value.trim()
+      };
+    }
+    function agregarFilaLocal(d){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${d.fecha}</td><td>${d.camion}</td><td>${d.placa}</td><td>${d.chofer}</td>
+                      <td>${d.origen}</td><td>${d.destino}</td><td>${d.salida}</td><td>${d.llegada}</td><td>${d.obs}</td>`;
+      tbody.prepend(tr);
+    }
+    function limpiarFormulario(){
+      document.getElementById('fecha').value = hoyISO();
+      document.getElementById('origen').value='';
+      document.getElementById('destino').value='';
+      document.getElementById('salida').value='';
+      document.getElementById('llegada').value='';
+      document.getElementById('obs').value='';
+      document.getElementById('camionSel').selectedIndex = 0;
+      document.getElementById('choferSel').selectedIndex = 0;
+      actualizarPlaca();
+      setEstado('Formulario limpio');
+    }
+    function enqueue(payload){
+      const q = JSON.parse(localStorage.getItem(QKEY)||'[]'); q.push(payload);
+      localStorage.setItem(QKEY, JSON.stringify(q));
+    }
+    async function enviar(payload){
+      // CORS desde GitHub Pages → no-cors
+      return fetch(ENDPOINT, {
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+    }
+    async function guardar(){
+      const data = leerFormulario();
+      if(!data.fecha || !data.camion || !data.placa || !data.chofer){
+        setEstado('Falta fecha / camión / placa / chofer', false); return;
+      }
+      try{
+        await enviar(data);
+        agregarFilaLocal(data);
+        setEstado('Enviado a Google Sheets ✔');
+        limpiarFormulario(); // limpia automático
+      }catch(e){
+        enqueue(data);
+        setEstado('Sin conexión. Guardado en cola.', false);
+      }
+    }
+    async function sincronizar(){
+      const q = JSON.parse(localStorage.getItem(QKEY)||'[]');
+      if(!q.length) return setEstado('No hay pendientes');
+      let ok=0;
+      while(q.length){
+        try{ await enviar(q[0]); q.shift(); ok++; }
+        catch(e){ break; }
+      }
+      localStorage.setItem(QKEY, JSON.stringify(q));
+      setEstado(`Sincronizados: ${ok}. Pendientes: ${q.length}`, ok>0);
+    }
+    function descargarPDF(){
+      const filas = tbody.querySelectorAll('tr');
+      if(!filas.length) return setEstado('No hay datos para PDF', false);
+      const tds = filas[0].querySelectorAll('td');
+      const texto = `Control de Camiones
+Fecha: ${tds[0].textContent}
+Camión: ${tds[1].textContent}  Placa: ${tds[2].textContent}
+Chofer: ${tds[3].textContent}
+Origen: ${tds[4].textContent}  Destino: ${tds[5].textContent}
+Salida: ${tds[6].textContent}  Llegada: ${tds[7].textContent}
+Obs: ${tds[8].textContent}`;
+      const blob = new Blob([texto], {type:'application/pdf'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download=`control_camiones_${Date.now()}.pdf`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    /* === EVENTOS === */
+    document.getElementById('btnGuardar').addEventListener('click', guardar);
+    document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
+    document.getElementById('btnSync').addEventListener('click', sincronizar);
+    document.getElementById('btnPDF').addEventListener('click', descargarPDF);
+
+    /* === INIT === */
+    loadLists();
+    renderCamionesTable();
+    renderChoferesTable();
+    populateSelects();
+    document.getElementById('fecha').value = hoyISO();
+    actualizarPlaca();
+  </script>
 </body>
 </html>
