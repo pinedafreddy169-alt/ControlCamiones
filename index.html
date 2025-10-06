@@ -1,323 +1,167 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Control de Horarios de Camiones</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:#0b1220;color:#e8eefc}
-    .wrap{max-width:980px;margin:20px auto;padding:16px}
-    .card{background:#121a2b;border:1px solid #23314f;border-radius:14px;padding:16px;margin-bottom:16px}
-    label{display:block;margin-top:10px;font-size:14px;color:#9ba8bf}
-    input,select,textarea{width:100%;padding:10px;border:1px solid #2a3b5f;border-radius:10px;background:#0f1526;color:#e8eefc}
-    .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    button{border:0;border-radius:12px;padding:12px 14px;cursor:pointer}
-    .save{background:#27c380;color:#102018}
-    .sync{background:#3fa0ff;color:#08111f}
-    .pdf{background:#23314f;color:#e8eefc}
-    .mini{padding:8px 10px;border-radius:10px;font-size:14px}
-    .ok{color:#27c380;margin-left:6px}
-    .err{color:#ff7b7b;margin-left:6px}
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{padding:10px;border-bottom:1px solid #23314f;text-align:left}
-    th{color:#9ba8bf;font-weight:600}
-    .inline{display:flex;gap:8px;align-items:flex-end}
+    body { font-family: Arial, sans-serif; background:#0b1220; color:#e8eefc; }
+    .wrap { max-width:980px; margin:20px auto; padding:16px; }
+    .card { background:#121a2b; border:1px solid #23314f; border-radius:16px; padding:16px; margin-bottom:16px; }
+    label { display:block; margin-top:10px; font-size:14px; color:#9ba8bf; }
+    input,select,textarea { width:100%; padding:10px; margin-top:5px; border:1px solid #2a3b5f; border-radius:10px; background:#0f1526; color:#e8eefc; }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    button { border:0; border-radius:12px; padding:12px 14px; cursor:pointer; font-weight:bold; }
+    .save { background:#27c380; color:#102818; }
+    .mini { background:#999; color:#fff; }
+    .sync { background:#3faaff; color:#00111f; }
+    .pdf  { background:#23314f; color:#e8eefc; }
+    #estado { font-size:14px; margin-left:12px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th,td { padding:10px; border-bottom:1px solid #23314f; text-align:left; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>🚛 Control de Horarios de Camiones</h1>
 
-    <!-- ===== Registro ===== -->
     <div class="card">
-      <div class="row">
-        <div>
-          <label>Fecha</label>
-          <input id="fecha" type="date" />
-        </div>
+      <label>Fecha:</label>
+      <input type="date" id="fecha"/>
 
-        <!-- CAMIÓN con lista -->
-        <div>
-          <label>Camión</label>
-          <div class="inline">
-            <select id="camionSel"></select>
-            <button class="mini" id="btnAddCamion">+ Camión</button>
-          </div>
-        </div>
+      <label>Camión:</label>
+      <select id="camionSel">
+        <option value="">Seleccione...</option>
+        <option value="Camión 01|ABC-123">Camión 01 (ABC-123)</option>
+        <option value="Camión 02|XYZ-456">Camión 02 (XYZ-456)</option>
+      </select>
+      <input type="text" id="placa" placeholder="Placa" readonly/>
 
-        <div>
-          <label>Placa</label>
-          <input id="placa" placeholder="ABC-123" readonly />
-        </div>
+      <label>Chofer:</label>
+      <select id="choferSel">
+        <option value="">Seleccione...</option>
+        <option value="Braulio">Braulio</option>
+        <option value="Luis">Luis</option>
+        <option value="Carlos">Carlos</option>
+      </select>
 
-        <!-- CHOFER con lista -->
-        <div>
-          <label>Chofer</label>
-          <div class="inline">
-            <select id="choferSel"></select>
-            <button class="mini" id="btnAddChofer">+ Chofer</button>
-          </div>
-        </div>
-
-        <div>
-          <label>Origen</label>
-          <input id="origen" placeholder="Cuyo" />
-        </div>
-
-        <div>
-          <label>Destino</label>
-          <input id="destino" placeholder="Guayabito" />
-        </div>
-
-        <div>
-          <label>Salida</label>
-          <input id="salida" type="time" />
-        </div>
-
-        <div>
-          <label>Llegada</label>
-          <input id="llegada" type="time" />
-        </div>
-      </div>
-
-      <label style="margin-top:12px;">Observaciones</label>
-      <textarea id="obs" rows="2" placeholder="Notas…"></textarea>
+      <label>Origen:</label>
+      <input type="text" id="origen"/>
+      <label>Destino:</label>
+      <input type="text" id="destino"/>
+      <label>Salida:</label>
+      <input type="time" id="salida"/>
+      <label>Llegada:</label>
+      <input type="time" id="llegada"/>
+      <label>Observaciones:</label>
+      <textarea id="obs"></textarea>
 
       <div class="btns">
         <button class="save" id="btnGuardar">Guardar (enviar a Sheets)</button>
+        <button class="mini" id="btnLimpiar">Limpiar</button>
         <span id="estado"></span>
         <button class="sync" id="btnSync">Sincronizar</button>
         <button class="pdf" id="btnPDF">Descargar PDF</button>
       </div>
     </div>
 
-    <!-- ===== Lista simple local ===== -->
     <div class="card">
-      <h3>Últimos registros (local)</h3>
-      <table id="tabla">
+      <h2>📋 Registros</h2>
+      <table>
         <thead>
           <tr>
             <th>Fecha</th><th>Camión</th><th>Placa</th><th>Chofer</th>
             <th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Obs</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
   </div>
 
   <script>
-  /* ✅ URL del Web App (Apps Script) */
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec";
+    const ENDPOINT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec";
 
-  const estado = document.getElementById('estado');
-  const tbody  = document.querySelector('#tabla tbody');
-  const queueKey = 'cc_queue_v1';
-  const CHOFERES_KEY = 'cc_choferes_v1';
-  const CAMIONES_KEY = 'cc_camiones_v1';
+    const tbody = document.getElementById('tbody');
+    const estado = document.getElementById('estado');
 
-  let choferes = [];
-  let camiones = []; // {nombre:"Camión 01", placa:"ABC-123"}
-
-  function setEstado(msg, ok=true){
-    estado.textContent = msg;
-    estado.className = ok ? 'ok' : 'err';
-  }
-
-  // ====== Listas locales (persisten en el teléfono) ======
-  function cargarListas() {
-    choferes = JSON.parse(localStorage.getItem(CHOFERES_KEY) || '[]');
-    camiones = JSON.parse(localStorage.getItem(CAMIONES_KEY) || '[]');
-
-    // Si están vacías, inicializar con ejemplos
-    if (choferes.length === 0) choferes = ["Braulio","Juan","Víctor"];
-    if (camiones.length === 0) camiones = [
-      { nombre:"Camión 01", placa:"ABC-123" },
-      { nombre:"Camión 02", placa:"XYZ-789" }
-    ];
-    guardarListas();
-  }
-
-  function guardarListas() {
-    localStorage.setItem(CHOFERES_KEY, JSON.stringify(choferes));
-    localStorage.setItem(CAMIONES_KEY, JSON.stringify(camiones));
-  }
-
-  function renderChoferes() {
-    const sel = document.getElementById('choferSel');
-    sel.innerHTML = '';
-    choferes.forEach((c, i) => {
-      const opt = document.createElement('option');
-      opt.value = c; opt.textContent = c;
-      sel.appendChild(opt);
-    });
-  }
-
-  function renderCamiones() {
-    const sel = document.getElementById('camionSel');
-    sel.innerHTML = '';
-    camiones.forEach((c, i) => {
-      const opt = document.createElement('option');
-      opt.value = i; 
-      opt.textContent = `${c.nombre} (${c.placa})`;
-      sel.appendChild(opt);
-    });
-    // actualizar placa según selección
-    actualizarPlaca();
-  }
-
-  function actualizarPlaca(){
-    const sel = document.getElementById('camionSel');
-    const placaInput = document.getElementById('placa');
-    const idx = parseInt(sel.value || "0", 10);
-    const item = camiones[idx];
-    placaInput.value = item ? item.placa : "";
-  }
-
-  function agregarChofer(){
-    const nombre = prompt("Nombre del chofer:");
-    if (!nombre) return;
-    if (choferes.includes(nombre.trim())) { setEstado("Chofer ya existe", false); return; }
-    choferes.push(nombre.trim());
-    guardarListas();
-    renderChoferes();
-    document.getElementById('choferSel').value = nombre.trim();
-    setEstado("Chofer agregado ✔");
-  }
-
-  function agregarCamion(){
-    const nombre = prompt("Nombre del camión (ej: Camión 03):");
-    if (!nombre) return;
-    const placa  = prompt("Placa (ej: DEF-456):");
-    if (!placa) return;
-    if (camiones.some(c => c.nombre === nombre.trim() || c.placa === placa.trim())) {
-      setEstado("Ese camión o placa ya existe", false); return;
+    function setEstado(msg, ok=true) {
+      estado.textContent = msg;
+      estado.style.color = ok ? '#27c380' : '#ff777b';
     }
-    camiones.push({ nombre: nombre.trim(), placa: placa.trim() });
-    guardarListas();
-    renderCamiones();
-    // seleccionar el recién agregado
-    document.getElementById('camionSel').value = String(camiones.length - 1);
-    actualizarPlaca();
-    setEstado("Camión agregado ✔");
-  }
 
-  // ====== Lectura de formulario y envío ======
-  function leerFormulario() {
-    const camionIdx = parseInt(document.getElementById('camionSel').value || "0", 10);
-    const camionSel = camiones[camionIdx] || { nombre:"", placa:"" };
-    return {
-      fecha:   document.getElementById('fecha').value,
-      camion:  camionSel.nombre,
-      placa:   camionSel.placa,
-      chofer:  document.getElementById('choferSel').value,
-      origen:  document.getElementById('origen').value.trim(),
-      destino: document.getElementById('destino').value.trim(),
-      salida:  document.getElementById('salida').value,
-      llegada: document.getElementById('llegada').value,
-      obs:     document.getElementById('obs').value.trim()
-    };
-  }
-
-  function agregarFilaLocal(r) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.fecha || ''}</td>
-      <td>${r.camion || ''}</td>
-      <td>${r.placa || ''}</td>
-      <td>${r.chofer || ''}</td>
-      <td>${r.origen || ''}</td>
-      <td>${r.destino || ''}</td>
-      <td>${r.salida || ''}</td>
-      <td>${r.llegada || ''}</td>
-      <td>${r.obs || ''}</td>`;
-    tbody.prepend(tr);
-  }
-
-  function encolar(payload){
-    const q = JSON.parse(localStorage.getItem(queueKey) || '[]');
-    q.push(payload);
-    localStorage.setItem(queueKey, JSON.stringify(q));
-  }
-
-  async function enviar(payload){
-    // GitHub Pages → Apps Script: usar no-cors
-    return fetch(ENDPOINT, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-  }
-
-  async function guardar() {
-    const datos = leerFormulario();
-    if(!datos.fecha || !datos.camion || !datos.placa || !datos.chofer){
-      setEstado('Faltan datos obligatorios (fecha/camión/placa/chofer)', false);
-      return;
+    function actualizarPlaca() {
+      const sel = document.getElementById('camionSel').value;
+      const [camion, placa] = sel.split("|");
+      document.getElementById('placa').value = placa || '';
     }
-    try {
-      await enviar(datos);
-      setEstado('Enviado a Google Sheets ✔');
-    } catch (e) {
-      encolar(datos);
-      setEstado('Sin conexión. Guardado en cola.', false);
-    }
-    agregarFilaLocal(datos);
-  }
+    document.getElementById('camionSel').addEventListener('change', actualizarPlaca);
 
-  async function sincronizar(){
-    const q = JSON.parse(localStorage.getItem(queueKey) || '[]');
-    if(!q.length){ setEstado('No hay pendientes'); return; }
-    let ok = 0;
-    while(q.length){
-      const item = q[0];
+    function limpiarFormulario() {
+      const hoy = new Date().toISOString().slice(0,10);
+      document.getElementById('fecha').value = hoy;
+      document.getElementById('camionSel').selectedIndex = 0;
+      document.getElementById('placa').value = '';
+      document.getElementById('choferSel').selectedIndex = 0;
+      ['origen','destino','salida','llegada','obs'].forEach(id => document.getElementById(id).value = '');
+      setEstado('Formulario limpio');
+    }
+
+    async function guardar() {
+      const datos = {
+        fecha: document.getElementById('fecha').value,
+        camion: document.getElementById('camionSel').value.split("|")[0],
+        placa: document.getElementById('placa').value,
+        chofer: document.getElementById('choferSel').value,
+        origen: document.getElementById('origen').value,
+        destino: document.getElementById('destino').value,
+        salida: document.getElementById('salida').value,
+        llegada: document.getElementById('llegada').value,
+        obs: document.getElementById('obs').value
+      };
       try {
-        await enviar(item);
-        q.shift(); ok++;
-      } catch(e){
-        break;
-      }
+        const res = await fetch(ENDPOINT, {method:'POST', body: JSON.stringify(datos)});
+        if(res.ok){
+          agregarFilaLocal(datos);
+          setEstado('Guardado en Sheets');
+          limpiarFormulario(); // 🔹 Se limpia automáticamente después de guardar
+        } else setEstado('Error al guardar', false);
+      } catch(e){ setEstado('Error conexión', false); }
     }
-    localStorage.setItem(queueKey, JSON.stringify(q));
-    setEstado(`Sincronizados: ${ok}. Pendientes: ${q.length}`, ok>0);
-  }
 
-  function descargarPDF(){
-    const filas = tbody.querySelectorAll('tr');
-    if(!filas.length){ setEstado('No hay datos para PDF', false); return; }
-    const tds = filas[0].querySelectorAll('td');
-    const texto = `
+    function agregarFilaLocal(d) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.fecha}</td><td>${d.camion}</td><td>${d.placa}</td>
+        <td>${d.chofer}</td><td>${d.origen}</td><td>${d.destino}</td>
+        <td>${d.salida}</td><td>${d.llegada}</td><td>${d.obs}</td>`;
+      tbody.appendChild(tr);
+    }
+
+    function descargarPDF(){
+      const filas = tbody.querySelectorAll('tr');
+      if(!filas.length){ setEstado('No hay datos para PDF', false); return; }
+      const tds = filas[filas.length-1].querySelectorAll('td');
+      const texto = `
 Control de Camiones
-Fecha: ${tds[0].textContent}
-Camión: ${tds[1].textContent}  Placa: ${tds[2].textContent}
+Fecha: ${tds[0].textContent} Camión: ${tds[1].textContent} Placa: ${tds[2].textContent}
 Chofer: ${tds[3].textContent}
-Origen: ${tds[4].textContent}  Destino: ${tds[5].textContent}
-Salida: ${tds[6].textContent}  Llegada: ${tds[7].textContent}
-Obs: ${tds[8].textContent}
-    `.trim();
+Origen: ${tds[4].textContent} Destino: ${tds[5].textContent}
+Salida: ${tds[6].textContent} Llegada: ${tds[7].textContent}
+Obs: ${tds[8].textContent}`.trim();
 
-    const blob = new Blob([texto], {type:'application/pdf'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `control_camiones_${Date.now()}.pdf`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  }
+      const blob = new Blob([texto], {type:'application/pdf'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `control_camiones_${Date.now()}.pdf`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
 
-  // ====== Eventos ======
-  document.getElementById('btnGuardar').addEventListener('click', guardar);
-  document.getElementById('btnSync').addEventListener('click', sincronizar);
-  document.getElementById('btnPDF').addEventListener('click', descargarPDF);
-  document.getElementById('btnAddChofer').addEventListener('click', agregarChofer);
-  document.getElementById('btnAddCamion').addEventListener('click', agregarCamion);
-  document.getElementById('camionSel').addEventListener('change', actualizarPlaca);
-
-  // Init
-  cargarListas();
-  renderChoferes();
-  renderCamiones();
+    document.getElementById('btnGuardar').addEventListener('click', guardar);
+    document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
+    document.getElementById('btnSync').addEventListener('click', ()=>setEstado('Aquí iría sincronización'));
+    document.getElementById('btnPDF').addEventListener('click', descargarPDF);
   </script>
 </body>
 </html>
