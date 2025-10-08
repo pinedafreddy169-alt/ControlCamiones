@@ -1,1047 +1,554 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Control de Camiones</title>
-  <style>
-    :root{
-      --bg:#0b1220;--card:#121a2b;--muted:#9ba8bf;--line:#23314f;--text:#e8eefc;
-      --ok:#27c380;--warn:#ff7b7b;--primary:#3fa0ff
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:1000px;margin:0 auto;padding:16px 12px}
-    header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    h1{margin:10px 0 16px}
-    .user{color:#9ba8bf;font-size:14px;display:flex;gap:8px;align-items:center}
-    .logout{background:#c84545;color:#fff;border:0;border-radius:10px;padding:8px 12px;cursor:pointer}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
-    .tabbtn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
-    .tabbtn.active{outline:2px solid var(--primary)}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px}
-    label{display:block;margin-top:10px;font-size:14px;color:var(--muted)}
-    input,select,textarea{width:100%;padding:10px;margin-top:6px;border:1px solid var(--line);border-radius:10px;background:#0f1526;color:var(--text)}
-    .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
-    button{border:0;border-radius:12px;padding:12px 14px;cursor:pointer;font-weight:600}
-    .save{background:var(--ok);color:#0b281c}
-    .ghost{background:#32415f;color:#dfe7ff}
-    .sync{background:var(--primary);color:#04101f;display:inline-flex;gap:8px;align-items:center}
-    .pdf{background:#23314f;color:#e8eefc}
-    .mini{padding:8px 10px;border-radius:10px}
-    #estado{font-size:14px}
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-    th{color:var(--muted)}
-    .right{display:flex;gap:8px;justify-content:flex-end}
-    .danger{background:#c84545;color:#fff}
-    .success{color:var(--ok)} .error{color:var(--warn)}
-    .chip{background:#23314f;color:#e8eefc;padding:4px 8px;border-radius:10px;margin:3px;display:inline-flex;gap:6px;align-items:center}
-
-    /* Seguridad admin Fincas & Lotes */
-    .adminLock{background:#0f1526;border:1px dashed #3b4b6b;border-radius:12px;padding:12px;margin-top:8px}
-    .adminLock input{width:auto;min-width:140px;display:inline-block;margin-right:8px}
-    .badge-lock{display:inline-block;background:#32415f;color:#e8eefc;padding:4px 8px;border-radius:8px;margin-left:8px;font-size:12px}
-
-    /* Modal edición */
-    #editModal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:12px;z-index:50}
-    #editCard{background:#121a2b;border:1px solid #23314f;border-radius:16px;max-width:700px;width:100%;padding:16px}
-    #editCard h3{margin:0 0 10px}
-    #editCard .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-    .badge{display:inline-block;min-width:24px;padding:2px 8px;border-radius:999px;border:1px solid #23314f;background:#0f1526}
-
-    /* Feedback visual de sync bloqueada */
-    .sync[disabled]{opacity:.6; cursor:not-allowed; filter:saturate(.7)}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Control de Camiones — v4 catalog (SheetID)</title>
+<style>
+:root{
+  --bg:#0b1220; --card:#121a2b; --muted:#9ba8bf; --text:#e8eefc; --accent:#9bff8a;
+  --line:#23314f; --warn:#ff7b7b; --primary:#3fa0ff; --ok:#27c380;
+}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg)}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label{font-size:12px;color:var(--muted)}
+input,select,textarea{width:100%;padding:10px;border-radius:10px;background:#0f1526;border:1px solid var(--line);color:var(--text)}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{background:transparent;border:1px solid var(--primary);color:var(--text);padding:12px 14px;cursor:pointer;border-radius:10px}
+.btn.primary{background:#23314f;border-color:#23314f}
+.btn.ok{background:#23314f;border-color:#23314f}
+.btn.warn{border-color:var(--warn);color:var(--warn)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+.tabbtn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px;border-radius:10px;cursor:pointer}
+.tabbtn.active{border-color:var(--primary);outline:2px solid var(--primary)}
+.table{width:100%;border-collapse:collapse;margin-top:10px}
+.table th,.table td{padding:8px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+.badge{font-size:12px;color:var(--muted);background:var(--accent);padding:2px 8px;border-radius:999px;display:inline-block}
+.small{font-size:12px;color:var(--muted)}
+hr{border:none;border-top:1px solid var(--line);margin:12px 0}
+.kbd{padding:2px 6px;border-radius:6px;background:#0f1526;border:1px solid var(--line);font-size:12px;color:var(--muted)}
+.lockmsg{color:var(--warn);font-size:14px}
+footer{margin:20px 0;color:var(--muted);font-size:12px;text-align:center}
+.searchWrap{display:flex;gap:8px;align-items:center}
+input[type="time"],input[type="date"]{padding:9px}
+textarea{min-height:48px;resize:vertical}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>🚛 Control de Camiones</h1>
-      <div class="user">
-        Usuario: <span id="who"></span>
-        <button class="logout" id="btnLogout">Cerrar sesión</button>
-      </div>
-    </header>
+<div class="wrap">
+  <h1>🛻 Control de Camiones <span class="badge">v4_catalog</span></h1>
 
-    <!-- NAV PESTAÑAS -->
-    <div class="tabs">
-      <button class="tabbtn active" data-tab="viajes">Viajes</button>
-      <button class="tabbtn" data-tab="camiones">Camiones</button>
-      <button class="tabbtn" data-tab="choferes">Choferes</button>
-      <button class="tabbtn" data-tab="fincas">Fincas & Lotes</button>
-    </div>
-
-    <!-- ====== TAB: VIAJES ====== -->
-    <section id="tab-viajes" class="card">
-      <div class="row">
-        <div>
-          <label>Fecha</label>
-          <input id="fecha" type="date"/>
-        </div>
-        <div>
-          <label>Camión</label>
-          <select id="camionSel"></select>
-        </div>
-        <div>
-          <label>Placa</label>
-          <input id="placa" readonly placeholder="Se llena al elegir camión"/>
-        </div>
-        <div>
-          <label>Chofer</label>
-          <select id="choferSel"></select>
-        </div>
-
-        <!-- ORIGEN -->
-        <div>
-          <label>Origen - Finca</label>
-          <input id="origenFinca" placeholder="Escribe o elige…" list="dlFincas" autocomplete="off"/>
-        </div>
-        <div>
-          <label>Origen - Lote</label>
-          <input id="origenLote" placeholder="Escribe o elige…" list="dlLotesOrigen" autocomplete="off"/>
-        </div>
-
-        <!-- DESTINO -->
-        <div>
-          <label>Destino - Finca</label>
-          <input id="destinoFinca" placeholder="Escribe o elige…" list="dlFincas" autocomplete="off"/>
-        </div>
-        <div>
-          <label>Destino - Lote</label>
-          <input id="destinoLote" placeholder="Escribe o elige…" list="dlLotesDestino" autocomplete="off"/>
-        </div>
-
-        <!-- DATALISTS -->
-        <datalist id="dlFincas"></datalist>
-        <datalist id="dlLotesOrigen"></datalist>
-        <datalist id="dlLotesDestino"></datalist>
-
-        <div>
-          <label>Salida</label>
-          <input id="salida" type="time"/>
-        </div>
-        <div>
-          <label>Llegada</label>
-          <input id="llegada" type="time"/>
-        </div>
-      </div>
-
-      <label style="margin-top:12px;">Observaciones</label>
-      <textarea id="obs" rows="2" placeholder="Notas…"></textarea>
-
-      <div class="btns">
-        <button class="save" id="btnGuardar">Guardar (cola local)</button>
-        <button class="ghost" id="btnLimpiar">Limpiar</button>
-        <span id="estado"></span>
-        <div class="right">
-          <button class="sync" id="btnSync">Sincronizar <span id="syncCount" class="badge">0</span></button>
-          <button class="pdf" id="btnPDF">Descargar PDF</button>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:16px">
-        <h3>📋 Registros pendientes (cola local)</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th><th>Camión</th><th>Placa</th><th>Chofer</th>
-              <th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Obs</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ====== TAB: CAMIONES ====== -->
-    <section id="tab-camiones" class="card" style="display:none">
-      <h3>🚚 Camiones</h3>
-      <div class="row">
-        <div>
-          <label>Nombre del camión</label>
-          <input id="newCamion" placeholder="Camión 01"/>
-        </div>
-        <div>
-          <label>Placa</label>
-          <input id="newPlaca" placeholder="ABC-123"/>
-        </div>
-      </div>
-      <div class="btns">
-        <button class="save mini" id="btnAddCamion">+ Agregar camión</button>
-        <button class="danger mini" id="btnClearCamiones">Borrar todos</button>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <table>
-          <thead><tr><th>Camión</th><th>Placa</th><th></th></tr></thead>
-          <tbody id="tbodyCamiones"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ====== TAB: CHOFERES ====== -->
-    <section id="tab-choferes" class="card" style="display:none">
-      <h3>🧑‍✈️ Choferes</h3>
-      <div class="row">
-        <div>
-          <label>Nombre del chofer</label>
-          <input id="newChofer" placeholder="Braulio"/>
-        </div>
-      </div>
-      <div class="btns">
-        <button class="save mini" id="btnAddChofer">+ Agregar chofer</button>
-        <button class="danger mini" id="btnClearChoferes">Borrar todos</button>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <table>
-          <thead><tr><th>Chofer</th><th></th></tr></thead>
-          <tbody id="tbodyChoferes"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ====== TAB: FINCAS & LOTES ====== -->
-    <section id="tab-fincas" class="card" style="display:none">
-      <h3>🏷️ Fincas & Lotes</h3>
-
-      <!-- Barra de seguridad -->
-      <div class="adminLock" id="adminBar">
-        <strong>Edición protegida</strong>
-        <span id="lockState" class="badge-lock">Bloqueado</span>
-        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <input id="adminUser" placeholder="Usuario" autocomplete="off"/>
-          <input id="adminPass" type="password" placeholder="Clave" autocomplete="off"/>
-          <button class="save mini" id="btnUnlock">Desbloquear edición</button>
-          <button class="danger mini" id="btnLock" style="display:none">Bloquear</button>
-        </div>
-        <div id="adminMsg" style="margin-top:6px;color:#ff7b7b;font-size:14px"></div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Nueva finca</label>
-          <input id="newFinca" placeholder="Cuyo, Buenavista…"/>
-        </div>
-      </div>
-      <div class="btns">
-        <button class="save mini" id="btnAddFinca">+ Agregar finca</button>
-        <button class="danger mini" id="btnClearFincas">Borrar todas</button>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <div class="row">
-          <div>
-            <label>Finca (para agregar lote)</label>
-            <select id="fincaParaLote"></select>
-          </div>
-          <div>
-            <label>Nuevo lote</label>
-            <input id="newLote" placeholder="Lote 1, Lote 2…"/>
-          </div>
-        </div>
-        <div class="btns">
-          <button class="save mini" id="btnAddLote">+ Agregar lote a finca</button>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <table>
-          <thead><tr><th>Finca</th><th>Lotes</th><th></th></tr></thead>
-          <tbody id="tbodyFincas"></tbody>
-        </table>
-      </div>
-
-      <!-- Importar / Exportar CSV -->
-      <div class="card" style="margin-top:12px">
-        <h4>📥 Importar / 📤 Exportar catálogo</h4>
-        <div class="row">
-          <div>
-            <label>Archivo CSV (finca,lote)</label>
-            <input type="file" id="csvFincas" accept=".csv"/>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:8px">
-          <div>
-            <label>Pegar CSV (finca,lote)</label>
-            <textarea id="csvText" rows="6" placeholder="finca,lote
-Cuyo,Lote 1
-Cuyo,Lote 2
-Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;border-radius:10px;background:#0f1526;color:#e8eefc"></textarea>
-          </div>
-        </div>
-
-        <div class="btns">
-          <button class="save mini" id="btnImportCSV">Importar CSV</button>
-          <button class="save mini" id="btnImportText">Importar desde texto</button>
-          <button class="ghost mini" id="btnExportCSV">Exportar CSV</button>
-          <button class="ghost mini" id="btnPlantillaCSV">Descargar plantilla</button>
-        </div>
-        <p class="msg" style="margin-top:8px">
-          Formato: <code>finca,lote</code> (con o sin encabezado). Acepta coma o punto y coma.
-        </p>
-      </div>
-    </section>
+  <div class="tabs">
+    <button class="tabbtn active" data-tab="tab-registro">Registro</button>
+    <button class="tabbtn" data-tab="tab-registros">Registros</button>
+    <button class="tabbtn" data-tab="tab-cc">Choferes & Camiones</button>
+    <button class="tabbtn" data-tab="tab-fincas">Fincas & Lotes</button>
+    <button class="tabbtn" data-tab="tab-config">Config</button>
   </div>
 
-  <!-- Modal de edición -->
-  <div id="editModal">
-    <div id="editCard">
-      <h3>✏️ Editar registro</h3>
-      <div class="row">
-        <div><label>Fecha</label><input id="ed_fecha" type="date"></div>
-        <div><label>Camión</label><input id="ed_camion" placeholder="Camión"></div>
-        <div><label>Placa</label><input id="ed_placa" placeholder="Placa"></div>
-        <div><label>Chofer</label><input id="ed_chofer" placeholder="Chofer"></div>
-        <div><label>Origen</label><input id="ed_origen" placeholder="Finca - Lote"></div>
-        <div><label>Destino</label><input id="ed_destino" placeholder="Finca - Lote"></div>
-        <div><label>Salida</label><input id="ed_salida" type="time"></div>
-        <div><label>Llegada</label><input id="ed_llegada" type="time"></div>
-      </div>
-      <label style="margin-top:10px">Observaciones</label>
-      <textarea id="ed_obs" rows="2" style="width:100%"></textarea>
-
-      <div class="btns" style="margin-top:12px">
-        <button class="save" id="btnSaveEdit">Guardar cambios</button>
-        <button class="danger" id="btnDeleteRow">Eliminar</button>
-        <button class="ghost" id="btnCancelEdit">Cancelar</button>
-        <span style="font-size:12px;color:#9ba8bf">* Solo edita registros <b>pendientes</b> (en cola local).</span>
+  <!-- REGISTRO -->
+  <section id="tab-registro" class="card">
+    <div class="row">
+      <div><label>Fecha</label><input type="date" id="r_fecha"/></div>
+      <div><label>Camión</label><select id="r_camion"></select></div>
+      <div><label>Placa</label><input id="r_placa" placeholder="ABC-123"/></div>
+      <div><label>Chofer</label><select id="r_chofer"></select></div>
+    </div>
+    <hr/>
+    <div class="row">
+      <div><label>Origen — Finca</label><select id="r_origen_finca"></select></div>
+      <div><label>Origen — Lote</label><select id="r_origen_lote"></select></div>
+      <div><label>Destino — Finca</label><select id="r_destino_finca"></select></div>
+      <div><label>Destino — Lote</label><select id="r_destino_lote"></select></div>
+    </div>
+    <hr/>
+    <div class="row">
+      <div><label>Salida</label><input type="time" id="r_salida"/></div>
+      <div><label>Llegada</label><input type="time" id="r_llegada"/></div>
+      <div class="row" style="grid-column:1/-1">
+        <label>Observaciones</label>
+        <textarea id="r_obs" placeholder="Notas u observaciones..."></textarea>
       </div>
     </div>
-  </div>
+    <div class="btns">
+      <button class="btn ok" id="btnGuardar">💾 Guardar</button>
+      <button class="btn" id="btnPDF">📄 Descargar PDF</button>
+      <button class="btn" id="btnLimpiar">🧹 Limpiar</button>
+      <button class="btn primary" id="btnSync">🔁 Sincronizar</button>
+      <span class="small">Registros locales: <span id="statCount">0</span></span>
+    </div>
+  </section>
 
-  <script>
-    /* === CHECK DE SESIÓN === */
-    const who = localStorage.getItem('session_user');
-    if(!who) { try { location.href = 'index.html'; } catch(_){} }
-    document.getElementById('who').textContent = who || 'Invitado';
-    document.getElementById('btnLogout').addEventListener('click', ()=>{
-      localStorage.removeItem('session_user'); location.href = 'index.html';
-    });
+  <!-- REGISTROS -->
+  <section id="tab-registros" class="card" hidden>
+    <div class="searchWrap">
+      <label>Buscar</label><input id="qreg" placeholder="filtrar por texto..."/>
+    </div>
+    <table class="table" id="tblReg">
+      <thead><tr>
+        <th>Fecha</th><th>Camión</th><th>Placa</th><th>Chofer</th>
+        <th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Obs</th><th>Acciones</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
-    /* === CONFIG === */
-    const ENDPOINT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec";
+  <!-- CHOFERES & CAMIONES -->
+  <section id="tab-cc" class="card" hidden>
+    <div class="row">
+      <div><label>Nuevo chófer</label><input id="cc_newChofer" placeholder="Nombre"/></div>
+      <div><label>&nbsp;</label><button class="btn ok" id="cc_addChofer">Agregar Chofer</button></div>
+      <div><label>Nuevo camión</label><input id="cc_newCamion" placeholder="Camión 01"/></div>
+      <div><label>&nbsp;</label><button class="btn ok" id="cc_addCamion">Agregar Camión</button></div>
+    </div><hr/>
+    <div class="row">
+      <div><label>Choferes</label><select id="cc_choferes" size="8" style="height:150px"></select></div>
+      <div><label>Camiones</label><select id="cc_camiones" size="8" style="height:150px"></select></div>
+    </div>
+  </section>
 
-    /* === KEYS/ESTADO === */
-    const QKEY   = 'cc_queue_v1';
-    const CAMKEY = 'cc_camiones_v1';
-    const CHOKEY = 'cc_choferes_v1';
-    const FKEY   = 'cc_fincas_v1';
+  <!-- FINCAS & LOTES (PROTEGIDO) -->
+  <section id="tab-fincas" class="card" hidden>
+    <div class="row">
+      <div class="card" style="background:#0f1526">
+        <b>Edición protegida</b><br/>
+        <span class="small">Para modificar catálogo, ingresar credenciales:</span>
+        <div class="row">
+          <div><label>Usuario</label><input id="adm_user" placeholder="AMID"/></div>
+          <div><label>Clave</label><input id="adm_pass" placeholder="BYC2024"/></div>
+        </div>
+        <div class="btns">
+          <button class="btn ok" id="btnUnlock">🔓 Desbloquear edición</button>
+          <button class="btn" id="btnLock">🔒 Bloquear</button>
+          <span id="adminState" class="small">Estado: Bloqueado</span>
+        </div>
+      </div>
+    </div>
+    <hr/>
+    <div class="row">
+      <div><label>Finca</label><input id="fn_newFinca" placeholder="Nombre finca" disabled/></div>
+      <div><label>Lote</label><input id="fn_newLote" placeholder="Lote 001" disabled/></div>
+      <div><label>&nbsp;</label><button class="btn ok" id="fn_add" disabled>Agregar al catálogo</button></div>
+    </div>
+    <div class="btns">
+      <div>
+        <label class="small">Archivo CSV (finca,lote)</label><br/>
+        <input type="file" id="csvFile" accept=".csv" disabled/>
+      </div>
+      <button class="btn" id="btnImportCSV" disabled>Importar CSV</button>
+      <span id="csvLockMsg" class="lockmsg">⚠️ Desbloquea para poder importar CSV o agregar fincas/lotes.</span>
+    </div>
+    <hr/>
+    <div class="row">
+      <div><label>Catálogo (vista rápida)</label><select id="fn_listFincas" size="10" style="height:200px"></select></div>
+      <div><label>Lotes de la finca</label><select id="fn_listLotes" size="10" style="height:200px"></select></div>
+    </div>
+  </section>
 
-    let camiones = [];
-    let choferes = [];
-    let fincas   = [];
+  <!-- CONFIG -->
+  <section id="tab-config" class="card" hidden>
+    <div class="row">
+      <div>
+        <label>Limpiar después de guardar</label>
+        <select id="cfg_autoClear">
+          <option value="yes">Sí, limpiar automáticamente</option>
+          <option value="no">No, lo haré manual</option>
+        </select>
+      </div>
+      <div>
+        <label>ENDPOINT Apps Script</label>
+        <input id="cfg_endpoint" />
+        <span class="small">Pega aquí tu <span class="kbd">/exec</span>.</span>
+      </div>
+      <div>
+        <label>SHEET ID (Google Sheet)</label>
+        <input id="cfg_sheetId" />
+        <span class="small">ID de la hoja (entre <span class="kbd">/d/</span> y <span class="kbd">/edit</span>).</span>
+      </div>
+    </div>
+    <div class="btns">
+      <button class="btn ok" id="btnSaveCfg">Guardar Config</button>
+      <button class="btn" id="btnPing">Probar endpoint</button>
+      <button class="btn warn" id="btnWipe">Borrar TODO (local)</button>
+    </div>
+  </section>
 
-    /* === Seguridad Admin (solo Fincas & Lotes) === */
-    const ADMIN_USER = 'AMID';
-    const ADMIN_PASS = 'BYC2024';
-    const ADMIN_KEY  = 'cc_admin_ok_v1';
-    let isAdmin = false;
+  <footer>© ControlCamiones — BYC</footer>
+</div>
 
-    // Refs admin
-    const lockState = document.getElementById('lockState');
-    const adminMsg  = document.getElementById('adminMsg');
-    const adminUser = document.getElementById('adminUser');
-    const adminPass = document.getElementById('adminPass');
-    const btnUnlock = document.getElementById('btnUnlock');
-    const btnLock   = document.getElementById('btnLock');
+<script>
+/* ========================
+   CONFIG & CATALOGO BASE
+======================== */
+const STORAGE_KEYS = {
+  viajes:'cc_viajes',
+  choferes:'cc_choferes',
+  camiones:'cc_camiones',
+  catalog:'cc_catalog',
+  cfg:'cc_cfg',
+  admin:'cc_admin'
+};
 
-    function toggleFincasEditable(enabled){
-      const scope = document.getElementById('tab-fincas');
-      scope.querySelectorAll('input, select, textarea').forEach(el=>{
-        if(el.id==='adminUser' || el.id==='adminPass') return;
-        el.disabled = !enabled;
-      });
-      scope.querySelectorAll('button').forEach(b=>{
-        if(b.id==='btnUnlock' || b.id==='btnLock') return;
-        b.disabled = !enabled;
-      });
-    }
-    function setAdminUI(){
-      if(isAdmin){
-        lockState.textContent = 'Desbloqueado';
-        lockState.style.background = '#27c380'; lockState.style.color = '#042b1c';
-        btnUnlock.style.display='none';
-        btnLock.style.display='inline-block';
-        adminMsg.textContent='';
-        toggleFincasEditable(true);
-      }else{
-        lockState.textContent = 'Bloqueado';
-        lockState.style.background = '#32415f'; lockState.style.color = '#e8eefc';
-        btnUnlock.style.display='inline-block';
-        btnLock.style.display='none';
-        adminMsg.textContent='';
-        toggleFincasEditable(false);
-      }
-    }
-    function loadAdminState(){
-      isAdmin = localStorage.getItem(ADMIN_KEY) === 'true';
-      setAdminUI();
-    }
-    btnUnlock.addEventListener('click', ()=>{
-      const u = (adminUser.value||'').trim();
-      const p = (adminPass.value||'').trim();
-      if(u===ADMIN_USER && p===ADMIN_PASS){
-        isAdmin = true; localStorage.setItem(ADMIN_KEY, 'true'); setAdminUI();
-      }else{
-        adminMsg.textContent='Usuario o clave incorrectos';
-      }
-    });
-    btnLock.addEventListener('click', ()=>{
-      isAdmin = false; localStorage.removeItem(ADMIN_KEY); setAdminUI();
-    });
+// Endpoint por defecto y Sheet ID TUYO
+let ENDPOINT_DEFAULT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec";
+let SHEET_ID_DEFAULT = "1C4EOlL_oe641yihG9IXZylFzlOKOTHfbNOQJKvkE_IQ";
 
-    /* === UI refs === */
-    const estado  = document.getElementById('estado');
-    const tbody   = document.getElementById('tbody');
-    const tCam    = document.getElementById('tbodyCamiones');
-    const tChof   = document.getElementById('tbodyChoferes');
-    const tFin    = document.getElementById('tbodyFincas');
-    const syncCountEl = document.getElementById('syncCount');
-    const btnSync = document.getElementById('btnSync');
+// Catálogo base
+const CATALOGO_BASE = {
+  "Buena Vista": ["Lote 001","Lote 002","Lote 003","Lote 005","Lote 007","Lote 008","Lote 009","Lote 011","Lote 014","Lote 015","Lote 016"],
+  "Guayabito": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005","Lote 006","Lote 011","Lote 012","Lote 014","Lote 015","Lote 017","Lote 019","Lote 021","Lote 022","Lote 027"],
+  "Caño Blanco": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005","Lote 006","Lote 007","Lote 008","Lote 009","Lote 011"],
+  "Don Cuyo": ["Lote 001","Lote 002","Lote 003","Lote 004"],
+  "Los Angeles": ["Lote 001"],
+  "Pajarilla": ["Lote 001"],
+  "Pataste": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 006","Lote 007","Lote 008"],
+  "Progreso": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005"],
+  "Rescate": ["Lote 001","Lote 004","Lote 005","Lote 006","Lote 007","Lote 008","Lote 013"],
+  "San Luis": ["Lote 001"],
+  "Los Abuelos": ["Lote 001"],
+  "Enrique": ["Lote 001","Lote 002"],
+  "Oscar": ["Lote 001","Lote 002","Lote 003"],
+  "Tuto": ["Lote 001"],
+  "Chorcha": ["Lote 001"]
+};
 
-    // Viajes
-    const origenFinca   = document.getElementById('origenFinca');
-    const origenLote    = document.getElementById('origenLote');
-    const destinoFinca  = document.getElementById('destinoFinca');
-    const destinoLote   = document.getElementById('destinoLote');
+const store = {
+  get:k => JSON.parse(localStorage.getItem(k)||'null'),
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  del:k => localStorage.removeItem(k)
+};
 
-    // Datalists
-    const dlFincas        = document.getElementById('dlFincas');
-    const dlLotesOrigen   = document.getElementById('dlLotesOrigen');
-    const dlLotesDestino  = document.getElementById('dlLotesDestino');
+// Estado
+let viajes = store.get(STORAGE_KEYS.viajes) || [];
+let choferes = store.get(STORAGE_KEYS.choferes) || ["Braulio"];
+let camiones = store.get(STORAGE_KEYS.camiones) || ["Camión 01"];
+let catalogo = store.get(STORAGE_KEYS.catalog) || CATALOGO_BASE;
+let cfg = store.get(STORAGE_KEYS.cfg) || {
+  autoClear:"yes",
+  endpoint: ENDPOINT_DEFAULT,
+  sheetId: SHEET_ID_DEFAULT
+};
+let isAdmin = !!store.get(STORAGE_KEYS.admin);
 
-    // Fincas tab
-    const fincaParaLote = document.getElementById('fincaParaLote');
+// ===== UI Inicial =====
+function loadChoferesCamiones(){
+  const sc = document.getElementById('r_camion');
+  const sh = document.getElementById('r_chofer');
+  sc.innerHTML = camiones.map(c=>`<option>${c}</option>`).join('');
+  sh.innerHTML = choferes.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('cc_camiones').innerHTML = camiones.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('cc_choferes').innerHTML = choferes.map(c=>`<option>${c}</option>`).join('');
+}
+function fillFincas(selectId){
+  const s = document.getElementById(selectId);
+  const nombres = Object.keys(catalogo).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  s.innerHTML = `<option value="">—</option>` + nombres.map(f=>`<option>${f}</option>`).join('');
+}
+function fillLotesForFinca(finca, selectId){
+  const s = document.getElementById(selectId);
+  if(!finca || !catalogo[finca]){ s.innerHTML = `<option value="">—</option>`; return; }
+  const lotes = [...new Set(catalogo[finca])].sort((a,b)=>a.localeCompare(b,'es',{numeric:true,sensitivity:'base'}));
+  s.innerHTML = `<option value="">—</option>` + lotes.map(l=>`<option>${l}</option>`).join('');
+}
 
-    /* === Tabs === */
-    document.querySelectorAll('.tabbtn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        const tab = btn.dataset.tab;
-        document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.style.display='none');
-        document.getElementById('tab-'+tab).style.display='block';
-      });
-    });
+// Tabs
+document.querySelectorAll('.tabbtn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('section.card').forEach(s=>s.hidden = true);
+    document.getElementById(b.dataset.tab).hidden = false;
+    if(b.dataset.tab==='tab-registros') renderTabla();
+    if(b.dataset.tab==='tab-fincas')   refreshFincasPanel();
+  });
+});
 
-    /* === Helpers === */
-    function setEstado(msg, ok=true){ estado.textContent = msg; estado.className = ok ? 'success' : 'error'; }
-    function hoyISO(){ return new Date().toISOString().slice(0,10); }
+// Formulario
+function uidRow(o){
+  return (o.fecha||'')+'|'+(o.camion||'')+'|'+(o.placa||'')+'|'+(o.chofer||'')+'|'+(o.origen||'')+'|'+(o.destino||'')+'|'+(o.salida||'')+'|'+(o.llegada||'')+'|'+(o.obs||'');
+}
+function leerFormulario(){
+  const f = v => document.getElementById(v).value.trim();
+  const origen = `${f('r_origen_finca')} / ${f('r_origen_lote')}`;
+  const destino = `${f('r_destino_finca')} / ${f('r_destino_lote')}`;
+  return {
+    fecha:f('r_fecha'), camion:f('r_camion'), placa:f('r_placa'), chofer:f('r_chofer'),
+    origen, destino, salida:f('r_salida'), llegada:f('r_llegada'), obs:f('r_obs')
+  };
+}
+function setFormulario(rec){
+  const set=(id,val)=>document.getElementById(id).value = val||'';
+  set('r_fecha', rec.fecha); set('r_camion', rec.camion); set('r_placa', rec.placa); set('r_chofer', rec.chofer);
+  const [of,ol] = (rec.origen||' / ').split(' / ').map(s=>s.trim());
+  const [df,dl] = (rec.destino||' / ').split(' / ').map(s=>s.trim());
+  set('r_origen_finca', of); fillLotesForFinca(of,'r_origen_lote'); set('r_origen_lote', ol);
+  set('r_destino_finca', df); fillLotesForFinca(df,'r_destino_lote'); set('r_destino_lote', dl);
+  set('r_salida',rec.salida); set('r_llegada',rec.llegada); set('r_obs',rec.obs);
+}
 
-    /* === Anti-duplicados: ID único === */
-    function genId(){
-      return (crypto?.randomUUID?.() ?? `cc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`);
-    }
+function guardar(){
+  const rec = leerFormulario();
+  if(!rec.fecha || !rec.camion || !rec.chofer){ alert('Completa fecha, camión y chofer.'); return; }
+  rec.uid = uidRow(rec);
+  rec.synced = false;
+  viajes.push(rec);
+  store.set(STORAGE_KEYS.viajes, viajes);
+  document.getElementById('statCount').textContent = viajes.length;
+  if(cfg.autoClear==='yes') limpiar();
+  alert('Registro guardado localmente.');
+}
+function limpiar(){
+  ['r_fecha','r_camion','r_placa','r_chofer','r_origen_finca','r_origen_lote','r_destino_finca','r_destino_lote','r_salida','r_llegada','r_obs'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el.tagName==='SELECT') el.selectedIndex=0; else el.value='';
+  });
+}
 
-    /* === Cola local === */
-    function getQueue(){ return JSON.parse(localStorage.getItem(QKEY)||'[]'); }
-    function setQueue(q){ localStorage.setItem(QKEY, JSON.stringify(q)); updateSyncCount(); }
-    function updateSyncCount(){
-      const n = getQueue().length;
-      syncCountEl.textContent = n;
-      syncCountEl.style.background = n ? '#ffe08a' : '#0f1526';
-      syncCountEl.style.borderColor = n ? '#7a5d00' : '#23314f';
-      syncCountEl.style.color = n ? '#3b2e00' : '#9ba8bf';
-    }
-
-    /* === Storage Listas === */
-    function loadLists(){
-      camiones = JSON.parse(localStorage.getItem(CAMKEY) || '[]');
-      choferes = JSON.parse(localStorage.getItem(CHOKEY) || '[]');
-      fincas   = JSON.parse(localStorage.getItem(FKEY)   || '[]');
-
-      if(!camiones.length) camiones = [{nombre:'Camión 01', placa:'ABC-123'}];
-      if(!choferes.length) choferes = ['Braulio'];
-      if(!fincas.length) fincas = [
-        { nombre: 'Cuyo',       lotes: ['Lote 1','Lote 2','Lote 3','Lote 4'] },
-        { nombre: 'Buenavista', lotes: ['Lote 1','Lote 2','Lote 3','Lote 4'] }
-      ];
-
-      saveLists();
-    }
-    function saveLists(){
-      localStorage.setItem(CAMKEY, JSON.stringify(camiones));
-      localStorage.setItem(CHOKEY, JSON.stringify(choferes));
-      localStorage.setItem(FKEY,   JSON.stringify(fincas));
-    }
-
-    /* === Renders === */
-    function renderCamionesTable(){
-      tCam.innerHTML = '';
-      camiones.forEach((c,i)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${c.nombre}</td><td>${c.placa}</td>
-          <td class="right"><button class="danger mini" data-i="${i}">Borrar</button></td>`;
-        tCam.appendChild(tr);
-      });
-      tCam.querySelectorAll('button[data-i]').forEach(b=>{
-        b.addEventListener('click', ()=>{
-          camiones.splice(+b.dataset.i,1); saveLists(); renderCamionesTable(); populateSelects(); actualizarPlaca();
-        });
-      });
-    }
-    function renderChoferesTable(){
-      tChof.innerHTML = '';
-      choferes.forEach((c,i)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${c}</td>
-          <td class="right"><button class="danger mini" data-i="${i}">Borrar</button></td>`;
-        tChof.appendChild(tr);
-      });
-      tChof.querySelectorAll('button[data-i]').forEach(b=>{
-        b.addEventListener('click', ()=>{
-          choferes.splice(+b.dataset.i,1); saveLists(); renderChoferesTable(); populateSelects();
-        });
-      });
-    }
-
-    // Tabla de fincas + lotes (con borrar lote puntual)
-    function renderFincasTable(){
-      tFin.innerHTML = '';
-      fincas.forEach((f,idx)=>{
-        const lotesHtml = f.lotes.map((l, li) => `
-          <span class="chip">
-            ${l}
-            <button title="Borrar lote" class="danger mini" data-f="${idx}" data-l="${li}" style="padding:2px 6px">✕</button>
-          </span>`).join(' ');
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${f.nombre}</td>
-          <td>${lotesHtml}</td>
-          <td class="right"><button class="danger mini" data-i="${idx}">Borrar finca</button></td>`;
-        tFin.appendChild(tr);
-      });
-
-      // Borrar finca (requiere admin)
-      tFin.querySelectorAll('button[data-i]').forEach(b=>{
-        b.addEventListener('click', ()=>{
-          if(!isAdmin){ alert('Solo el administrador puede modificar Fincas & Lotes'); return; }
-          const i = +b.dataset.i;
-          const nombre = fincas[i]?.nombre || '';
-          fincas.splice(i,1);
-          saveLists();
-          renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote();
-          if ((origenFinca.value||'').toLowerCase() === nombre.toLowerCase()) actualizarLotesOrigen();
-          if ((destinoFinca.value||'').toLowerCase() === nombre.toLowerCase()) actualizarLotesDestino();
-        });
-      });
-
-      // Borrar lote puntual (requiere admin)
-      tFin.querySelectorAll('button[data-f][data-l]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          if(!isAdmin){ alert('Solo el administrador puede modificar Fincas & Lotes'); return; }
-          const fi = +btn.getAttribute('data-f');
-          const li = +btn.getAttribute('data-l');
-          const finca = fincas[fi];
-          if(!finca) return;
-          const eliminado = finca.lotes.splice(li,1)[0];
-          saveLists();
-          renderFincasTable();
-          if ((origenFinca.value||'').toLowerCase() === finca.nombre.toLowerCase()) actualizarLotesOrigen();
-          if ((destinoFinca.value||'').toLowerCase() === finca.nombre.toLowerCase()) actualizarLotesDestino();
-          setEstado(`Lote "${eliminado}" borrado de ${finca.nombre} ✔`);
-        });
-      });
-    }
-
-    // Datalist de Fincas
-    function renderFincasDatalist(){
-      dlFincas.innerHTML = '';
-      fincas.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre,'es',{sensitivity:'base'}))
-        .forEach(f=>{
-          const opt = document.createElement('option'); opt.value = f.nombre; dlFincas.appendChild(opt);
-        });
-    }
-    function renderFincaSelectParaLote(){
-      fincaParaLote.innerHTML = '';
-      fincas.forEach((f,i)=>{
-        const opt = document.createElement('option');
-        opt.value = i; opt.textContent = f.nombre;
-        fincaParaLote.appendChild(opt);
-      });
-    }
-
-    // Lotes dependientes
-    function lotesDe(nombreFinca){
-      const f = fincas.find(x => x.nombre.toLowerCase() === (nombreFinca||'').toLowerCase());
-      return f ? f.lotes : [];
-    }
-    function setDatalistOptions(datalistEl, arr){
-      if(!datalistEl) return;
-      datalistEl.innerHTML = '';
-      arr.forEach(l=>{
-        const opt = document.createElement('option');
-        opt.value = l; datalistEl.appendChild(opt);
-      });
-    }
-    function actualizarLotesOrigen(){
-      const lotes = lotesDe((origenFinca.value||'').trim());
-      setDatalistOptions(dlLotesOrigen, lotes);
-    }
-    function actualizarLotesDestino(){
-      const lotes = lotesDe((destinoFinca.value||'').trim());
-      setDatalistOptions(dlLotesDestino, lotes);
-    }
-    origenFinca.addEventListener('input', actualizarLotesOrigen);
-    destinoFinca.addEventListener('input', actualizarLotesDestino);
-
-    /* === Gestión listas (Camiones/Choferes/Fincas/Lotes) === */
-    document.getElementById('btnAddCamion').addEventListener('click', ()=>{
-      const nombre = document.getElementById('newCamion').value.trim();
-      const placa  = document.getElementById('newPlaca').value.trim().toUpperCase();
-      if(!nombre || !placa) return alert('Completa nombre y placa');
-      if(camiones.some(c=>c.nombre===nombre || c.placa===placa)) return alert('Ya existe ese camión o placa');
-      camiones.push({nombre, placa}); saveLists();
-      document.getElementById('newCamion').value=''; document.getElementById('newPlaca').value='';
-      renderCamionesTable(); populateSelects(); actualizarPlaca(); setEstado('Camión agregado ✔');
-    });
-    document.getElementById('btnClearCamiones').addEventListener('click', ()=>{
-      if(confirm('¿Borrar TODOS los camiones?')){ camiones=[]; saveLists(); renderCamionesTable(); populateSelects(); actualizarPlaca(); }
-    });
-
-    document.getElementById('btnAddChofer').addEventListener('click', ()=>{
-      const nombre = document.getElementById('newChofer').value.trim();
-      if(!nombre) return alert('Escribe el nombre del chofer');
-      if(choferes.includes(nombre)) return alert('Ese chofer ya existe');
-      choferes.push(nombre); saveLists();
-      document.getElementById('newChofer').value='';
-      renderChoferesTable(); populateSelects(); setEstado('Chofer agregado ✔');
-    });
-    document.getElementById('btnClearChoferes').addEventListener('click', ()=>{
-      if(confirm('¿Borrar TODOS los choferes?')){ choferes=[]; saveLists(); renderChoferesTable(); populateSelects(); }
-    });
-
-    document.getElementById('btnAddFinca').addEventListener('click', ()=>{
-      if(!isAdmin){ alert('Solo el administrador puede modificar Fincas & Lotes'); return; }
-      const nombre = document.getElementById('newFinca').value.trim();
-      if(!nombre) return alert('Escribe el nombre de la finca');
-      if(fincas.some(f=>f.nombre.toLowerCase()===nombre.toLowerCase()))
-        return alert('Esa finca ya existe');
-      fincas.push({nombre, lotes:[]}); document.getElementById('newFinca').value='';
-      saveLists(); renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote();
-      setEstado('Finca agregada ✔');
-    });
-    document.getElementById('btnClearFincas').addEventListener('click', ()=>{
-      if(!isAdmin){ alert('Solo el administrador puede modificar Fincas & Lotes'); return; }
-      if(confirm('¿Borrar TODAS las fincas y sus lotes?')){
-        fincas=[]; saveLists(); renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote();
-        actualizarLotesOrigen(); actualizarLotesDestino();
-      }
-    });
-    document.getElementById('btnAddLote').addEventListener('click', ()=>{
-      if(!isAdmin){ alert('Solo el administrador puede modificar Fincas & Lotes'); return; }
-      const i = +fincaParaLote.value||0;
-      const f = fincas[i];
-      const lote = (document.getElementById('newLote').value||'').trim();
-      if(!f) return alert('Elige una finca');
-      if(!lote) return alert('Escribe el nombre del lote');
-      if(f.lotes.some(l=>l.toLowerCase()===lote.toLowerCase()))
-        return alert('Ese lote ya existe en la finca');
-      f.lotes.push(lote);
-      document.getElementById('newLote').value='';
-      saveLists(); renderFincasTable();
-      if((origenFinca.value||'').toLowerCase()===f.nombre.toLowerCase()) actualizarLotesOrigen();
-      if((destinoFinca.value||'').toLowerCase()===f.nombre.toLowerCase()) actualizarLotesDestino();
-      setEstado('Lote agregado ✔');
-    });
-
-    /* === CSV helpers === */
-    function readFileText(file){
-      return new Promise((res, rej)=>{
-        const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(r.error); r.readAsText(file);
-      });
-    }
-    function parseCSV(text){
-      const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-      if(!lines.length) return [];
-      const header = lines[0].split(/[;,]/).map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
-      const idxFinca = header.indexOf('finca');
-      const idxLote  = header.indexOf('lote');
-      let start = (idxFinca !== -1 && idxLote !== -1) ? 1 : 0;
-      const rows = [];
-      for(let i=start;i<lines.length;i++){
-        const cols = lines[i].split(/[;,]/).map(c => c.trim().replace(/^"|"$/g,''));
-        const finca = (idxFinca !== -1 ? cols[idxFinca] : cols[0]) || '';
-        const lote  = (idxLote  !== -1 ? cols[idxLote]  : cols[1]) || '';
-        if(!finca || !lote) continue;
-        rows.push({ finca, lote });
-      }
-      return rows;
-    }
-    function mergeFincas(rows){
-      let addedFincas = 0, addedLotes = 0;
-      const lookup = new Map();
-      fincas.forEach(f => lookup.set(f.nombre.toLowerCase(), f));
-      for(const {finca, lote} of rows){
-        const fn = finca.trim(); const ln = lote.trim();
-        if(!fn || !ln) continue;
-        const key = fn.toLowerCase();
-        let f = lookup.get(key);
-        if(!f){ f = { nombre: fn, lotes: [] }; fincas.push(f); lookup.set(key, f); addedFincas++; }
-        if(!f.lotes.some(x => x.toLowerCase() === ln.toLowerCase())){ f.lotes.push(ln); addedLotes++; }
-      }
-      fincas.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es',{sensitivity:'base'}));
-      fincas.forEach(f=>f.lotes.sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'})));
-      saveLists(); return { addedFincas, addedLotes };
-    }
-    function buildCSVFromFincas(){
-      const rows = [['finca','lote']];
-      fincas.forEach(f=> f.lotes.forEach(l=> rows.push([f.nombre, l])));
-      return rows.map(r => r.map(v => /[",;\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v).join(',')).join('\n');
-    }
-    function downloadText(filename, text){
-      const blob = new Blob([text], {type:'text/csv;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    }
-    function plantillaCSV(){
-      const txt = `finca,lote
-Cuyo,Lote 1
-Cuyo,Lote 2
-Buenavista,Lote 1
-Buenavista,Lote 2`;
-      downloadText('plantilla_fincas_lotes.csv', txt);
-    }
-
-    // Importar / Exportar (importar requiere admin; exportar permitido a todos para consulta)
-    document.getElementById('btnImportCSV').addEventListener('click', async ()=>{
-      if(!isAdmin){ alert('Solo el administrador puede modificar Fincas & Lotes'); return; }
-      const inp = document.getElementById('csvFincas');
-      const file = inp?.files?.[0];
-      if(!file) return alert('Selecciona un archivo .csv');
-      try{
-        const text = await readFileText(file);
-        const rows = parseCSV(text);
-        if(!rows.length) return setEstado('CSV sin filas válidas', false);
-        const { addedFincas, addedLotes } = mergeFincas(rows);
-        renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote(); actualizarLotesOrigen(); actualizarLotesDestino();
-        setEstado(`Importado: fincas +${addedFincas}, lotes +${addedLotes} ✔`);
-        inp.value = '';
-      }catch(e){ console.error(e); setEstado('Error leyendo el CSV', false); }
-    });
-    document.getElementById('btnImportText').addEventListener('click', ()=>{
-      if(!isAdmin){ alert('Solo el administrador puede modificar Fincas & Lotes'); return; }
-      const txt = (document.getElementById('csvText').value || '').trim();
-      if(!txt) return alert('Pega alguna fila con formato finca,lote');
-      const rows = parseCSV(txt);
-      if(!rows.length) return setEstado('Texto sin filas válidas', false);
-      const { addedFincas, addedLotes } = mergeFincas(rows);
-      renderFincasTable(); renderFincasDatalist(); renderFincaSelectParaLote(); actualizarLotesOrigen(); actualizarLotesDestino();
-      setEstado(`Importado (texto): fincas +${addedFincas}, lotes +${addedLotes} ✔`);
-      document.getElementById('csvText').value = '';
-    });
-    document.getElementById('btnExportCSV').addEventListener('click', ()=>{
-      const csv = buildCSVFromFincas(); downloadText('fincas_lotes.csv', csv);
-    });
-    document.getElementById('btnPlantillaCSV').addEventListener('click', plantillaCSV);
-
-    /* === Selects Viajes (camión/chofer) === */
-    function populateSelects(){
-      const selC = document.getElementById('camionSel');
-      const selH = document.getElementById('choferSel');
-      selC.innerHTML = '';
-      camiones.forEach((c,i)=>{
-        const opt = document.createElement('option'); opt.value = i; opt.textContent = `${c.nombre} (${c.placa})`;
-        selC.appendChild(opt);
-      });
-      selH.innerHTML = '';
-      choferes.forEach(ch=>{
-        const opt = document.createElement('option'); opt.value = ch; opt.textContent = ch;
-        selH.appendChild(opt);
-      });
-    }
-    function actualizarPlaca(){
-      const i = +document.getElementById('camionSel').value || 0;
-      const c = camiones[i]; document.getElementById('placa').value = c ? c.placa : '';
-    }
-    document.getElementById('camionSel').addEventListener('change', actualizarPlaca);
-
-    /* === VIAJES === */
-    function leerFormulario(){
-      const i = +document.getElementById('camionSel').value || 0;
-      const c = camiones[i] || {nombre:'', placa:''};
-      const oF = (origenFinca.value||'').trim(),  oL = (origenLote.value||'').trim();
-      const dF = (destinoFinca.value||'').trim(), dL = (destinoLote.value||'').trim();
-      return {
-        id: genId(), // << nuevo: id único
-        usuario: who || '',
-        fecha: document.getElementById('fecha').value,
-        camion: c.nombre,
-        placa: c.placa,
-        chofer: document.getElementById('choferSel').value,
-        origen:  oF ? (oL ? `${oF} - ${oL}` : oF) : '',
-        destino: dF ? (dL ? `${dF} - ${dL}` : dF) : '',
-        salida: document.getElementById('salida').value,
-        llegada: document.getElementById('llegada').value,
-        obs: (document.getElementById('obs').value||'').trim()
-      };
-    }
-
-    // === Tabla de pendientes editable ===
-    function renderQueueTable(){
-      const q = getQueue();
-      tbody.innerHTML = '';
-      for(let i=q.length-1;i>=0;i--){
-        const d = q[i];
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${d.fecha||''}</td>
-          <td>${d.camion||''}</td>
-          <td>${d.placa||''}</td>
-          <td>${d.chofer||''}</td>
-          <td>${d.origen||''}</td>
-          <td>${d.destino||''}</td>
-          <td>${d.salida||''}</td>
-          <td>${d.llegada||''}</td>
-          <td>${d.obs||''}</td>
-          <td class="right"><button class="mini" data-edit="${i}">✏️ Editar</button></td>
-        `;
-        tbody.appendChild(tr);
-      }
-      // Botones editar
-      tbody.querySelectorAll('button[data-edit]').forEach(b=>{
-        b.addEventListener('click', ()=> openEdit(+b.dataset.edit));
-      });
-      updateSyncCount();
-    }
-
-    // Modal edición
-    let editIndex = null;
-    const editModal   = document.getElementById('editModal');
-    const ed_fecha    = document.getElementById('ed_fecha');
-    const ed_camion   = document.getElementById('ed_camion');
-    const ed_placa    = document.getElementById('ed_placa');
-    const ed_chofer   = document.getElementById('ed_chofer');
-    const ed_origen   = document.getElementById('ed_origen');
-    const ed_destino  = document.getElementById('ed_destino');
-    const ed_salida   = document.getElementById('ed_salida');
-    const ed_llegada  = document.getElementById('ed_llegada');
-    const ed_obs      = document.getElementById('ed_obs');
-
-    function fillEditForm(d){
-      ed_fecha.value   = d.fecha || '';
-      ed_camion.value  = d.camion || '';
-      ed_placa.value   = d.placa || '';
-      ed_chofer.value  = d.chofer || '';
-      ed_origen.value  = d.origen || '';
-      ed_destino.value = d.destino || '';
-      ed_salida.value  = d.salida || '';
-      ed_llegada.value = d.llegada || '';
-      ed_obs.value     = d.obs || '';
-    }
-    function openEdit(indexInQueue){
-      const q = getQueue();
-      const d = q[indexInQueue];
-      if(!d) return;
-      editIndex = indexInQueue;
-      fillEditForm(d);
-      editModal.style.display = 'flex';
-    }
-    function closeEdit(){
-      editModal.style.display = 'none';
-      editIndex = null;
-    }
-    document.getElementById('btnCancelEdit').addEventListener('click', closeEdit);
-    editModal.addEventListener('click', (e)=>{ if(e.target===editModal) closeEdit(); });
-
-    document.getElementById('btnSaveEdit').addEventListener('click', ()=>{
-      if(editIndex===null) return;
-      if(!ed_fecha.value || !ed_camion.value || !ed_placa.value || !ed_chofer.value){
-        setEstado('Falta fecha / camión / placa / chofer', false); return;
-      }
-      const q = getQueue();
-      q[editIndex] = {
-        id: q[editIndex]?.id || genId(),
-        usuario: q[editIndex]?.usuario || (who || ''),
-        fecha:   ed_fecha.value,
-        camion:  ed_camion.value.trim(),
-        placa:   ed_placa.value.trim(),
-        chofer:  ed_chofer.value.trim(),
-        origen:  ed_origen.value.trim(),
-        destino: ed_destino.value.trim(),
-        salida:  ed_salida.value,
-        llegada: ed_llegada.value,
-        obs:     ed_obs.value.trim()
-      };
-      setQueue(q);
-      renderQueueTable();
-      closeEdit();
-      setEstado('Registro actualizado ✔');
-    });
-
-    document.getElementById('btnDeleteRow').addEventListener('click', ()=>{
-      if(editIndex===null) return;
-      if(!confirm('¿Eliminar este registro pendiente?')) return;
-      const q = getQueue();
-      q.splice(editIndex,1);
-      setQueue(q);
-      renderQueueTable();
-      closeEdit();
-      setEstado('Registro eliminado de la cola.');
-    });
-
-    // Encolar + enviar + sincronizar + pdf
-    function enqueue(payload){
-      if(!payload.id) payload.id = genId();
-      const q = getQueue(); q.push(payload); setQueue(q);
-    }
-    async function enviar(payload){
-      // El servidor debe ignorar duplicados por payload.id si ya llegó antes
-      return fetch(ENDPOINT, {
-        method:'POST',
-        mode:'no-cors',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-    }
-
-    function guardar(){
-      const data = leerFormulario();
-      if(!data.fecha || !data.camion || !data.placa || !data.chofer){
-        setEstado('Falta fecha / camión / placa / chofer', false); return;
-      }
-      enqueue(data);
-      renderQueueTable();
-      setEstado('Guardado localmente. Pendiente de sincronizar.');
-      document.getElementById('fecha').value = hoyISO();
-      origenFinca.value=''; destinoFinca.value=''; origenLote.value=''; destinoLote.value='';
-      setDatalistOptions(dlLotesOrigen, []); setDatalistOptions(dlLotesDestino, []);
-      document.getElementById('salida').value=''; document.getElementById('llegada').value='';
-      document.getElementById('obs').value='';
-      document.getElementById('camionSel').selectedIndex = 0;
-      document.getElementById('choferSel').selectedIndex = 0;
-      actualizarPlaca();
-    }
-
-    let isSyncing = false;
-    let lastSyncClick = 0;
-
-    async function sincronizar(){
-      if(isSyncing){ setEstado('Ya se está sincronizando…'); return; }
-      const q0 = getQueue();
-      if(!q0.length){ setEstado('No hay pendientes'); return; }
-
-      isSyncing = true;
-      btnSync.disabled = true;
-      const originalText = btnSync.innerHTML;
-
-      try{
-        let q = getQueue(); // lee fresco
-        let ok = 0;
-
-        while(q.length){
-          const reg = q[0];
-
-          // UI progreso
-          btnSync.innerHTML = `Sincronizando… <span class="badge">${q.length}</span>`;
-
-          try{
-            await enviar(reg);        // envía con reg.id
-            q.shift();                // quita enviado
-            setQueue(q);
-            ok++;
-            setEstado(`Sincronizando… OK ${ok}`);
-          }catch(e){
-            setEstado('Error de red. Quedan pendientes.', false);
-            break;
-          }
-        }
-
-        setEstado(`Sincronizados: ${ok}. Pendientes: ${getQueue().length}`, ok>0);
-        renderQueueTable();
-      } finally {
-        isSyncing = false;
-        btnSync.disabled = false;
-        btnSync.innerHTML = originalText;
-      }
-    }
-
-    // Listener con anti-doble-click
-    btnSync.addEventListener('click', ()=>{
-      const now = Date.now();
-      if (now - lastSyncClick < 1200) return; // ignora doble click en 1.2s
-      lastSyncClick = now;
-      sincronizar();
-    });
-
-    function descargarPDF(){
-      const filas = tbody.querySelectorAll('tr');
-      if(!filas.length) return setEstado('No hay datos para PDF', false);
-      const tds = filas[0].querySelectorAll('td');
-      const texto = `Control de Camiones
-Fecha: ${tds[0].textContent}
-Camión: ${tds[1].textContent}  Placa: ${tds[2].textContent}
+// PDF
+function descargarPDF(){
+  const tb = document.querySelector('#tblReg tbody');
+  if(!tb || !tb.children.length){ alert('No hay datos para PDF'); return; }
+  const tds = tb.children[0].querySelectorAll('td');
+  const texto = `Control de Camiones
+Fecha: ${tds[0].textContent}   Camión: ${tds[1].textContent}  Placa: ${tds[2].textContent}
 Chofer: ${tds[3].textContent}
-Origen: ${tds[4].textContent}  Destino: ${tds[5].textContent}
+Origen: ${tds[4].textContent}
+Destino: ${tds[5].textContent}
 Salida: ${tds[6].textContent}  Llegada: ${tds[7].textContent}
-Obs: ${tds[8].textContent}`;
-      const blob = new Blob([texto], {type:'application/pdf'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download=`control_camiones_${Date.now()}.pdf`;
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    }
+Obs: ${tds[8].textContent}`.trim();
 
-    /* === Eventos === */
-    document.getElementById('btnGuardar').addEventListener('click', guardar);
-    document.getElementById('btnLimpiar').addEventListener('click', ()=>{
-      document.getElementById('fecha').value = hoyISO();
-      origenFinca.value=''; destinoFinca.value=''; origenLote.value=''; destinoLote.value='';
-      setDatalistOptions(dlLotesOrigen, []); setDatalistOptions(dlLotesDestino, []);
-      document.getElementById('salida').value=''; document.getElementById('llegada').value='';
-      document.getElementById('obs').value='';
-      document.getElementById('camionSel').selectedIndex = 0;
-      document.getElementById('choferSel').selectedIndex = 0;
-      actualizarPlaca();
-      setEstado('Formulario limpio');
+  const blob = new Blob([texto], {type:'application/pdf'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `control_camiones_${Date.now()}.pdf`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// Sincronizar (con error real)
+let syncing=false;
+async function sincronizar(){
+  if(syncing) return;
+  const btn = document.getElementById('btnSync');
+  btn.disabled=true; syncing=true;
+
+  try{
+    const pendientes = viajes.filter(v=>!v.synced);
+    if(!pendientes.length){ alert('Nada que sincronizar.'); return; }
+
+    const map = new Map();
+    for(const r of pendientes) map.set(r.uid, r);
+    const lote = Array.from(map.values());
+
+    const payload = { rows: lote, sheetId: (cfg.sheetId || SHEET_ID_DEFAULT) };
+    const res = await fetch(cfg.endpoint || ENDPOINT_DEFAULT, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
     });
-    document.getElementById('btnPDF').addEventListener('click', descargarPDF);
 
-    /* === INIT === */
-    function populateSelects(){
-      const selC = document.getElementById('camionSel');
-      const selH = document.getElementById('choferSel');
-      selC.innerHTML = '';
-      camiones.forEach((c,i)=>{
-        const opt = document.createElement('option'); opt.value = i; opt.textContent = `${c.nombre} (${c.placa})`;
-        selC.appendChild(opt);
-      });
-      selH.innerHTML = '';
-      choferes.forEach(ch=>{
-        const opt = document.createElement('option'); opt.value = ch; opt.textContent = ch;
-        selH.appendChild(opt);
-      });
+    const text = await res.text();
+    let data; try{ data = JSON.parse(text); }catch{ data = {ok:false, raw:text}; }
+    if(!res.ok || !data.ok){
+      const msg = data && (data.error || data.raw) ? (data.error || data.raw) : ('HTTP '+res.status);
+      throw new Error(msg);
     }
 
-    function init(){
-      loadLists();
-      renderCamionesTable();
-      renderChoferesTable();
-      renderFincasTable();
-      renderFincasDatalist();
-      renderFincaSelectParaLote();
-      populateSelects();
-      document.getElementById('fecha').value = hoyISO();
-      actualizarPlaca();
-      actualizarLotesOrigen();
-      actualizarLotesDestino();
+    const okUIDs = new Set(lote.map(r=>r.uid));
+    viajes = viajes.map(v=> (okUIDs.has(v.uid) ? {...v, synced:true} : v));
+    store.set(STORAGE_KEYS.viajes, viajes);
+    renderTabla();
+    alert('Sincronización realizada correctamente.');
+  }catch(err){
+    console.error(err);
+    alert('Falló la sincronización: ' + err.message);
+  }finally{
+    btn.disabled=false; syncing=false;
+  }
+}
 
-      // Admin lock al iniciar
-      loadAdminState();
+// Tabla editable
+function renderTabla(){
+  const q = (document.getElementById('qreg').value||'').toLowerCase();
+  const tb = document.querySelector('#tblReg tbody'); tb.innerHTML='';
+  const fil = viajes.filter(v => JSON.stringify(v).toLowerCase().includes(q));
+  for(const v of fil){
+    const tr = document.createElement('tr');
+    const cel = (t)=>{ const td=document.createElement('td'); td.textContent=t; return td; };
+    tr.append(
+      cel(v.fecha), cel(v.camion), cel(v.placa), cel(v.chofer),
+      cel(v.origen), cel(v.destino), cel(v.salida), cel(v.llegada), cel(v.obs)
+    );
+    const td = document.createElement('td');
+    const bEdit = document.createElement('button'); bEdit.className='btn'; bEdit.textContent='✏️ Editar';
+    bEdit.addEventListener('click', ()=>editarFila(v));
+    const bDel = document.createElement('button'); bDel.className='btn warn'; bDel.textContent='🗑️';
+    bDel.addEventListener('click', ()=>{
+      if(!confirm('¿Eliminar registro?')) return;
+      viajes = viajes.filter(x=>x!==v);
+      store.set(STORAGE_KEYS.viajes, viajes);
+      renderTabla();
+      document.getElementById('statCount').textContent = viajes.length;
+    });
+    td.append(bEdit,' ',bDel); tr.append(td);
+    tb.append(tr);
+  }
+}
+function editarFila(v){
+  setFormulario(v);
+  document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.tabbtn[data-tab="tab-registro"]').classList.add('active');
+  document.querySelectorAll('section.card').forEach(s=>s.hidden = true);
+  document.getElementById('tab-registro').hidden = false;
 
-      // Render inicial de la cola y contador
-      renderQueueTable();
+  const oldGuardar = guardar, oldUid = v.uid;
+  guardar = function(){
+    const rec = leerFormulario();
+    rec.uid = uidRow(rec);
+    rec.synced = false;
+    const ix = viajes.findIndex(x=>x.uid===oldUid);
+    if(ix>=0) viajes.splice(ix,1,rec); else viajes.push(rec);
+    store.set(STORAGE_KEYS.viajes, viajes);
+    document.getElementById('statCount').textContent = viajes.length;
+    if(cfg.autoClear==='yes') limpiar();
+    alert('Registro actualizado localmente.');
+    guardar = oldGuardar;
+  };
+}
 
-      // Dejar visible Viajes
-      document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.style.display='none');
-      document.getElementById('tab-viajes').style.display='block';
-      document.querySelector('.tabbtn[data-tab="viajes"]').classList.add('active');
-    }
-    init();
-  </script>
+// CC
+document.getElementById('cc_addChofer').addEventListener('click', ()=>{
+  const v = document.getElementById('cc_newChofer').value.trim();
+  if(!v) return;
+  if(!choferes.includes(v)) choferes.push(v);
+  store.set(STORAGE_KEYS.choferes, choferes);
+  document.getElementById('cc_newChofer').value='';
+  loadChoferesCamiones();
+});
+document.getElementById('cc_addCamion').addEventListener('click', ()=>{
+  const v = document.getElementById('cc_newCamion').value.trim();
+  if(!v) return;
+  if(!camiones.includes(v)) camiones.push(v);
+  store.set(STORAGE_KEYS.camiones, camiones);
+  document.getElementById('cc_newCamion').value='';
+  loadChoferesCamiones();
+});
+
+// Admin fincas/lotes
+function setAdminUI(){
+  const dis = !isAdmin;
+  ['fn_newFinca','fn_newLote','fn_add','csvFile','btnImportCSV'].forEach(id=>{
+    document.getElementById(id).disabled = dis;
+  });
+  document.getElementById('csvLockMsg').style.display = dis ? 'block':'none';
+  document.getElementById('adminState').textContent = 'Estado: ' + (isAdmin?'Desbloqueado':'Bloqueado');
+}
+document.getElementById('btnUnlock').addEventListener('click', ()=>{
+  const u = document.getElementById('adm_user').value.trim();
+  const p = document.getElementById('adm_pass').value.trim();
+  if(u==='AMID' && p==='BYC2024'){ isAdmin=true; store.set(STORAGE_KEYS.admin, true); setAdminUI(); alert('Edición habilitada.'); }
+  else alert('Credenciales inválidas.');
+});
+document.getElementById('btnLock').addEventListener('click', ()=>{
+  isAdmin=false; store.del(STORAGE_KEYS.admin); setAdminUI();
+});
+document.getElementById('fn_add').addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  const f = document.getElementById('fn_newFinca').value.trim();
+  const l = document.getElementById('fn_newLote').value.trim();
+  if(!f || !l) return;
+  if(!catalogo[f]) catalogo[f]=[];
+  if(!catalogo[f].includes(l)) catalogo[f].push(l);
+  store.set(STORAGE_KEYS.catalog, catalogo);
+  document.getElementById('fn_newLote').value='';
+  refreshFincasPanel();
+});
+document.getElementById('btnImportCSV').addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  const file = document.getElementById('csvFile').files[0];
+  if(!file){ alert('Elegí un CSV.'); return; }
+  const r = new FileReader();
+  r.onload = ()=> importarCSVText(r.result);
+  r.readAsText(file, 'UTF-8');
+});
+function importarCSVText(txt){
+  const lines = txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const head = lines.shift().toLowerCase();
+  const delim = head.includes(';') ? ';' : ',';
+  for(const line of lines){
+    const parts = line.split(delim).map(s=>s.trim());
+    if(parts.length<2) continue;
+    const f=parts[0], l=parts[1];
+    if(!catalogo[f]) catalogo[f]=[];
+    if(!catalogo[f].includes(l)) catalogo[f].push(l);
+  }
+  store.set(STORAGE_KEYS.catalog, catalogo);
+  refreshFincasPanel();
+  alert('Catálogo importado.');
+}
+function refreshFincasPanel(){
+  const sf = document.getElementById('fn_listFincas');
+  const sl = document.getElementById('fn_listLotes');
+  const names = Object.keys(catalogo).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  sf.innerHTML = names.map(f=>`<option value="${f}">${f}</option>`).join('');
+  sl.innerHTML='';
+  sf.onchange = ()=>{
+    const f = sf.value;
+    const lt = (catalogo[f]||[]).slice().sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
+    sl.innerHTML = lt.map(l=>`<option>${l}</option>`).join('');
+  };
+}
+
+// Config
+document.getElementById('btnSaveCfg').addEventListener('click', ()=>{
+  cfg.autoClear = document.getElementById('cfg_autoClear').value;
+  cfg.endpoint  = document.getElementById('cfg_endpoint').value.trim() || ENDPOINT_DEFAULT;
+  cfg.sheetId   = document.getElementById('cfg_sheetId').value.trim() || SHEET_ID_DEFAULT;
+  store.set(STORAGE_KEYS.cfg, cfg);
+  alert('Config guardada.');
+});
+document.getElementById('btnPing').addEventListener('click', async ()=>{
+  try{
+    const url = document.getElementById('cfg_endpoint').value || ENDPOINT_DEFAULT;
+    const res = await fetch(url, { method:'GET' });
+    const text = await res.text();
+    alert('GET /exec respondió:\n' + text.substring(0,300));
+  }catch(e){
+    alert('Error al probar endpoint: ' + e.message);
+  }
+});
+document.getElementById('btnWipe').addEventListener('click', ()=>{
+  if(!confirm('¿Borrar todos los datos locales (viajes, catálogos, config)?')) return;
+  Object.values(STORAGE_KEYS).forEach(k=>localStorage.removeItem(k));
+  location.reload();
+});
+
+// Eventos base
+document.getElementById('btnGuardar').addEventListener('click', guardar);
+document.getElementById('btnLimpiar').addEventListener('click', limpiar);
+document.getElementById('btnPDF').addEventListener('click', descargarPDF);
+document.getElementById('btnSync').addEventListener('click', sincronizar);
+document.getElementById('qreg').addEventListener('input', renderTabla);
+document.getElementById('r_origen_finca').addEventListener('change', e=> fillLotesForFinca(e.target.value, 'r_origen_lote'));
+document.getElementById('r_destino_finca').addEventListener('change', e=> fillLotesForFinca(e.target.value, 'r_destino_lote'));
+
+// INIT
+(function init(){
+  document.getElementById('cfg_autoClear').value = cfg.autoClear||'yes';
+  document.getElementById('cfg_endpoint').value  = cfg.endpoint || ENDPOINT_DEFAULT;
+  document.getElementById('cfg_sheetId').value   = cfg.sheetId || SHEET_ID_DEFAULT;
+
+  loadChoferesCamiones();
+  fillFincas('r_origen_finca'); fillFincas('r_destino_finca');
+  fillLotesForFinca('', 'r_origen_lote'); fillLotesForFinca('', 'r_destino_lote');
+
+  document.getElementById('statCount').textContent = viajes.length;
+  setAdminUI(); refreshFincasPanel();
+})();
+</script>
 </body>
 </html>
