@@ -50,6 +50,9 @@
     #editCard h3{margin:0 0 10px}
     #editCard .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
     .badge{display:inline-block;min-width:24px;padding:2px 8px;border-radius:999px;border:1px solid #23314f;background:#0f1526}
+
+    /* Feedback visual de sync bloqueada */
+    .sync[disabled]{opacity:.6; cursor:not-allowed; filter:saturate(.7)}
   </style>
 </head>
 <body>
@@ -333,10 +336,10 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
     let choferes = [];
     let fincas   = [];
 
-    /* === Seguridad Admin (solo modifica Fincas & Lotes) === */
+    /* === Seguridad Admin (solo Fincas & Lotes) === */
     const ADMIN_USER = 'AMID';
     const ADMIN_PASS = 'BYC2024';
-    const ADMIN_KEY  = 'cc_admin_ok_v1'; // se guarda por navegador
+    const ADMIN_KEY  = 'cc_admin_ok_v1';
     let isAdmin = false;
 
     // Refs admin
@@ -382,7 +385,6 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
     btnUnlock.addEventListener('click', ()=>{
       const u = (adminUser.value||'').trim();
       const p = (adminPass.value||'').trim();
-      // if (/Mobi|Android/i.test(navigator.userAgent)) { adminMsg.textContent = 'El desbloqueo solo se permite en la computadora.'; return; }
       if(u===ADMIN_USER && p===ADMIN_PASS){
         isAdmin = true; localStorage.setItem(ADMIN_KEY, 'true'); setAdminUI();
       }else{
@@ -400,6 +402,7 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
     const tChof   = document.getElementById('tbodyChoferes');
     const tFin    = document.getElementById('tbodyFincas');
     const syncCountEl = document.getElementById('syncCount');
+    const btnSync = document.getElementById('btnSync');
 
     // Viajes
     const origenFinca   = document.getElementById('origenFinca');
@@ -429,6 +432,11 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
     /* === Helpers === */
     function setEstado(msg, ok=true){ estado.textContent = msg; estado.className = ok ? 'success' : 'error'; }
     function hoyISO(){ return new Date().toISOString().slice(0,10); }
+
+    /* === Anti-duplicados: ID único === */
+    function genId(){
+      return (crypto?.randomUUID?.() ?? `cc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`);
+    }
 
     /* === Cola local === */
     function getQueue(){ return JSON.parse(localStorage.getItem(QKEY)||'[]'); }
@@ -549,7 +557,6 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
           const opt = document.createElement('option'); opt.value = f.nombre; dlFincas.appendChild(opt);
         });
     }
-
     function renderFincaSelectParaLote(){
       fincaParaLote.innerHTML = '';
       fincas.forEach((f,i)=>{
@@ -761,6 +768,7 @@ Buenavista,Lote 2`;
       const oF = (origenFinca.value||'').trim(),  oL = (origenLote.value||'').trim();
       const dF = (destinoFinca.value||'').trim(), dL = (destinoLote.value||'').trim();
       return {
+        id: genId(), // << nuevo: id único
         usuario: who || '',
         fecha: document.getElementById('fecha').value,
         camion: c.nombre,
@@ -848,6 +856,7 @@ Buenavista,Lote 2`;
       }
       const q = getQueue();
       q[editIndex] = {
+        id: q[editIndex]?.id || genId(),
         usuario: q[editIndex]?.usuario || (who || ''),
         fecha:   ed_fecha.value,
         camion:  ed_camion.value.trim(),
@@ -876,11 +885,13 @@ Buenavista,Lote 2`;
       setEstado('Registro eliminado de la cola.');
     });
 
-    // Encolar + sincronizar + pdf
+    // Encolar + enviar + sincronizar + pdf
     function enqueue(payload){
+      if(!payload.id) payload.id = genId();
       const q = getQueue(); q.push(payload); setQueue(q);
     }
     async function enviar(payload){
+      // El servidor debe ignorar duplicados por payload.id si ya llegó antes
       return fetch(ENDPOINT, {
         method:'POST',
         mode:'no-cors',
@@ -888,6 +899,7 @@ Buenavista,Lote 2`;
         body: JSON.stringify(payload)
       });
     }
+
     function guardar(){
       const data = leerFormulario();
       if(!data.fecha || !data.camion || !data.placa || !data.chofer){
@@ -896,26 +908,66 @@ Buenavista,Lote 2`;
       enqueue(data);
       renderQueueTable();
       setEstado('Guardado localmente. Pendiente de sincronizar.');
-      limpiarFormulario();
+      document.getElementById('fecha').value = hoyISO();
+      origenFinca.value=''; destinoFinca.value=''; origenLote.value=''; destinoLote.value='';
+      setDatalistOptions(dlLotesOrigen, []); setDatalistOptions(dlLotesDestino, []);
+      document.getElementById('salida').value=''; document.getElementById('llegada').value='';
+      document.getElementById('obs').value='';
+      document.getElementById('camionSel').selectedIndex = 0;
+      document.getElementById('choferSel').selectedIndex = 0;
+      actualizarPlaca();
     }
+
+    let isSyncing = false;
+    let lastSyncClick = 0;
+
     async function sincronizar(){
-      const q = getQueue();
-      if(!q.length) return setEstado('No hay pendientes');
-      let ok=0;
-      while(q.length){
-        try{
-          await enviar(q[0]);
-          q.shift(); ok++;
-          setQueue(q);
-          setEstado(`Sincronizando… OK ${ok}`);
-        }catch(e){
-          setEstado('Error de red. Quedan pendientes.', false);
-          break;
+      if(isSyncing){ setEstado('Ya se está sincronizando…'); return; }
+      const q0 = getQueue();
+      if(!q0.length){ setEstado('No hay pendientes'); return; }
+
+      isSyncing = true;
+      btnSync.disabled = true;
+      const originalText = btnSync.innerHTML;
+
+      try{
+        let q = getQueue(); // lee fresco
+        let ok = 0;
+
+        while(q.length){
+          const reg = q[0];
+
+          // UI progreso
+          btnSync.innerHTML = `Sincronizando… <span class="badge">${q.length}</span>`;
+
+          try{
+            await enviar(reg);        // envía con reg.id
+            q.shift();                // quita enviado
+            setQueue(q);
+            ok++;
+            setEstado(`Sincronizando… OK ${ok}`);
+          }catch(e){
+            setEstado('Error de red. Quedan pendientes.', false);
+            break;
+          }
         }
+
+        setEstado(`Sincronizados: ${ok}. Pendientes: ${getQueue().length}`, ok>0);
+        renderQueueTable();
+      } finally {
+        isSyncing = false;
+        btnSync.disabled = false;
+        btnSync.innerHTML = originalText;
       }
-      setEstado(`Sincronizados: ${ok}. Pendientes: ${getQueue().length}`, ok>0);
-      renderQueueTable();
     }
+
+    // Listener con anti-doble-click
+    btnSync.addEventListener('click', ()=>{
+      const now = Date.now();
+      if (now - lastSyncClick < 1200) return; // ignora doble click en 1.2s
+      lastSyncClick = now;
+      sincronizar();
+    });
 
     function descargarPDF(){
       const filas = tbody.querySelectorAll('tr');
@@ -947,7 +999,6 @@ Obs: ${tds[8].textContent}`;
       actualizarPlaca();
       setEstado('Formulario limpio');
     });
-    document.getElementById('btnSync').addEventListener('click', sincronizar);
     document.getElementById('btnPDF').addEventListener('click', descargarPDF);
 
     /* === INIT === */
