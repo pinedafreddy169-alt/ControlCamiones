@@ -27,12 +27,12 @@
     button{border:0;border-radius:12px;padding:12px 14px;cursor:pointer;font-weight:600}
     .save{background:var(--ok);color:#0b281c}
     .ghost{background:#32415f;color:#dfe7ff}
-    .sync{background:var(--primary);color:#04101f}
+    .sync{background:var(--primary);color:#04101f;display:inline-flex;gap:8px;align-items:center}
     .pdf{background:#23314f;color:#e8eefc}
     .mini{padding:8px 10px;border-radius:10px}
     #estado{font-size:14px}
     table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
     th{color:var(--muted)}
     .right{display:flex;gap:8px;justify-content:flex-end}
     .danger{background:#c84545;color:#fff}
@@ -43,6 +43,13 @@
     .adminLock{background:#0f1526;border:1px dashed #3b4b6b;border-radius:12px;padding:12px;margin-top:8px}
     .adminLock input{width:auto;min-width:140px;display:inline-block;margin-right:8px}
     .badge-lock{display:inline-block;background:#32415f;color:#e8eefc;padding:4px 8px;border-radius:8px;margin-left:8px;font-size:12px}
+
+    /* Modal edición */
+    #editModal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:12px;z-index:50}
+    #editCard{background:#121a2b;border:1px solid #23314f;border-radius:16px;max-width:700px;width:100%;padding:16px}
+    #editCard h3{margin:0 0 10px}
+    #editCard .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+    .badge{display:inline-block;min-width:24px;padding:2px 8px;border-radius:999px;border:1px solid #23314f;background:#0f1526}
   </style>
 </head>
 <body>
@@ -126,18 +133,19 @@
         <button class="ghost" id="btnLimpiar">Limpiar</button>
         <span id="estado"></span>
         <div class="right">
-          <button class="sync" id="btnSync">Sincronizar</button>
+          <button class="sync" id="btnSync">Sincronizar <span id="syncCount" class="badge">0</span></button>
           <button class="pdf" id="btnPDF">Descargar PDF</button>
         </div>
       </div>
 
       <div class="card" style="margin-top:16px">
-        <h3>📋 Últimos registros (local)</h3>
+        <h3>📋 Registros pendientes (cola local)</h3>
         <table>
           <thead>
             <tr>
               <th>Fecha</th><th>Camión</th><th>Placa</th><th>Chofer</th>
               <th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Obs</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
@@ -277,6 +285,32 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
     </section>
   </div>
 
+  <!-- Modal de edición -->
+  <div id="editModal">
+    <div id="editCard">
+      <h3>✏️ Editar registro</h3>
+      <div class="row">
+        <div><label>Fecha</label><input id="ed_fecha" type="date"></div>
+        <div><label>Camión</label><input id="ed_camion" placeholder="Camión"></div>
+        <div><label>Placa</label><input id="ed_placa" placeholder="Placa"></div>
+        <div><label>Chofer</label><input id="ed_chofer" placeholder="Chofer"></div>
+        <div><label>Origen</label><input id="ed_origen" placeholder="Finca - Lote"></div>
+        <div><label>Destino</label><input id="ed_destino" placeholder="Finca - Lote"></div>
+        <div><label>Salida</label><input id="ed_salida" type="time"></div>
+        <div><label>Llegada</label><input id="ed_llegada" type="time"></div>
+      </div>
+      <label style="margin-top:10px">Observaciones</label>
+      <textarea id="ed_obs" rows="2" style="width:100%"></textarea>
+
+      <div class="btns" style="margin-top:12px">
+        <button class="save" id="btnSaveEdit">Guardar cambios</button>
+        <button class="danger" id="btnDeleteRow">Eliminar</button>
+        <button class="ghost" id="btnCancelEdit">Cancelar</button>
+        <span style="font-size:12px;color:#9ba8bf">* Solo edita registros <b>pendientes</b> (en cola local).</span>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* === CHECK DE SESIÓN === */
     const who = localStorage.getItem('session_user');
@@ -348,7 +382,6 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
     btnUnlock.addEventListener('click', ()=>{
       const u = (adminUser.value||'').trim();
       const p = (adminPass.value||'').trim();
-      // (Opcional) bloquear intento desde móvil:
       // if (/Mobi|Android/i.test(navigator.userAgent)) { adminMsg.textContent = 'El desbloqueo solo se permite en la computadora.'; return; }
       if(u===ADMIN_USER && p===ADMIN_PASS){
         isAdmin = true; localStorage.setItem(ADMIN_KEY, 'true'); setAdminUI();
@@ -366,6 +399,7 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
     const tCam    = document.getElementById('tbodyCamiones');
     const tChof   = document.getElementById('tbodyChoferes');
     const tFin    = document.getElementById('tbodyFincas');
+    const syncCountEl = document.getElementById('syncCount');
 
     // Viajes
     const origenFinca   = document.getElementById('origenFinca');
@@ -395,6 +429,17 @@ Buenavista,Lote 1" style="width:100%;padding:10px;border:1px solid #23314f;borde
     /* === Helpers === */
     function setEstado(msg, ok=true){ estado.textContent = msg; estado.className = ok ? 'success' : 'error'; }
     function hoyISO(){ return new Date().toISOString().slice(0,10); }
+
+    /* === Cola local === */
+    function getQueue(){ return JSON.parse(localStorage.getItem(QKEY)||'[]'); }
+    function setQueue(q){ localStorage.setItem(QKEY, JSON.stringify(q)); updateSyncCount(); }
+    function updateSyncCount(){
+      const n = getQueue().length;
+      syncCountEl.textContent = n;
+      syncCountEl.style.background = n ? '#ffe08a' : '#0f1526';
+      syncCountEl.style.borderColor = n ? '#7a5d00' : '#23314f';
+      syncCountEl.style.color = n ? '#3b2e00' : '#9ba8bf';
+    }
 
     /* === Storage Listas === */
     function loadLists(){
@@ -728,27 +773,112 @@ Buenavista,Lote 2`;
         obs: (document.getElementById('obs').value||'').trim()
       };
     }
-    function agregarFilaLocal(d){
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${d.fecha}</td><td>${d.camion}</td><td>${d.placa}</td><td>${d.chofer}</td>
-                      <td>${d.origen}</td><td>${d.destino}</td><td>${d.salida}</td><td>${d.llegada}</td><td>${d.obs}</td>`;
-      tbody.prepend(tr);
-    }
-    function limpiarFormulario(){
-      document.getElementById('fecha').value = hoyISO();
-      origenFinca.value=''; destinoFinca.value=''; origenLote.value=''; destinoLote.value='';
-      setDatalistOptions(dlLotesOrigen, []); setDatalistOptions(dlLotesDestino, []);
-      document.getElementById('salida').value=''; document.getElementById('llegada').value='';
-      document.getElementById('obs').value='';
-      document.getElementById('camionSel').selectedIndex = 0;
-      document.getElementById('choferSel').selectedIndex = 0;
-      actualizarPlaca();
-      setEstado('Formulario limpio');
+
+    // === Tabla de pendientes editable ===
+    function renderQueueTable(){
+      const q = getQueue();
+      tbody.innerHTML = '';
+      for(let i=q.length-1;i>=0;i--){
+        const d = q[i];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${d.fecha||''}</td>
+          <td>${d.camion||''}</td>
+          <td>${d.placa||''}</td>
+          <td>${d.chofer||''}</td>
+          <td>${d.origen||''}</td>
+          <td>${d.destino||''}</td>
+          <td>${d.salida||''}</td>
+          <td>${d.llegada||''}</td>
+          <td>${d.obs||''}</td>
+          <td class="right"><button class="mini" data-edit="${i}">✏️ Editar</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+      // Botones editar
+      tbody.querySelectorAll('button[data-edit]').forEach(b=>{
+        b.addEventListener('click', ()=> openEdit(+b.dataset.edit));
+      });
+      updateSyncCount();
     }
 
+    // Modal edición
+    let editIndex = null;
+    const editModal   = document.getElementById('editModal');
+    const ed_fecha    = document.getElementById('ed_fecha');
+    const ed_camion   = document.getElementById('ed_camion');
+    const ed_placa    = document.getElementById('ed_placa');
+    const ed_chofer   = document.getElementById('ed_chofer');
+    const ed_origen   = document.getElementById('ed_origen');
+    const ed_destino  = document.getElementById('ed_destino');
+    const ed_salida   = document.getElementById('ed_salida');
+    const ed_llegada  = document.getElementById('ed_llegada');
+    const ed_obs      = document.getElementById('ed_obs');
+
+    function fillEditForm(d){
+      ed_fecha.value   = d.fecha || '';
+      ed_camion.value  = d.camion || '';
+      ed_placa.value   = d.placa || '';
+      ed_chofer.value  = d.chofer || '';
+      ed_origen.value  = d.origen || '';
+      ed_destino.value = d.destino || '';
+      ed_salida.value  = d.salida || '';
+      ed_llegada.value = d.llegada || '';
+      ed_obs.value     = d.obs || '';
+    }
+    function openEdit(indexInQueue){
+      const q = getQueue();
+      const d = q[indexInQueue];
+      if(!d) return;
+      editIndex = indexInQueue;
+      fillEditForm(d);
+      editModal.style.display = 'flex';
+    }
+    function closeEdit(){
+      editModal.style.display = 'none';
+      editIndex = null;
+    }
+    document.getElementById('btnCancelEdit').addEventListener('click', closeEdit);
+    editModal.addEventListener('click', (e)=>{ if(e.target===editModal) closeEdit(); });
+
+    document.getElementById('btnSaveEdit').addEventListener('click', ()=>{
+      if(editIndex===null) return;
+      if(!ed_fecha.value || !ed_camion.value || !ed_placa.value || !ed_chofer.value){
+        setEstado('Falta fecha / camión / placa / chofer', false); return;
+      }
+      const q = getQueue();
+      q[editIndex] = {
+        usuario: q[editIndex]?.usuario || (who || ''),
+        fecha:   ed_fecha.value,
+        camion:  ed_camion.value.trim(),
+        placa:   ed_placa.value.trim(),
+        chofer:  ed_chofer.value.trim(),
+        origen:  ed_origen.value.trim(),
+        destino: ed_destino.value.trim(),
+        salida:  ed_salida.value,
+        llegada: ed_llegada.value,
+        obs:     ed_obs.value.trim()
+      };
+      setQueue(q);
+      renderQueueTable();
+      closeEdit();
+      setEstado('Registro actualizado ✔');
+    });
+
+    document.getElementById('btnDeleteRow').addEventListener('click', ()=>{
+      if(editIndex===null) return;
+      if(!confirm('¿Eliminar este registro pendiente?')) return;
+      const q = getQueue();
+      q.splice(editIndex,1);
+      setQueue(q);
+      renderQueueTable();
+      closeEdit();
+      setEstado('Registro eliminado de la cola.');
+    });
+
+    // Encolar + sincronizar + pdf
     function enqueue(payload){
-      const q = JSON.parse(localStorage.getItem(QKEY)||'[]'); q.push(payload);
-      localStorage.setItem(QKEY, JSON.stringify(q));
+      const q = getQueue(); q.push(payload); setQueue(q);
     }
     async function enviar(payload){
       return fetch(ENDPOINT, {
@@ -758,32 +888,35 @@ Buenavista,Lote 2`;
         body: JSON.stringify(payload)
       });
     }
-
-    // GUARDAR: SOLO COLA LOCAL
     function guardar(){
       const data = leerFormulario();
       if(!data.fecha || !data.camion || !data.placa || !data.chofer){
         setEstado('Falta fecha / camión / placa / chofer', false); return;
       }
       enqueue(data);
-      agregarFilaLocal(data);
+      renderQueueTable();
       setEstado('Guardado localmente. Pendiente de sincronizar.');
       limpiarFormulario();
     }
-
-    // SINCRONIZAR: ENVÍA COLA
     async function sincronizar(){
-      const q = JSON.parse(localStorage.getItem(QKEY)||'[]');
+      const q = getQueue();
       if(!q.length) return setEstado('No hay pendientes');
       let ok=0;
       while(q.length){
-        try{ await enviar(q[0]); q.shift(); ok++; localStorage.setItem(QKEY, JSON.stringify(q)); }
-        catch(e){ setEstado('Error de red. Quedan pendientes.', false); break; }
+        try{
+          await enviar(q[0]);
+          q.shift(); ok++;
+          setQueue(q);
+          setEstado(`Sincronizando… OK ${ok}`);
+        }catch(e){
+          setEstado('Error de red. Quedan pendientes.', false);
+          break;
+        }
       }
-      setEstado(`Sincronizados: ${ok}. Pendientes: ${q.length}`, ok>0);
+      setEstado(`Sincronizados: ${ok}. Pendientes: ${getQueue().length}`, ok>0);
+      renderQueueTable();
     }
 
-    // PDF simple del primer registro visible
     function descargarPDF(){
       const filas = tbody.querySelectorAll('tr');
       if(!filas.length) return setEstado('No hay datos para PDF', false);
@@ -803,7 +936,17 @@ Obs: ${tds[8].textContent}`;
 
     /* === Eventos === */
     document.getElementById('btnGuardar').addEventListener('click', guardar);
-    document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
+    document.getElementById('btnLimpiar').addEventListener('click', ()=>{
+      document.getElementById('fecha').value = hoyISO();
+      origenFinca.value=''; destinoFinca.value=''; origenLote.value=''; destinoLote.value='';
+      setDatalistOptions(dlLotesOrigen, []); setDatalistOptions(dlLotesDestino, []);
+      document.getElementById('salida').value=''; document.getElementById('llegada').value='';
+      document.getElementById('obs').value='';
+      document.getElementById('camionSel').selectedIndex = 0;
+      document.getElementById('choferSel').selectedIndex = 0;
+      actualizarPlaca();
+      setEstado('Formulario limpio');
+    });
     document.getElementById('btnSync').addEventListener('click', sincronizar);
     document.getElementById('btnPDF').addEventListener('click', descargarPDF);
 
@@ -838,6 +981,9 @@ Obs: ${tds[8].textContent}`;
 
       // Admin lock al iniciar
       loadAdminState();
+
+      // Render inicial de la cola y contador
+      renderQueueTable();
 
       // Dejar visible Viajes
       document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.style.display='none');
