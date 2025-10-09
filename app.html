@@ -1,554 +1,105 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Control de Camiones — v4 catalog (SheetID)</title>
-<style>
-:root{
-  --bg:#0b1220; --card:#121a2b; --muted:#9ba8bf; --text:#e8eefc; --accent:#9bff8a;
-  --line:#23314f; --warn:#ff7b7b; --primary:#3fa0ff; --ok:#27c380;
-}
-*{box-sizing:border-box}
-body{margin:0;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg)}
-.wrap{max-width:1100px;margin:0 auto;padding:16px}
-h1{margin:0 0 16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
-.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-label{font-size:12px;color:var(--muted)}
-input,select,textarea{width:100%;padding:10px;border-radius:10px;background:#0f1526;border:1px solid var(--line);color:var(--text)}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-.btn{background:transparent;border:1px solid var(--primary);color:var(--text);padding:12px 14px;cursor:pointer;border-radius:10px}
-.btn.primary{background:#23314f;border-color:#23314f}
-.btn.ok{background:#23314f;border-color:#23314f}
-.btn.warn{border-color:var(--warn);color:var(--warn)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
-.tabbtn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px;border-radius:10px;cursor:pointer}
-.tabbtn.active{border-color:var(--primary);outline:2px solid var(--primary)}
-.table{width:100%;border-collapse:collapse;margin-top:10px}
-.table th,.table td{padding:8px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
-.badge{font-size:12px;color:var(--muted);background:var(--accent);padding:2px 8px;border-radius:999px;display:inline-block}
-.small{font-size:12px;color:var(--muted)}
-hr{border:none;border-top:1px solid var(--line);margin:12px 0}
-.kbd{padding:2px 6px;border-radius:6px;background:#0f1526;border:1px solid var(--line);font-size:12px;color:var(--muted)}
-.lockmsg{color:var(--warn);font-size:14px}
-footer{margin:20px 0;color:var(--muted);font-size:12px;text-align:center}
-.searchWrap{display:flex;gap:8px;align-items:center}
-input[type="time"],input[type="date"]{padding:9px}
-textarea{min-height:48px;resize:vertical}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>🛻 Control de Camiones <span class="badge">v4_catalog</span></h1>
-
-  <div class="tabs">
-    <button class="tabbtn active" data-tab="tab-registro">Registro</button>
-    <button class="tabbtn" data-tab="tab-registros">Registros</button>
-    <button class="tabbtn" data-tab="tab-cc">Choferes & Camiones</button>
-    <button class="tabbtn" data-tab="tab-fincas">Fincas & Lotes</button>
-    <button class="tabbtn" data-tab="tab-config">Config</button>
-  </div>
-
-  <!-- REGISTRO -->
-  <section id="tab-registro" class="card">
-    <div class="row">
-      <div><label>Fecha</label><input type="date" id="r_fecha"/></div>
-      <div><label>Camión</label><select id="r_camion"></select></div>
-      <div><label>Placa</label><input id="r_placa" placeholder="ABC-123"/></div>
-      <div><label>Chofer</label><select id="r_chofer"></select></div>
-    </div>
-    <hr/>
-    <div class="row">
-      <div><label>Origen — Finca</label><select id="r_origen_finca"></select></div>
-      <div><label>Origen — Lote</label><select id="r_origen_lote"></select></div>
-      <div><label>Destino — Finca</label><select id="r_destino_finca"></select></div>
-      <div><label>Destino — Lote</label><select id="r_destino_lote"></select></div>
-    </div>
-    <hr/>
-    <div class="row">
-      <div><label>Salida</label><input type="time" id="r_salida"/></div>
-      <div><label>Llegada</label><input type="time" id="r_llegada"/></div>
-      <div class="row" style="grid-column:1/-1">
-        <label>Observaciones</label>
-        <textarea id="r_obs" placeholder="Notas u observaciones..."></textarea>
-      </div>
-    </div>
-    <div class="btns">
-      <button class="btn ok" id="btnGuardar">💾 Guardar</button>
-      <button class="btn" id="btnPDF">📄 Descargar PDF</button>
-      <button class="btn" id="btnLimpiar">🧹 Limpiar</button>
-      <button class="btn primary" id="btnSync">🔁 Sincronizar</button>
-      <span class="small">Registros locales: <span id="statCount">0</span></span>
-    </div>
-  </section>
-
-  <!-- REGISTROS -->
-  <section id="tab-registros" class="card" hidden>
-    <div class="searchWrap">
-      <label>Buscar</label><input id="qreg" placeholder="filtrar por texto..."/>
-    </div>
-    <table class="table" id="tblReg">
-      <thead><tr>
-        <th>Fecha</th><th>Camión</th><th>Placa</th><th>Chofer</th>
-        <th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Obs</th><th>Acciones</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <!-- CHOFERES & CAMIONES -->
-  <section id="tab-cc" class="card" hidden>
-    <div class="row">
-      <div><label>Nuevo chófer</label><input id="cc_newChofer" placeholder="Nombre"/></div>
-      <div><label>&nbsp;</label><button class="btn ok" id="cc_addChofer">Agregar Chofer</button></div>
-      <div><label>Nuevo camión</label><input id="cc_newCamion" placeholder="Camión 01"/></div>
-      <div><label>&nbsp;</label><button class="btn ok" id="cc_addCamion">Agregar Camión</button></div>
-    </div><hr/>
-    <div class="row">
-      <div><label>Choferes</label><select id="cc_choferes" size="8" style="height:150px"></select></div>
-      <div><label>Camiones</label><select id="cc_camiones" size="8" style="height:150px"></select></div>
-    </div>
-  </section>
-
-  <!-- FINCAS & LOTES (PROTEGIDO) -->
-  <section id="tab-fincas" class="card" hidden>
-    <div class="row">
-      <div class="card" style="background:#0f1526">
-        <b>Edición protegida</b><br/>
-        <span class="small">Para modificar catálogo, ingresar credenciales:</span>
-        <div class="row">
-          <div><label>Usuario</label><input id="adm_user" placeholder="AMID"/></div>
-          <div><label>Clave</label><input id="adm_pass" placeholder="BYC2024"/></div>
-        </div>
-        <div class="btns">
-          <button class="btn ok" id="btnUnlock">🔓 Desbloquear edición</button>
-          <button class="btn" id="btnLock">🔒 Bloquear</button>
-          <span id="adminState" class="small">Estado: Bloqueado</span>
-        </div>
-      </div>
-    </div>
-    <hr/>
-    <div class="row">
-      <div><label>Finca</label><input id="fn_newFinca" placeholder="Nombre finca" disabled/></div>
-      <div><label>Lote</label><input id="fn_newLote" placeholder="Lote 001" disabled/></div>
-      <div><label>&nbsp;</label><button class="btn ok" id="fn_add" disabled>Agregar al catálogo</button></div>
-    </div>
-    <div class="btns">
-      <div>
-        <label class="small">Archivo CSV (finca,lote)</label><br/>
-        <input type="file" id="csvFile" accept=".csv" disabled/>
-      </div>
-      <button class="btn" id="btnImportCSV" disabled>Importar CSV</button>
-      <span id="csvLockMsg" class="lockmsg">⚠️ Desbloquea para poder importar CSV o agregar fincas/lotes.</span>
-    </div>
-    <hr/>
-    <div class="row">
-      <div><label>Catálogo (vista rápida)</label><select id="fn_listFincas" size="10" style="height:200px"></select></div>
-      <div><label>Lotes de la finca</label><select id="fn_listLotes" size="10" style="height:200px"></select></div>
-    </div>
-  </section>
-
-  <!-- CONFIG -->
-  <section id="tab-config" class="card" hidden>
-    <div class="row">
-      <div>
-        <label>Limpiar después de guardar</label>
-        <select id="cfg_autoClear">
-          <option value="yes">Sí, limpiar automáticamente</option>
-          <option value="no">No, lo haré manual</option>
-        </select>
-      </div>
-      <div>
-        <label>ENDPOINT Apps Script</label>
-        <input id="cfg_endpoint" />
-        <span class="small">Pega aquí tu <span class="kbd">/exec</span>.</span>
-      </div>
-      <div>
-        <label>SHEET ID (Google Sheet)</label>
-        <input id="cfg_sheetId" />
-        <span class="small">ID de la hoja (entre <span class="kbd">/d/</span> y <span class="kbd">/edit</span>).</span>
-      </div>
-    </div>
-    <div class="btns">
-      <button class="btn ok" id="btnSaveCfg">Guardar Config</button>
-      <button class="btn" id="btnPing">Probar endpoint</button>
-      <button class="btn warn" id="btnWipe">Borrar TODO (local)</button>
-    </div>
-  </section>
-
-  <footer>© ControlCamiones — BYC</footer>
-</div>
-
 <script>
-/* ========================
-   CONFIG & CATALOGO BASE
-======================== */
-const STORAGE_KEYS = {
-  viajes:'cc_viajes',
-  choferes:'cc_choferes',
-  camiones:'cc_camiones',
-  catalog:'cc_catalog',
-  cfg:'cc_cfg',
-  admin:'cc_admin'
-};
+// ======== CONFIG =========
+const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec"; // <-- TU URL /exec
 
-// Endpoint por defecto y Sheet ID TUYO
-let ENDPOINT_DEFAULT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec";
-let SHEET_ID_DEFAULT = "1C4EOlL_oe641yihG9IXZylFzlOKOTHfbNOQJKvkE_IQ";
+// ======== FUNCIONES ========
 
-// Catálogo base
-const CATALOGO_BASE = {
-  "Buena Vista": ["Lote 001","Lote 002","Lote 003","Lote 005","Lote 007","Lote 008","Lote 009","Lote 011","Lote 014","Lote 015","Lote 016"],
-  "Guayabito": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005","Lote 006","Lote 011","Lote 012","Lote 014","Lote 015","Lote 017","Lote 019","Lote 021","Lote 022","Lote 027"],
-  "Caño Blanco": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005","Lote 006","Lote 007","Lote 008","Lote 009","Lote 011"],
-  "Don Cuyo": ["Lote 001","Lote 002","Lote 003","Lote 004"],
-  "Los Angeles": ["Lote 001"],
-  "Pajarilla": ["Lote 001"],
-  "Pataste": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 006","Lote 007","Lote 008"],
-  "Progreso": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005"],
-  "Rescate": ["Lote 001","Lote 004","Lote 005","Lote 006","Lote 007","Lote 008","Lote 013"],
-  "San Luis": ["Lote 001"],
-  "Los Abuelos": ["Lote 001"],
-  "Enrique": ["Lote 001","Lote 002"],
-  "Oscar": ["Lote 001","Lote 002","Lote 003"],
-  "Tuto": ["Lote 001"],
-  "Chorcha": ["Lote 001"]
-};
-
-const store = {
-  get:k => JSON.parse(localStorage.getItem(k)||'null'),
-  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
-  del:k => localStorage.removeItem(k)
-};
-
-// Estado
-let viajes = store.get(STORAGE_KEYS.viajes) || [];
-let choferes = store.get(STORAGE_KEYS.choferes) || ["Braulio"];
-let camiones = store.get(STORAGE_KEYS.camiones) || ["Camión 01"];
-let catalogo = store.get(STORAGE_KEYS.catalog) || CATALOGO_BASE;
-let cfg = store.get(STORAGE_KEYS.cfg) || {
-  autoClear:"yes",
-  endpoint: ENDPOINT_DEFAULT,
-  sheetId: SHEET_ID_DEFAULT
-};
-let isAdmin = !!store.get(STORAGE_KEYS.admin);
-
-// ===== UI Inicial =====
-function loadChoferesCamiones(){
-  const sc = document.getElementById('r_camion');
-  const sh = document.getElementById('r_chofer');
-  sc.innerHTML = camiones.map(c=>`<option>${c}</option>`).join('');
-  sh.innerHTML = choferes.map(c=>`<option>${c}</option>`).join('');
-  document.getElementById('cc_camiones').innerHTML = camiones.map(c=>`<option>${c}</option>`).join('');
-  document.getElementById('cc_choferes').innerHTML = choferes.map(c=>`<option>${c}</option>`).join('');
-}
-function fillFincas(selectId){
-  const s = document.getElementById(selectId);
-  const nombres = Object.keys(catalogo).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
-  s.innerHTML = `<option value="">—</option>` + nombres.map(f=>`<option>${f}</option>`).join('');
-}
-function fillLotesForFinca(finca, selectId){
-  const s = document.getElementById(selectId);
-  if(!finca || !catalogo[finca]){ s.innerHTML = `<option value="">—</option>`; return; }
-  const lotes = [...new Set(catalogo[finca])].sort((a,b)=>a.localeCompare(b,'es',{numeric:true,sensitivity:'base'}));
-  s.innerHTML = `<option value="">—</option>` + lotes.map(l=>`<option>${l}</option>`).join('');
-}
-
-// Tabs
-document.querySelectorAll('.tabbtn').forEach(b=>{
-  b.addEventListener('click', ()=>{
-    document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.querySelectorAll('section.card').forEach(s=>s.hidden = true);
-    document.getElementById(b.dataset.tab).hidden = false;
-    if(b.dataset.tab==='tab-registros') renderTabla();
-    if(b.dataset.tab==='tab-fincas')   refreshFincasPanel();
-  });
-});
-
-// Formulario
-function uidRow(o){
-  return (o.fecha||'')+'|'+(o.camion||'')+'|'+(o.placa||'')+'|'+(o.chofer||'')+'|'+(o.origen||'')+'|'+(o.destino||'')+'|'+(o.salida||'')+'|'+(o.llegada||'')+'|'+(o.obs||'');
-}
-function leerFormulario(){
-  const f = v => document.getElementById(v).value.trim();
-  const origen = `${f('r_origen_finca')} / ${f('r_origen_lote')}`;
-  const destino = `${f('r_destino_finca')} / ${f('r_destino_lote')}`;
+// Arma un registro con los valores del formulario
+function buildRecordFromForm() {
   return {
-    fecha:f('r_fecha'), camion:f('r_camion'), placa:f('r_placa'), chofer:f('r_chofer'),
-    origen, destino, salida:f('r_salida'), llegada:f('r_llegada'), obs:f('r_obs')
+    fecha:          document.querySelector("#fecha")?.value || "",
+    camion:         document.querySelector("#camion")?.value || "",
+    placa:          document.querySelector("#placa")?.value || "",
+    chofer:         document.querySelector("#chofer")?.value || "",
+    origenFinca:    document.querySelector("#origenFinca")?.value || "",
+    origenLote:     document.querySelector("#origenLote")?.value || "",
+    destinoFinca:   document.querySelector("#destinoFinca")?.value || "",
+    destinoLote:    document.querySelector("#destinoLote")?.value || "",
+    salida:         document.querySelector("#horaSalida")?.value || "",
+    llegada:        document.querySelector("#horaLlegada")?.value || "",
+    observaciones:  document.querySelector("#observaciones")?.value || ""
   };
 }
-function setFormulario(rec){
-  const set=(id,val)=>document.getElementById(id).value = val||'';
-  set('r_fecha', rec.fecha); set('r_camion', rec.camion); set('r_placa', rec.placa); set('r_chofer', rec.chofer);
-  const [of,ol] = (rec.origen||' / ').split(' / ').map(s=>s.trim());
-  const [df,dl] = (rec.destino||' / ').split(' / ').map(s=>s.trim());
-  set('r_origen_finca', of); fillLotesForFinca(of,'r_origen_lote'); set('r_origen_lote', ol);
-  set('r_destino_finca', df); fillLotesForFinca(df,'r_destino_lote'); set('r_destino_lote', dl);
-  set('r_salida',rec.salida); set('r_llegada',rec.llegada); set('r_obs',rec.obs);
+
+// Guarda en localStorage (por si no hay internet)
+function saveLocalRecord(record) {
+  const key = "ccamiones_local";
+  const current = JSON.parse(localStorage.getItem(key) || "[]");
+  current.push(record);
+  localStorage.setItem(key, JSON.stringify(current));
+  updateLocalCountUI(current.length);
 }
 
-function guardar(){
-  const rec = leerFormulario();
-  if(!rec.fecha || !rec.camion || !rec.chofer){ alert('Completa fecha, camión y chofer.'); return; }
-  rec.uid = uidRow(rec);
-  rec.synced = false;
-  viajes.push(rec);
-  store.set(STORAGE_KEYS.viajes, viajes);
-  document.getElementById('statCount').textContent = viajes.length;
-  if(cfg.autoClear==='yes') limpiar();
-  alert('Registro guardado localmente.');
+function getLocalRecords() {
+  return JSON.parse(localStorage.getItem("ccamiones_local") || "[]");
 }
-function limpiar(){
-  ['r_fecha','r_camion','r_placa','r_chofer','r_origen_finca','r_origen_lote','r_destino_finca','r_destino_lote','r_salida','r_llegada','r_obs'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el.tagName==='SELECT') el.selectedIndex=0; else el.value='';
+
+function clearLocalRecords() {
+  localStorage.setItem("ccamiones_local", "[]");
+  updateLocalCountUI(0);
+}
+
+function updateLocalCountUI(n) {
+  const el = document.querySelector("#registrosLocales");
+  if (el) el.textContent = n;
+}
+
+// POST hacia Google Apps Script
+async function postToGas(record) {
+  const res = await fetch(GAS_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita CORS preflight
+    body: JSON.stringify(record)
   });
+
+  const text = await res.text();
+  let json;
+  try { json = JSON.parse(text); } catch(_) { throw new Error("Respuesta no JSON: " + text); }
+
+  if (!res.ok || json.status !== "ok") {
+    throw new Error(json.message || "Error en sincronización");
+  }
+  return json;
 }
 
-// PDF
-function descargarPDF(){
-  const tb = document.querySelector('#tblReg tbody');
-  if(!tb || !tb.children.length){ alert('No hay datos para PDF'); return; }
-  const tds = tb.children[0].querySelectorAll('td');
-  const texto = `Control de Camiones
-Fecha: ${tds[0].textContent}   Camión: ${tds[1].textContent}  Placa: ${tds[2].textContent}
-Chofer: ${tds[3].textContent}
-Origen: ${tds[4].textContent}
-Destino: ${tds[5].textContent}
-Salida: ${tds[6].textContent}  Llegada: ${tds[7].textContent}
-Obs: ${tds[8].textContent}`.trim();
+// Sincroniza todos los registros locales
+async function syncAll() {
+  const records = getLocalRecords();
+  if (!records.length) {
+    alert("No hay registros locales para sincronizar.");
+    return;
+  }
 
-  const blob = new Blob([texto], {type:'application/pdf'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `control_camiones_${Date.now()}.pdf`;
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-}
-
-// Sincronizar (con error real)
-let syncing=false;
-async function sincronizar(){
-  if(syncing) return;
-  const btn = document.getElementById('btnSync');
-  btn.disabled=true; syncing=true;
-
-  try{
-    const pendientes = viajes.filter(v=>!v.synced);
-    if(!pendientes.length){ alert('Nada que sincronizar.'); return; }
-
-    const map = new Map();
-    for(const r of pendientes) map.set(r.uid, r);
-    const lote = Array.from(map.values());
-
-    const payload = { rows: lote, sheetId: (cfg.sheetId || SHEET_ID_DEFAULT) };
-    const res = await fetch(cfg.endpoint || ENDPOINT_DEFAULT, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-
-    const text = await res.text();
-    let data; try{ data = JSON.parse(text); }catch{ data = {ok:false, raw:text}; }
-    if(!res.ok || !data.ok){
-      const msg = data && (data.error || data.raw) ? (data.error || data.raw) : ('HTTP '+res.status);
-      throw new Error(msg);
+  try {
+    for (let r of records) {
+      await postToGas(r);
     }
-
-    const okUIDs = new Set(lote.map(r=>r.uid));
-    viajes = viajes.map(v=> (okUIDs.has(v.uid) ? {...v, synced:true} : v));
-    store.set(STORAGE_KEYS.viajes, viajes);
-    renderTabla();
-    alert('Sincronización realizada correctamente.');
-  }catch(err){
+    clearLocalRecords();
+    alert("¡Sincronización exitosa!");
+  } catch (err) {
     console.error(err);
-    alert('Falló la sincronización: ' + err.message);
-  }finally{
-    btn.disabled=false; syncing=false;
+    alert("Falló la sincronización: " + err.message);
   }
 }
 
-// Tabla editable
-function renderTabla(){
-  const q = (document.getElementById('qreg').value||'').toLowerCase();
-  const tb = document.querySelector('#tblReg tbody'); tb.innerHTML='';
-  const fil = viajes.filter(v => JSON.stringify(v).toLowerCase().includes(q));
-  for(const v of fil){
-    const tr = document.createElement('tr');
-    const cel = (t)=>{ const td=document.createElement('td'); td.textContent=t; return td; };
-    tr.append(
-      cel(v.fecha), cel(v.camion), cel(v.placa), cel(v.chofer),
-      cel(v.origen), cel(v.destino), cel(v.salida), cel(v.llegada), cel(v.obs)
-    );
-    const td = document.createElement('td');
-    const bEdit = document.createElement('button'); bEdit.className='btn'; bEdit.textContent='✏️ Editar';
-    bEdit.addEventListener('click', ()=>editarFila(v));
-    const bDel = document.createElement('button'); bDel.className='btn warn'; bDel.textContent='🗑️';
-    bDel.addEventListener('click', ()=>{
-      if(!confirm('¿Eliminar registro?')) return;
-      viajes = viajes.filter(x=>x!==v);
-      store.set(STORAGE_KEYS.viajes, viajes);
-      renderTabla();
-      document.getElementById('statCount').textContent = viajes.length;
-    });
-    td.append(bEdit,' ',bDel); tr.append(td);
-    tb.append(tr);
+// Botón GUARDAR (local)
+function onGuardarClick() {
+  const rec = buildRecordFromForm();
+  if (!rec.fecha || !rec.camion || !rec.chofer) {
+    alert("Fecha, Camión y Chofer son obligatorios.");
+    return;
   }
-}
-function editarFila(v){
-  setFormulario(v);
-  document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
-  document.querySelector('.tabbtn[data-tab="tab-registro"]').classList.add('active');
-  document.querySelectorAll('section.card').forEach(s=>s.hidden = true);
-  document.getElementById('tab-registro').hidden = false;
-
-  const oldGuardar = guardar, oldUid = v.uid;
-  guardar = function(){
-    const rec = leerFormulario();
-    rec.uid = uidRow(rec);
-    rec.synced = false;
-    const ix = viajes.findIndex(x=>x.uid===oldUid);
-    if(ix>=0) viajes.splice(ix,1,rec); else viajes.push(rec);
-    store.set(STORAGE_KEYS.viajes, viajes);
-    document.getElementById('statCount').textContent = viajes.length;
-    if(cfg.autoClear==='yes') limpiar();
-    alert('Registro actualizado localmente.');
-    guardar = oldGuardar;
-  };
+  saveLocalRecord(rec);
+  alert("Guardado localmente.");
 }
 
-// CC
-document.getElementById('cc_addChofer').addEventListener('click', ()=>{
-  const v = document.getElementById('cc_newChofer').value.trim();
-  if(!v) return;
-  if(!choferes.includes(v)) choferes.push(v);
-  store.set(STORAGE_KEYS.choferes, choferes);
-  document.getElementById('cc_newChofer').value='';
-  loadChoferesCamiones();
-});
-document.getElementById('cc_addCamion').addEventListener('click', ()=>{
-  const v = document.getElementById('cc_newCamion').value.trim();
-  if(!v) return;
-  if(!camiones.includes(v)) camiones.push(v);
-  store.set(STORAGE_KEYS.camiones, camiones);
-  document.getElementById('cc_newCamion').value='';
-  loadChoferesCamiones();
-});
-
-// Admin fincas/lotes
-function setAdminUI(){
-  const dis = !isAdmin;
-  ['fn_newFinca','fn_newLote','fn_add','csvFile','btnImportCSV'].forEach(id=>{
-    document.getElementById(id).disabled = dis;
-  });
-  document.getElementById('csvLockMsg').style.display = dis ? 'block':'none';
-  document.getElementById('adminState').textContent = 'Estado: ' + (isAdmin?'Desbloqueado':'Bloqueado');
-}
-document.getElementById('btnUnlock').addEventListener('click', ()=>{
-  const u = document.getElementById('adm_user').value.trim();
-  const p = document.getElementById('adm_pass').value.trim();
-  if(u==='AMID' && p==='BYC2024'){ isAdmin=true; store.set(STORAGE_KEYS.admin, true); setAdminUI(); alert('Edición habilitada.'); }
-  else alert('Credenciales inválidas.');
-});
-document.getElementById('btnLock').addEventListener('click', ()=>{
-  isAdmin=false; store.del(STORAGE_KEYS.admin); setAdminUI();
-});
-document.getElementById('fn_add').addEventListener('click', ()=>{
-  if(!isAdmin) return;
-  const f = document.getElementById('fn_newFinca').value.trim();
-  const l = document.getElementById('fn_newLote').value.trim();
-  if(!f || !l) return;
-  if(!catalogo[f]) catalogo[f]=[];
-  if(!catalogo[f].includes(l)) catalogo[f].push(l);
-  store.set(STORAGE_KEYS.catalog, catalogo);
-  document.getElementById('fn_newLote').value='';
-  refreshFincasPanel();
-});
-document.getElementById('btnImportCSV').addEventListener('click', ()=>{
-  if(!isAdmin) return;
-  const file = document.getElementById('csvFile').files[0];
-  if(!file){ alert('Elegí un CSV.'); return; }
-  const r = new FileReader();
-  r.onload = ()=> importarCSVText(r.result);
-  r.readAsText(file, 'UTF-8');
-});
-function importarCSVText(txt){
-  const lines = txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-  const head = lines.shift().toLowerCase();
-  const delim = head.includes(';') ? ';' : ',';
-  for(const line of lines){
-    const parts = line.split(delim).map(s=>s.trim());
-    if(parts.length<2) continue;
-    const f=parts[0], l=parts[1];
-    if(!catalogo[f]) catalogo[f]=[];
-    if(!catalogo[f].includes(l)) catalogo[f].push(l);
-  }
-  store.set(STORAGE_KEYS.catalog, catalogo);
-  refreshFincasPanel();
-  alert('Catálogo importado.');
-}
-function refreshFincasPanel(){
-  const sf = document.getElementById('fn_listFincas');
-  const sl = document.getElementById('fn_listLotes');
-  const names = Object.keys(catalogo).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
-  sf.innerHTML = names.map(f=>`<option value="${f}">${f}</option>`).join('');
-  sl.innerHTML='';
-  sf.onchange = ()=>{
-    const f = sf.value;
-    const lt = (catalogo[f]||[]).slice().sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
-    sl.innerHTML = lt.map(l=>`<option>${l}</option>`).join('');
-  };
+// Botón SINCRONIZAR
+function onSincronizarClick() {
+  syncAll();
 }
 
-// Config
-document.getElementById('btnSaveCfg').addEventListener('click', ()=>{
-  cfg.autoClear = document.getElementById('cfg_autoClear').value;
-  cfg.endpoint  = document.getElementById('cfg_endpoint').value.trim() || ENDPOINT_DEFAULT;
-  cfg.sheetId   = document.getElementById('cfg_sheetId').value.trim() || SHEET_ID_DEFAULT;
-  store.set(STORAGE_KEYS.cfg, cfg);
-  alert('Config guardada.');
+// Inicializar contador al cargar
+document.addEventListener("DOMContentLoaded", () => {
+  updateLocalCountUI(getLocalRecords().length);
 });
-document.getElementById('btnPing').addEventListener('click', async ()=>{
-  try{
-    const url = document.getElementById('cfg_endpoint').value || ENDPOINT_DEFAULT;
-    const res = await fetch(url, { method:'GET' });
-    const text = await res.text();
-    alert('GET /exec respondió:\n' + text.substring(0,300));
-  }catch(e){
-    alert('Error al probar endpoint: ' + e.message);
-  }
-});
-document.getElementById('btnWipe').addEventListener('click', ()=>{
-  if(!confirm('¿Borrar todos los datos locales (viajes, catálogos, config)?')) return;
-  Object.values(STORAGE_KEYS).forEach(k=>localStorage.removeItem(k));
-  location.reload();
-});
-
-// Eventos base
-document.getElementById('btnGuardar').addEventListener('click', guardar);
-document.getElementById('btnLimpiar').addEventListener('click', limpiar);
-document.getElementById('btnPDF').addEventListener('click', descargarPDF);
-document.getElementById('btnSync').addEventListener('click', sincronizar);
-document.getElementById('qreg').addEventListener('input', renderTabla);
-document.getElementById('r_origen_finca').addEventListener('change', e=> fillLotesForFinca(e.target.value, 'r_origen_lote'));
-document.getElementById('r_destino_finca').addEventListener('change', e=> fillLotesForFinca(e.target.value, 'r_destino_lote'));
-
-// INIT
-(function init(){
-  document.getElementById('cfg_autoClear').value = cfg.autoClear||'yes';
-  document.getElementById('cfg_endpoint').value  = cfg.endpoint || ENDPOINT_DEFAULT;
-  document.getElementById('cfg_sheetId').value   = cfg.sheetId || SHEET_ID_DEFAULT;
-
-  loadChoferesCamiones();
-  fillFincas('r_origen_finca'); fillFincas('r_destino_finca');
-  fillLotesForFinca('', 'r_origen_lote'); fillLotesForFinca('', 'r_destino_lote');
-
-  document.getElementById('statCount').textContent = viajes.length;
-  setAdminUI(); refreshFincasPanel();
-})();
 </script>
-</body>
-</html>
