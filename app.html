@@ -25,9 +25,9 @@
 </head>
 <body>
   <h1>Control de Camiones</h1>
-  <p>Completa y presioná <b>Enviar a Excel</b>. Se guarda en la pestaña <b>CHOFERES BYC</b>.</p>
+  <p>Completa y presioná <b>Enviar a Excel</b>. Luego podés usar <b>🔄 Sincronizar</b> para ver lo guardado.</p>
 
-  <!-- TU URL /exec -->
+  <!-- URL de tu script -->
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbw-0PS8huGi_7VHS24rd6ywBajLoOAwJVVKUdxLMqOiDctqbn-kxeYhLNb-io2h3BaaiA/exec";
   </script>
@@ -46,4 +46,91 @@
     <textarea name="observaciones" placeholder="Observaciones"></textarea>
     <div class="actions">
       <button type="button" class="primary" id="btnEnviar">Enviar a Excel</button>
-      <button
+      <button type="reset" class="ghost">Limpiar</button>
+      <button type="button" class="ghost" id="btnSync">🔄 Sincronizar</button>
+    </div>
+  </form>
+
+  <p id="msg"></p>
+  <div id="tabla"></div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const msg = $("#msg");
+    const wrapTabla = $("#tabla");
+
+    function leerFormulario() {
+      const f = $("#frm");
+      return {
+        fecha: f.fecha.value,
+        camion: f.camion.value,
+        placa: f.placa.value,
+        chofer: f.chofer.value,
+        origen: f.origen.value,
+        destino: f.destino.value,
+        salida: f.salida.value,
+        llegada: f.llegada.value,
+        observaciones: f.observaciones.value
+      };
+    }
+
+    async function enviar() {
+      msg.textContent = "Enviando…";
+      try {
+        const registro = leerFormulario();
+        const body = new URLSearchParams({ payload: JSON.stringify([registro]) });
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+          body
+        });
+        const text = await res.text();
+        let json;
+        try { json = JSON.parse(text); } catch { json = {ok: res.ok, raw: text}; }
+        if (json.ok) {
+          msg.innerHTML = `<span class="ok">✅ Enviado. Filas insertadas: ${json.insertados ?? 1}</span>`;
+          $("#frm").reset();
+        } else {
+          throw new Error(json.error || JSON.stringify(json));
+        }
+      } catch (e) {
+        msg.innerHTML = `<span class="error">❌ Error:\n${String(e)}</span>`;
+      }
+    }
+
+    async function sincronizar() {
+      msg.textContent = "Sincronizando...";
+      try {
+        const res = await fetch(GAS_URL + "?action=getData");
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || "Error al sincronizar");
+        msg.innerHTML = `<span class="ok">✅ Datos sincronizados (${json.data.length})</span>`;
+        mostrarTabla(json.data);
+      } catch (e) {
+        msg.innerHTML = `<span class="error">❌ Error:\n${String(e)}</span>`;
+      }
+    }
+
+    function mostrarTabla(data) {
+      if (!data || !data.length) {
+        wrapTabla.innerHTML = "<p>No hay datos registrados.</p>";
+        return;
+      }
+      const cols = Object.keys(data[0]);
+      let html = "<table><thead><tr>";
+      cols.forEach(c => html += `<th>${c}</th>`);
+      html += "</tr></thead><tbody>";
+      data.forEach(row => {
+        html += "<tr>";
+        cols.forEach(c => html += `<td>${row[c] ?? ""}</td>`);
+        html += "</tr>";
+      });
+      html += "</tbody></table>";
+      wrapTabla.innerHTML = html;
+    }
+
+    $("#btnEnviar").addEventListener("click", enviar);
+    $("#btnSync").addEventListener("click", sincronizar);
+  </script>
+</body>
+</html>
