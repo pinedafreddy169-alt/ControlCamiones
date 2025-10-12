@@ -1,621 +1,261 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Control de Camiones — v4 catalog</title>
-<style>
-:root{
-  --bg:#0b1220; --card:#121a2b; --muted:#9ba8bf; --text:#e8eefc; --accent:#9bff8a;
-  --line:#23314f; --warn:#ff7b7b; --primary:#3fa0ff; --ok:#27c380;
-}
-*{box-sizing:border-box}
-body{margin:0;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg)}
-.wrap{max-width:1100px;margin:0 auto;padding:16px}
-h1{margin:0 0 16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
-.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-label{font-size:12px;color:var(--muted)}
-input,select,textarea{width:100%;padding:10px;border-radius:10px;background:#0f1526;border:1px solid var(--line);color:var(--text)}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-.btn{background:transparent;border:1px solid var(--primary);color:var(--text);padding:12px 14px;cursor:pointer;border-radius:10px}
-.btn.primary{background:#23314f;border-color:#23314f}
-.btn.ok{background:#23314f;border-color:#23314f}
-.btn.warn{border-color:var(--warn);color:var(--warn)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
-.tabbtn{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px;border-radius:10px;cursor:pointer}
-.tabbtn.active{border-color:var(--primary);outline:2px solid var(--primary)}
-.table{width:100%;border-collapse:collapse;margin-top:10px}
-.table th,.table td{padding:8px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
-.badge{font-size:12px;color:var(--muted);background:var(--accent);padding:2px 8px;border-radius:999px;display:inline-block}
-.small{font-size:12px;color:var(--muted)}
-hr{border:none;border-top:1px solid var(--line);margin:12px 0}
-.kbd{padding:2px 6px;border-radius:6px;background:#0f1526;border:1px solid var(--line);font-size:12px;color:var(--muted)}
-.lockmsg{color:var(--warn);font-size:14px}
-footer{margin:20px 0;color:var(--muted);font-size:12px;text-align:center}
-.searchWrap{display:flex;gap:8px;align-items:center}
-input[type="time"],input[type="date"]{padding:9px}
-textarea{min-height:48px;resize:vertical}
-</style>
+  <meta charset="utf-8" />
+  <title>Control de Camiones — BYC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --bg:#0f1115; --card:#171a21; --txt:#e7ecf2; --muted:#9aa4b2; --pri:#ef4444; --pri2:#b91c1c; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:var(--txt); }
+    header { padding:16px 20px; border-bottom:1px solid #222833; display:flex; align-items:center; gap:12px; }
+    header h1 { font-size:20px; margin:0; color:#ff6b6b; }
+    nav { display:flex; gap:8px; padding:10px 20px; border-bottom:1px solid #222833; flex-wrap:wrap; }
+    .tab { padding:8px 12px; border-radius:10px; background:#1d232f; color:var(--muted); cursor:pointer; border:1px solid #242b38; }
+    .tab.active { color:#fff; background:#2a3242; border-color:#2f394d; }
+    main { padding:16px 20px; max-width:1000px; margin:0 auto; }
+    .card { background:var(--card); border:1px solid #222833; border-radius:16px; padding:16px; }
+    label { display:block; margin:10px 0 6px; font-weight:600; color:#cfd6df; }
+    input, select, textarea { width:100%; background:#12161d; color:#e7ecf2; border:1px solid #2a3242; border-radius:10px; padding:10px 12px; font-size:16px; }
+    textarea { min-height:90px; resize:vertical; }
+    .grid { display:grid; gap:12px; }
+    @media (min-width:720px){ .grid.cols-2 { grid-template-columns:1fr 1fr; } .grid.cols-3 { grid-template-columns: repeat(3,1fr);} }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+    button { border:0; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer; }
+    .btn { background:#293246; color:#e7ecf2; }
+    .btn-primary { background:var(--pri); color:#fff; }
+    .btn-primary:active { background:var(--pri2); }
+    .muted { color:var(--muted); }
+    .list { margin-top:12px; }
+    .row { padding:10px; border:1px solid #222833; border-radius:12px; background:#12161d; margin-bottom:8px; font-size:14px; }
+    .right { text-align:right; }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>🛻 Control de Camiones <span class="badge">v4_catalog</span></h1>
+  <header>
+    <span style="font-size:22px">🚛</span>
+    <h1>Control de Camiones — BYC</h1>
+  </header>
 
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tabbtn active" data-tab="tab-registro">Registro</button>
-    <button class="tabbtn" data-tab="tab-registros">Registros</button>
-    <button class="tabbtn" data-tab="tab-cc">Choferes & Camiones</button>
-    <button class="tabbtn" data-tab="tab-fincas">Fincas & Lotes</button>
-    <button class="tabbtn" data-tab="tab-config">Config</button>
-  </div>
+  <nav>
+    <div class="tab active" data-tab="registro">Registro</div>
+    <div class="tab" data-tab="registros">Registros</div>
+    <div class="tab" data-tab="catalogos">Choferes & Camiones</div>
+    <div class="muted" id="localCount" style="margin-left:auto">Registros locales: 0</div>
+  </nav>
 
-  <!-- ====== REGISTRO ====== -->
-  <section id="tab-registro" class="card">
-    <div class="row">
-      <div><label>Fecha</label><input type="date" id="r_fecha"/></div>
-      <div>
-        <label>Camión</label>
-        <select id="r_camion"></select>
-      </div>
-      <div><label>Placa</label><input id="r_placa" placeholder="ABC-123"/></div>
-      <div>
-        <label>Chofer</label>
-        <select id="r_chofer"></select>
-      </div>
-    </div>
-
-    <hr/>
-
-    <div class="row">
-      <div>
-        <label>Origen — Finca</label>
-        <select id="r_origen_finca"></select>
-      </div>
-      <div>
-        <label>Origen — Lote</label>
-        <select id="r_origen_lote"></select>
+  <main>
+    <!-- TAB REGISTRO -->
+    <section id="tab-registro" class="card">
+      <div class="grid cols-3">
+        <div>
+          <label>Fecha</label>
+          <input type="date" id="fecha"/>
+        </div>
+        <div>
+          <label>Camión</label>
+          <select id="camion"></select>
+        </div>
+        <div>
+          <label>Placa</label>
+          <input type="text" id="placa" placeholder="ABC-123"/>
+        </div>
       </div>
 
-      <div>
-        <label>Destino — Finca</label>
-        <select id="r_destino_finca"></select>
+      <div class="grid cols-3">
+        <div>
+          <label>Chofer</label>
+          <select id="chofer"></select>
+        </div>
+        <div>
+          <label>Origen — Finca/Lote</label>
+          <input type="text" id="origen" placeholder="Finca/Lote"/>
+        </div>
+        <div>
+          <label>Destino — Finca/Lote</label>
+          <input type="text" id="destino" placeholder="Finca/Lote"/>
+        </div>
       </div>
-      <div>
-        <label>Destino — Lote</label>
-        <select id="r_destino_lote"></select>
+
+      <div class="grid cols-2">
+        <div>
+          <label>Salida</label>
+          <input type="time" id="salida"/>
+        </div>
+        <div>
+          <label>Llegada</label>
+          <input type="time" id="llegada"/>
+        </div>
       </div>
-    </div>
 
-    <hr/>
-
-    <div class="row">
-      <div><label>Salida</label><input type="time" id="r_salida"/></div>
-      <div><label>Llegada</label><input type="time" id="r_llegada"/></div>
-      <div class="row" style="grid-column:1/-1">
+      <div>
         <label>Observaciones</label>
-        <textarea id="r_obs" placeholder="Notas u observaciones..."></textarea>
+        <textarea id="observaciones" placeholder="Notas u observaciones..."></textarea>
       </div>
-    </div>
 
-    <div class="btns">
-      <button class="btn ok" id="btnGuardar">💾 Guardar</button>
-      <button class="btn" id="btnPDF">📄 Descargar PDF</button>
-      <button class="btn" id="btnLimpiar">🧹 Limpiar</button>
-      <button class="btn primary" id="btnSync">🔁 Sincronizar</button>
-      <span class="small">Registros locales: <span id="statCount">0</span></span>
-    </div>
-  </section>
-
-  <!-- ====== REGISTROS ====== -->
-  <section id="tab-registros" class="card" hidden>
-    <div class="searchWrap">
-      <label>Buscar</label>
-      <input id="qreg" placeholder="filtrar por texto..."/>
-    </div>
-    <table class="table" id="tblReg">
-      <thead>
-        <tr>
-          <th>Fecha</th><th>Camión</th><th>Placa</th><th>Chofer</th>
-          <th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Obs</th><th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <!-- ====== CHOFERES & CAMIONES ====== -->
-  <section id="tab-cc" class="card" hidden>
-    <div class="row">
-      <div><label>Nuevo chófer</label><input id="cc_newChofer" placeholder="Nombre"/></div>
-      <div><label>&nbsp;</label><button class="btn ok" id="cc_addChofer">Agregar Chofer</button></div>
-      <div><label>Nuevo camión</label><input id="cc_newCamion" placeholder="Camión 01"/></div>
-      <div><label>&nbsp;</label><button class="btn ok" id="cc_addCamion">Agregar Camión</button></div>
-    </div>
-    <hr/>
-    <div class="row">
-      <div>
-        <label>Choferes</label>
-        <select id="cc_choferes" size="8" style="height:150px"></select>
+      <div class="actions">
+        <button class="btn" type="button" id="btnGuardar">Guardar</button>
+        <button class="btn" type="button" id="btnPDF">Descargar PDF</button>
+        <button class="btn-primary" type="button" id="btnSync">Sincronizar</button>
+        <div class="muted right" style="flex:1 1 auto"></div>
       </div>
-      <div>
-        <label>Camiones</label>
-        <select id="cc_camiones" size="8" style="height:150px"></select>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ====== FINCAS & LOTES (PROTEGIDO) ====== -->
-  <section id="tab-fincas" class="card" hidden>
-    <div class="row">
-      <div class="card" style="background:#0f1526">
-        <b>Edición protegida</b><br/>
-        <span class="small">Para modificar catálogo, ingresar credenciales:</span>
-        <div class="row">
-          <div><label>Usuario</label><input id="adm_user" placeholder="AMID"/></div>
-          <div><label>Clave</label><input id="adm_pass" placeholder="BYC2024"/></div>
+    <!-- TAB REGISTROS -->
+    <section id="tab-registros" class="card" style="display:none">
+      <div class="actions">
+        <button class="btn" type="button" id="btnBorrarLocal">Borrar locales</button>
+        <button class="btn" type="button" id="btnExportJSON">Exportar JSON</button>
+      </div>
+      <div class="list" id="listaRegistros"></div>
+    </section>
+
+    <!-- TAB CATALOGOS -->
+    <section id="tab-catalogos" class="card" style="display:none">
+      <div class="grid cols-2">
+        <div>
+          <label>Camiones (uno por línea)</label>
+          <textarea id="catCamiones">Camión 01
+Camión 02
+Camión 03</textarea>
         </div>
-        <div class="btns">
-          <button class="btn ok" id="btnUnlock">🔓 Desbloquear edición</button>
-          <button class="btn" id="btnLock">🔒 Bloquear</button>
-          <span id="adminState" class="small">Estado: Bloqueado</span>
+        <div>
+          <label>Choferes (uno por línea)</label>
+          <textarea id="catChoferes">Braulio
+Víctor
+Roberto</textarea>
         </div>
       </div>
-    </div>
-
-    <hr/>
-
-    <div class="row">
-      <div>
-        <label>Finca</label>
-        <input id="fn_newFinca" placeholder="Nombre finca" disabled/>
+      <div class="actions">
+        <button class="btn" type="button" id="btnAplicarCatalogos">Aplicar catálogos</button>
       </div>
-      <div>
-        <label>Lote</label>
-        <input id="fn_newLote" placeholder="Lote 001" disabled/>
-      </div>
-      <div>
-        <label>&nbsp;</label>
-        <button class="btn ok" id="fn_add" disabled>Agregar al catálogo</button>
-      </div>
-    </div>
+    </section>
+  </main>
 
-    <div class="btns">
-      <div>
-        <label class="small">Archivo CSV (finca,lote)</label><br/>
-        <input type="file" id="csvFile" accept=".csv" disabled/>
-      </div>
-      <button class="btn" id="btnImportCSV" disabled>Importar CSV</button>
-      <span id="csvLockMsg" class="lockmsg">⚠️ Desbloquea para poder importar CSV o agregar fincas/lotes.</span>
-    </div>
+  <!-- jsPDF para PDF simple -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <hr/>
+  <script>
+  /********** CONFIG **********/
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-N1v3hc4Gumo3ZH_vBQ_mm_03i8n-llBJ31urziJgLV6-Qc8kBEy5m5AjOsccBTRGtw/exec";
+  const STORAGE_KEY = "camiones_registros"; // ¡que sea el mismo en todo el proyecto!
 
-    <div class="row">
-      <div>
-        <label>Catálogo (vista rápida)</label>
-        <select id="fn_listFincas" size="10" style="height:200px"></select>
-      </div>
-      <div>
-        <label>Lotes de la finca</label>
-        <select id="fn_listLotes" size="10" style="height:200px"></select>
-      </div>
-    </div>
-  </section>
+  /********** STATE **********/
+  const $ = (sel) => document.querySelector(sel);
 
-  <!-- ====== CONFIG ====== -->
-  <section id="tab-config" class="card" hidden>
-    <div class="row">
-      <div>
-        <label>Limpiar después de guardar</label>
-        <select id="cfg_autoClear">
-          <option value="yes">Sí, limpiar automáticamente</option>
-          <option value="no">No, lo haré manual</option>
-        </select>
-      </div>
-      <div>
-        <label>ENDPOINT Apps Script</label>
-        <input id="cfg_endpoint" />
-        <span class="small">Si cambias el Apps Script, pega aquí el nuevo <span class="kbd">/exec</span>.</span>
-      </div>
-    </div>
-    <div class="btns">
-      <button class="btn ok" id="btnSaveCfg">Guardar Config</button>
-      <button class="btn warn" id="btnWipe">Borrar TODO (local)</button>
-    </div>
-  </section>
-
-  <footer>© ControlCamiones — BYC</footer>
-</div>
-
-<script>
-/* ========================
-   CONFIG & CATALOGO BASE
-======================== */
-const STORAGE_KEYS = {
-  viajes:'cc_viajes',
-  choferes:'cc_choferes',
-  camiones:'cc_camiones',
-  catalog:'cc_catalog',
-  cfg:'cc_cfg',
-  admin:'cc_admin' // bool
-};
-
-// ENDPOINT (reemplazar si cambiás Apps Script)
-let ENDPOINT = "https://script.google.com/macros/s/AKfycbzwggbJrozcTXMq9aEoW5vSh69AlgfpoCYfCYWvCOYdDF7jMEnF8w2j39qFyYYC6VlO/exec";
-
-// Catálogo embebido (limpio, sin duplicados)
-const CATALOGO_BASE = {
-  "Buena Vista": ["Lote 001","Lote 002","Lote 003","Lote 005","Lote 007","Lote 008","Lote 009","Lote 011","Lote 014","Lote 015","Lote 016"],
-  "Guayabito": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005","Lote 006","Lote 011","Lote 012","Lote 014","Lote 015","Lote 017","Lote 019","Lote 021","Lote 022","Lote 027"],
-  "Caño Blanco": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005","Lote 006","Lote 007","Lote 008","Lote 009","Lote 011"],
-  "Don Cuyo": ["Lote 001","Lote 002","Lote 003","Lote 004"],
-  "Los Angeles": ["Lote 001"],
-  "Pajarilla": ["Lote 001"],
-  "Pataste": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 006","Lote 007","Lote 008"],
-  "Progreso": ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 005"],
-  "Rescate": ["Lote 001","Lote 004","Lote 005","Lote 006","Lote 007","Lote 008","Lote 013"],
-  "San Luis": ["Lote 001"],
-  "Los Abuelos": ["Lote 001"],
-  "Enrique": ["Lote 001","Lote 002"],
-  "Oscar": ["Lote 001","Lote 002","Lote 003"],
-  "Tuto": ["Lote 001"],
-  "Chorcha": ["Lote 001"]
-};
-
-// Helpers de storage
-const store = {
-  get:k => JSON.parse(localStorage.getItem(k)||'null'),
-  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
-  del:k => localStorage.removeItem(k)
-};
-
-// Estado en memoria
-let viajes = store.get(STORAGE_KEYS.viajes) || [];
-let choferes = store.get(STORAGE_KEYS.choferes) || ["Braulio"];
-let camiones = store.get(STORAGE_KEYS.camiones) || ["Camión 01"];
-let catalogo = store.get(STORAGE_KEYS.catalog) || CATALOGO_BASE;
-let cfg = store.get(STORAGE_KEYS.cfg) || {autoClear:"yes", endpoint: ENDPOINT};
-let isAdmin = !!store.get(STORAGE_KEYS.admin);
-
-// ===== Populate de selects iniciales =====
-function loadChoferesCamiones(){
-  const sc = document.getElementById('r_camion');
-  const sh = document.getElementById('r_chofer');
-  sc.innerHTML = camiones.map(c=>`<option>${c}</option>`).join('');
-  sh.innerHTML = choferes.map(c=>`<option>${c}</option>`).join('');
-
-  // listas en pestaña CC
-  document.getElementById('cc_camiones').innerHTML = camiones.map(c=>`<option>${c}</option>`).join('');
-  document.getElementById('cc_choferes').innerHTML = choferes.map(c=>`<option>${c}</option>`).join('');
-}
-
-// ===== Fincas/Lotes (dependientes) =====
-function fillFincas(selectId){
-  const s = document.getElementById(selectId);
-  const nombres = Object.keys(catalogo).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
-  s.innerHTML = `<option value="">—</option>` + nombres.map(f=>`<option>${f}</option>`).join('');
-}
-function fillLotesForFinca(finca, selectId){
-  const s = document.getElementById(selectId);
-  if(!finca || !catalogo[finca]){ s.innerHTML = `<option value="">—</option>`; return; }
-  const lotes = [...new Set(catalogo[finca])].sort((a,b)=>a.localeCompare(b,'es',{numeric:true,sensitivity:'base'}));
-  s.innerHTML = `<option value="">—</option>` + lotes.map(l=>`<option>${l}</option>`).join('');
-}
-
-// ===== UI Cambio de pestañas =====
-document.querySelectorAll('.tabbtn').forEach(b=>{
-  b.addEventListener('click', ()=>{
-    document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.querySelectorAll('section.card').forEach(s=>s.hidden = true);
-    document.getElementById(b.dataset.tab).hidden = false;
-    if(b.dataset.tab==='tab-registros') renderTabla();
-    if(b.dataset.tab==='tab-fincas')   refreshFincasPanel();
-  });
-});
-
-// ===== Registro => Guardar =====
-function uidRow(o){
-  return (o.fecha||'')+'|'+(o.camion||'')+'|'+(o.placa||'')+'|'+(o.chofer||'')+'|'+(o.origen||'')+'|'+(o.destino||'')+'|'+(o.salida||'')+'|'+(o.llegada||'')+'|'+(o.obs||'');
-}
-function leerFormulario(){
-  const f = v => document.getElementById(v).value.trim();
-  const origen = `${f('r_origen_finca')} / ${f('r_origen_lote')}`;
-  const destino = `${f('r_destino_finca')} / ${f('r_destino_lote')}`;
-  return {
-    fecha:f('r_fecha'), camion:f('r_camion'), placa:f('r_placa'), chofer:f('r_chofer'),
-    origen, destino, salida:f('r_salida'), llegada:f('r_llegada'), obs:f('r_obs')
-  };
-}
-function setFormulario(rec){
-  const set=(id,val)=>document.getElementById(id).value = val||'';
-  set('r_fecha', rec.fecha); set('r_camion', rec.camion); set('r_placa', rec.placa); set('r_chofer', rec.chofer);
-  const [of,ol] = (rec.origen||' / ').split(' / ').map(s=>s.trim());
-  const [df,dl] = (rec.destino||' / ').split(' / ').map(s=>s.trim());
-  set('r_origen_finca', of); fillLotesForFinca(of,'r_origen_lote'); set('r_origen_lote', ol);
-  set('r_destino_finca', df); fillLotesForFinca(df,'r_destino_lote'); set('r_destino_lote', dl);
-  set('r_salida',rec.salida); set('r_llegada',rec.llegada); set('r_obs',rec.obs);
-}
-
-function guardar(){
-  const rec = leerFormulario();
-  // validaciones mínimas
-  if(!rec.fecha || !rec.camion || !rec.chofer){ alert('Completa fecha, camión y chofer.'); return; }
-  rec.uid = uidRow(rec);
-  rec.synced = false;
-  viajes.push(rec);
-  store.set(STORAGE_KEYS.viajes, viajes);
-  document.getElementById('statCount').textContent = viajes.length;
-  if(cfg.autoClear==='yes') limpiar();
-  alert('Registro guardado localmente.');
-}
-
-// ===== Limpiar =====
-function limpiar(){
-  ['r_fecha','r_camion','r_placa','r_chofer','r_origen_finca','r_origen_lote','r_destino_finca','r_destino_lote','r_salida','r_llegada','r_obs'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el.tagName==='SELECT') el.selectedIndex=0; else el.value='';
-  });
-}
-
-// ===== PDF simple del último registro visible =====
-function descargarPDF(){
-  const tb = document.querySelector('#tblReg tbody');
-  if(!tb || !tb.children.length){ alert('No hay datos para PDF'); return; }
-  const tds = tb.children[0].querySelectorAll('td');
-  const texto = `Control de Camiones
-Fecha: ${tds[0].textContent}   Camión: ${tds[1].textContent}  Placa: ${tds[2].textContent}
-Chofer: ${tds[3].textContent}
-Origen: ${tds[4].textContent}
-Destino: ${tds[5].textContent}
-Salida: ${tds[6].textContent}  Llegada: ${tds[7].textContent}
-Obs: ${tds[8].textContent}`.trim();
-
-  const blob = new Blob([texto], {type:'application/pdf'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `control_camiones_${Date.now()}.pdf`;
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-}
-
-// ===== Sincronizar (antidoble toque / dedupe por uid) =====
-let syncing=false;
-async function sincronizar(){
-  if(syncing) return;
-  const btn = document.getElementById('btnSync');
-  btn.disabled=true; syncing=true;
-
-  try{
-    const pendientes = viajes.filter(v=>!v.synced);
-    if(!pendientes.length){ alert('Nada que sincronizar.'); return; }
-
-    // dedupe por uid
-    const map = new Map();
-    for(const r of pendientes) map.set(r.uid, r);
-    const lote = Array.from(map.values());
-
-    const payload = {rows:lote};
-    const res = await fetch(cfg.endpoint || ENDPOINT, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
+  // Navegación de tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const tab = t.dataset.tab;
+      ['registro','registros','catalogos'].forEach(name => {
+        $('#tab-' + name).style.display = (name === tab) ? '' : 'none';
+      });
     });
-    if(!res.ok){ throw new Error('Error de red'); }
-    const data = await res.json().catch(()=>({ok:true}));
-
-    // marcar synced por uid presentes
-    const okUIDs = new Set(lote.map(r=>r.uid));
-    viajes = viajes.map(v=> (okUIDs.has(v.uid) ? {...v, synced:true} : v));
-    store.set(STORAGE_KEYS.viajes, viajes);
-    renderTabla();
-    alert('Sincronización realizada (antiduplicado activo).');
-  }catch(err){
-    console.error(err);
-    alert('Falló la sincronización.');
-  }finally{
-    btn.disabled=false; syncing=false;
-  }
-}
-
-// ===== Tabla registros (editable) =====
-function renderTabla(){
-  const q = (document.getElementById('qreg').value||'').toLowerCase();
-  const tb = document.querySelector('#tblReg tbody'); tb.innerHTML='';
-  const fil = viajes.filter(v => JSON.stringify(v).toLowerCase().includes(q));
-  for(let i=0;i<fil.length;i++){
-    const v = fil[i];
-    const tr = document.createElement('tr');
-    const cel = (t)=>{ const td=document.createElement('td'); td.textContent=t; return td; };
-    tr.append(
-      cel(v.fecha), cel(v.camion), cel(v.placa), cel(v.chofer),
-      cel(v.origen), cel(v.destino), cel(v.salida), cel(v.llegada), cel(v.obs)
-    );
-    const td = document.createElement('td');
-    const bEdit = document.createElement('button'); bEdit.className='btn'; bEdit.textContent='✏️ Editar';
-    bEdit.addEventListener('click', ()=>editarFila(v));
-    const bDel = document.createElement('button'); bDel.className='btn warn'; bDel.textContent='🗑️';
-    bDel.addEventListener('click', ()=>{
-      if(!confirm('¿Eliminar registro?')) return;
-      viajes = viajes.filter(x=>x!==v);
-      store.set(STORAGE_KEYS.viajes, viajes);
-      renderTabla();
-      document.getElementById('statCount').textContent = viajes.length;
-    });
-    td.append(bEdit,' ',bDel); tr.append(td);
-    tb.append(tr);
-  }
-}
-function editarFila(v){
-  setFormulario(v);
-  // Ir a la pestaña de registro para editar y volver a guardar
-  document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
-  document.querySelector('.tabbtn[data-tab="tab-registro"]').classList.add('active');
-  document.querySelectorAll('section.card').forEach(s=>s.hidden = true);
-  document.getElementById('tab-registro').hidden = false;
-
-  // cuando guarde, actualizamos el mismo (por uid antiguo)
-  const oldUid = v.uid;
-  const originalGuardar = guardar;
-  guardar = function(){
-    const rec = leerFormulario();
-    rec.uid = uidRow(rec);
-    rec.synced = false;
-    // reemplazar el viejo por el nuevo
-    const ix = viajes.findIndex(x=>x.uid===oldUid);
-    if(ix>=0) viajes.splice(ix,1,rec); else viajes.push(rec);
-    store.set(STORAGE_KEYS.viajes, viajes);
-    document.getElementById('statCount').textContent = viajes.length;
-    if(cfg.autoClear==='yes') limpiar();
-    alert('Registro actualizado localmente.');
-    // devolver el handler original
-    guardar = originalGuardar;
-  };
-}
-
-// ===== CC: agregar chofer/camión =====
-document.getElementById('cc_addChofer').addEventListener('click', ()=>{
-  const v = document.getElementById('cc_newChofer').value.trim();
-  if(!v) return;
-  if(!choferes.includes(v)) choferes.push(v);
-  store.set(STORAGE_KEYS.choferes, choferes);
-  document.getElementById('cc_newChofer').value='';
-  loadChoferesCamiones();
-});
-document.getElementById('cc_addCamion').addEventListener('click', ()=>{
-  const v = document.getElementById('cc_newCamion').value.trim();
-  if(!v) return;
-  if(!camiones.includes(v)) camiones.push(v);
-  store.set(STORAGE_KEYS.camiones, camiones);
-  document.getElementById('cc_newCamion').value='';
-  loadChoferesCamiones();
-});
-
-// ===== Protegido: fincas/lotes =====
-function setAdminUI(){
-  const dis = !isAdmin;
-  ['fn_newFinca','fn_newLote','fn_add','csvFile','btnImportCSV'].forEach(id=>{
-    document.getElementById(id).disabled = dis;
   });
-  document.getElementById('csvLockMsg').style.display = dis ? 'block':'none';
-  document.getElementById('adminState').textContent = 'Estado: ' + (isAdmin?'Desbloqueado':'Bloqueado');
-}
-document.getElementById('btnUnlock').addEventListener('click', ()=>{
-  const u = document.getElementById('adm_user').value.trim();
-  const p = document.getElementById('adm_pass').value.trim();
-  if(u==='AMID' && p==='BYC2024'){ isAdmin=true; store.set(STORAGE_KEYS.admin, true); setAdminUI(); alert('Edición habilitada.'); }
-  else alert('Credenciales inválidas.');
-});
-document.getElementById('btnLock').addEventListener('click', ()=>{
-  isAdmin=false; store.del(STORAGE_KEYS.admin); setAdminUI();
-});
 
-document.getElementById('fn_add').addEventListener('click', ()=>{
-  if(!isAdmin) return;
-  const f = document.getElementById('fn_newFinca').value.trim();
-  const l = document.getElementById('fn_newLote').value.trim();
-  if(!f || !l) return;
-  if(!catalogo[f]) catalogo[f]=[];
-  if(!catalogo[f].includes(l)) catalogo[f].push(l);
-  store.set(STORAGE_KEYS.catalog, catalogo);
-  document.getElementById('fn_newLote').value='';
-  refreshFincasPanel();
-});
-
-document.getElementById('btnImportCSV').addEventListener('click', ()=>{
-  if(!isAdmin) return;
-  const file = document.getElementById('csvFile').files[0];
-  if(!file){ alert('Elegí un CSV.'); return; }
-  const r = new FileReader();
-  r.onload = ()=>{
-    const txt = r.result;
-    importarCSVText(txt);
-  };
-  r.readAsText(file, 'UTF-8');
-});
-
-function importarCSVText(txt){
-  // acepta encabezados FINCA,LOTE o finca,lote
-  const lines = txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-  const head = lines.shift().toLowerCase();
-  const delim = head.includes(';') ? ';' : ',';
-  const [c1,c2] = head.split(delim).map(s=>s.trim());
-  if(!['finca','finaca','finça','finac','finca'].includes(c1) && c1!=='finca'){} // tolerante
-  // Cargar
-  for(const line of lines){
-    const parts = line.split(delim).map(s=>s.trim());
-    if(parts.length<2) continue;
-    const f=parts[0], l=parts[1];
-    if(!f || !l) continue;
-    if(!catalogo[f]) catalogo[f]=[];
-    if(!catalogo[f].includes(l)) catalogo[f].push(l);
+  // Catálogos -> selects
+  function aplicarCatalogos() {
+    const camiones = $('#catCamiones').value.split(/\n+/).map(s => s.trim()).filter(Boolean);
+    const choferes = $('#catChoferes').value.split(/\n+/).map(s => s.trim()).filter(Boolean);
+    const camionSel = $('#camion'); const choferSel = $('#chofer');
+    camionSel.innerHTML = camiones.map(c => `<option>${c}</option>`).join('');
+    choferSel.innerHTML = choferes.map(c => `<option>${c}</option>`).join('');
   }
-  store.set(STORAGE_KEYS.catalog, catalogo);
-  refreshFincasPanel();
-  alert('Catálogo importado.');
-}
+  $('#btnAplicarCatalogos').addEventListener('click', aplicarCatalogos);
+  aplicarCatalogos();
 
-function refreshFincasPanel(){
-  // Lado izquierdo: fincas
-  const sf = document.getElementById('fn_listFincas');
-  const sl = document.getElementById('fn_listLotes');
-  const names = Object.keys(catalogo).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
-  sf.innerHTML = names.map(f=>`<option value="${f}">${f}</option>`).join('');
-  sl.innerHTML = '';
-  sf.onchange = ()=>{
-    const f = sf.value;
-    const lt = (catalogo[f]||[]).slice().sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
-    sl.innerHTML = lt.map(l=>`<option>${l}</option>`).join('');
-  };
-}
+  // LocalStorage helpers
+  const readLocal = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  const writeLocal = (arr) => localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  const clearLocal = () => localStorage.removeItem(STORAGE_KEY);
 
-// ===== Config =====
-document.getElementById('btnSaveCfg').addEventListener('click', ()=>{
-  cfg.autoClear = document.getElementById('cfg_autoClear').value;
-  cfg.endpoint = document.getElementById('cfg_endpoint').value.trim() || ENDPOINT;
-  store.set(STORAGE_KEYS.cfg, cfg);
-  alert('Config guardada.');
-});
-document.getElementById('btnWipe').addEventListener('click', ()=>{
-  if(!confirm('¿Borrar todos los datos locales (viajes, catálogos, config)?')) return;
-  Object.values(STORAGE_KEYS).forEach(k=>localStorage.removeItem(k));
-  location.reload();
-});
+  function refreshLocalCount() {
+    const n = readLocal().length;
+    $('#localCount').textContent = `Registros locales: ${n}`;
+  }
 
-// ===== Eventos UI =====
-document.getElementById('btnGuardar').addEventListener('click', guardar);
-document.getElementById('btnLimpiar').addEventListener('click', limpiar);
-document.getElementById('btnPDF').addEventListener('click', descargarPDF);
-document.getElementById('btnSync').addEventListener('click', sincronizar);
-document.getElementById('qreg').addEventListener('input', renderTabla);
+  function renderLista() {
+    const arr = readLocal();
+    const cont = $('#listaRegistros');
+    cont.innerHTML = arr.length ? arr.map((r,i) =>
+      `<div class="row">(${i+1}) ${r.fecha || ''} — ${r.camion || ''} — ${r.chofer || ''} — ${r.origen || ''} → ${r.destino || ''}</div>`
+    ).join('') : '<div class="muted">Sin registros locales…</div>';
+  }
 
-// selects dependientes
-document.getElementById('r_origen_finca').addEventListener('change', e=>{
-  fillLotesForFinca(e.target.value, 'r_origen_lote');
-});
-document.getElementById('r_destino_finca').addEventListener('change', e=>{
-  fillLotesForFinca(e.target.value, 'r_destino_lote');
-});
+  // Captura del formulario
+  function getFormData() {
+    return {
+      fecha: $('#fecha').value,
+      camion: $('#camion').value,
+      placa: $('#placa').value,
+      chofer: $('#chofer').value,
+      origen: $('#origen').value,
+      destino: $('#destino').value,
+      salida: $('#salida').value,
+      llegada: $('#llegada').value,
+      observaciones: $('#observaciones').value
+    };
+  }
 
-// ===== INIT =====
-(function init(){
-  // cfg
-  document.getElementById('cfg_autoClear').value = cfg.autoClear||'yes';
-  document.getElementById('cfg_endpoint').value  = cfg.endpoint||ENDPOINT;
+  // Guardar
+  $('#btnGuardar').addEventListener('click', () => {
+    const r = getFormData();
+    if (!r.fecha || !r.camion || !r.chofer) { alert('⚠️ Fecha, Camión y Chofer son obligatorios'); return; }
+    const arr = readLocal(); arr.push(r); writeLocal(arr);
+    refreshLocalCount(); renderLista();
+    alert('✅ Registro guardado localmente');
+  });
 
-  // selects iniciales
-  loadChoferesCamiones();
-  fillFincas('r_origen_finca'); fillFincas('r_destino_finca');
-  fillLotesForFinca('', 'r_origen_lote'); fillLotesForFinca('', 'r_destino_lote');
+  // Exportar PDF simple
+  $('#btnPDF').addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const r = getFormData();
+    let y = 12;
+    doc.setFontSize(14); doc.text('Registro de Camión — BYC', 10, y); y += 8;
+    doc.setFontSize(11);
+    Object.entries(r).forEach(([k,v]) => { doc.text(`${k.toUpperCase()}: ${v||''}`, 10, y); y += 7; });
+    doc.save('registro_camion.pdf');
+  });
 
-  // contador
-  document.getElementById('statCount').textContent = viajes.length;
+  // Sincronizar
+  $('#btnSync').addEventListener('click', async () => {
+    const registros = readLocal();
+    if (!registros.length) { alert('No hay registros locales.'); return; }
 
-  // fincas panel
-  setAdminUI(); refreshFincasPanel();
-})();
-</script>
+    const params = new URLSearchParams();
+    params.append('payload', JSON.stringify(registros));
+
+    try {
+      const resp = await fetch(SCRIPT_URL, { method:'POST', body: params });
+      if (resp.ok) {
+        clearLocal(); refreshLocalCount(); renderLista();
+        alert('🚀 Sincronización completada');
+      } else {
+        alert('❌ Falló la sincronización (HTTP ' + resp.status + ')');
+      }
+    } catch (e) {
+      alert('⚠️ Falló la sincronización: ' + (e?.message || e));
+    }
+  });
+
+  // Tab Registros: utilidades
+  $('#btnBorrarLocal')?.addEventListener('click', () => {
+    if (confirm('¿Borrar todos los registros locales?')) {
+      clearLocal(); refreshLocalCount(); renderLista();
+    }
+  });
+  $('#btnExportJSON')?.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(readLocal(), null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'camiones_local.json'; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Inicial
+  refreshLocalCount(); renderLista();
+  </script>
 </body>
 </html>
