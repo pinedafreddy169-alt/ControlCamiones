@@ -93,10 +93,10 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
   <!-- Choferes -->
   <section id="choferes" class="card" hidden>
     <div class="row grid2">
-      <div><label>Nuevo chofer</label><input type="text" id="c_nuevo"></div>
+      <div><label>Nuevo chofer</label><input type="text" id="c_nuevo" placeholder="Nombre del chofer"></div>
       <div style="display:flex;align-items:end"><button class="primary" id="c_add">Agregar</button></div>
     </div>
-    <div id="c_lista"></div>
+    <div id="c_lista" class="row"></div>
   </section>
 
   <!-- Fincas & Lotes (admin seguro) -->
@@ -167,9 +167,9 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyjDY7j7ehoQ7crRAh2tLT_PnRvVT384_YmUmJ5JOmwP8jBH23x45CksGy3plcsM5nLcg/exec";
 const ADMIN_PASS_NORMALIZED = "admi12345";
 
-/* ===== ANTIPEGA GLOBAL: captura errores sin trabar ===== */
-window.onerror = (m, s, l, c, e) => { try{toast(document.getElementById('estadoEnvio')||document.body, "Error: "+m, false)}catch{}; return true; };
-window.onunhandledrejection = (ev) => { try{toast(document.getElementById('estadoEnvio')||document.body, "Error: "+(ev.reason?.message||ev.reason), false)}catch{}; ev.preventDefault?.(); return true; };
+/* ===== ANTIPEGA GLOBAL ===== */
+window.onerror = (m)=>{ try{toast(document.getElementById('estadoEnvio')||document.body, "Error: "+m, false)}catch{}; return true; };
+window.onunhandledrejection = (ev)=>{ try{toast(document.getElementById('estadoEnvio')||document.body, "Error: "+(ev.reason?.message||ev.reason), false)}catch{}; ev.preventDefault?.(); return true; };
 
 /* ===== UTIL ===== */
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
@@ -216,14 +216,13 @@ const DEFAULTS = {
   ]
 };
 
-/* ===== CARGA SEGURA (repara si hay basura en storage) ===== */
+/* ===== CARGA SEGURA ===== */
 function dedupLotes(raw){
   const ok = (raw||[]).filter(r=>r && typeof r.finca==="string" && typeof r.lote==="string");
   const map=new Map(ok.map(r=>[r.finca+"|"+r.lote, {finca:r.finca.trim(), lote:r.lote.trim()}]));
   return Array.from(map.values());
 }
 function safeArray(a, def){ return Array.isArray(a)?a:def }
-function safeString(s, def){ return (typeof s==="string")?s:def }
 
 let choferes = safeArray(store.get("byc_choferes", DEFAULTS.choferes), DEFAULTS.choferes);
 let camiones = safeArray(store.get("byc_camiones", DEFAULTS.camiones), DEFAULTS.camiones);
@@ -234,7 +233,6 @@ let isAdmin = !!store.get("byc_is_admin", false);
 let lotes = dedupLotes(store.get("byc_lotes", DEFAULTS.lotesRaw));
 let fincas = [...new Set(lotes.map(r=>r.finca))].sort();
 
-// Si algo vino roto, lo reescribimos
 store.set("byc_choferes", choferes);
 store.set("byc_camiones", camiones);
 store.set("byc_lotes", lotes);
@@ -244,10 +242,31 @@ store.set("byc_fincas", fincas);
 $$(".tab").forEach(b=>{b.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
 ["viaje","borradores","choferes","fincas","camiones","sincronizar","usuario"].forEach(id=>$("#"+id).hidden=(id!==b.dataset.tab));
 if(b.dataset.tab==="borradores") renderBorradores();
-if(b.dataset.tab==="fincas") updateAdminUI();};});
+if(b.dataset.tab==="fincas") updateAdminUI();
+if(b.dataset.tab==="choferes") renderChoferList();
+};});
 
 /* ===== SELECTS CHOFER/CAMION ===== */
 function renderChoferes(){ const el=$("#v_chofer"); if(!el) return; el.innerHTML=choferes.map(n=>`<option value="${n}">${n}</option>`).join("") }
+
+/* NUEVO: lista visible en pestaña Choferes */
+function renderChoferList(){
+  const cont=$("#c_lista"); if(!cont) return;
+  if(!choferes.length){ cont.innerHTML = '<p class="muted">Sin choferes.</p>'; return; }
+  cont.innerHTML = choferes.map((n,i)=>`
+    <div class="row grid2">
+      <input value="${n}" disabled>
+      <button class="danger" onclick="delChofer(${i})">Eliminar</button>
+    </div>
+  `).join("");
+}
+window.delChofer = (i)=>{
+  choferes.splice(i,1);
+  store.set("byc_choferes", choferes);
+  renderChoferes();
+  renderChoferList();
+};
+
 function renderCamiones(){ const el=$("#v_camion"); if(!el) return; el.innerHTML=camiones.map(c=>`<option value="${c.camion}">${c.camion}</option>`).join(""); fillPlacaFromCamion(); }
 function fillPlacaFromCamion(){ const v=$("#v_camion")?.value; const f=camiones.find(c=>c.camion===v); const p=$("#v_placa"); if(p) p.value=f?f.placa:"" }
 
@@ -305,8 +324,7 @@ function renderAdminFincasLotes(){
       html+=`<h4 style="margin:10px 0 6px">${f}</h4>`;
       const arr=lotes.filter(x=>x.finca===f);
       if(!arr.length){ html+='<p class="muted">Sin lotes</p>'; return; }
-      html+='<div class="grid3">'+arr.map((x,idx)=>{
-        // índice estable: buscar por clave compuesta
+      html+='<div class="grid3">'+arr.map((x)=>{
         const key=x.finca+"|"+x.lote;
         return `<div class="row">
           <input value="${x.lote}" disabled>
@@ -317,7 +335,6 @@ function renderAdminFincasLotes(){
     lList.innerHTML=html;
   }
 }
-// eliminar por clave (evita problemas con indexOf)
 window.delLote = (key)=>{
   if(!isAdmin) return alert("Solo administrador.");
   lotes = lotes.filter(x => (x.finca+"|"+x.lote)!==key);
@@ -346,10 +363,23 @@ $("#l_add")?.addEventListener("click",()=>{
   const lote=$("#l_nuevo")?.value.trim(); const finca=$("#l_fincaSel")?.value;
   if(!lote||!finca) return;
   lotes.push({finca,lote});
-  lotes = dedupLotes(lotes);
+  // de-duplicar
+  const map=new Map(lotes.map(r=>[r.finca+"|"+r.lote,r])); lotes=[...map.values()];
   fincas = [...new Set(lotes.map(r=>r.finca))].sort();
   store.set("byc_lotes",lotes); store.set("byc_fincas",fincas);
   $("#l_nuevo").value=""; updateAdminUI(); initOrigenDestino();
+});
+
+/* ===== Choferes (ARREGLADO) ===== */
+$("#c_add")?.addEventListener("click", ()=>{
+  const v = ($("#c_nuevo")?.value||"").trim();
+  if(!v){ alert("Escribí el nombre del chofer."); return; }
+  if(!choferes.includes(v)) choferes.push(v);
+  const ok = store.set("byc_choferes", choferes);
+  $("#c_nuevo").value="";
+  renderChoferes();
+  renderChoferList();
+  toast($("#estadoEnvio"), ok ? "Chofer agregado ✅" : "Agregado temporal (abrí fuera de WhatsApp)", ok);
 });
 
 /* ===== Camiones ===== */
@@ -372,8 +402,9 @@ function renderAdminCamiones(){
 window.delCamion = (i)=>{ camiones.splice(i,1); store.set("byc_camiones",camiones); renderAdminCamiones(); renderCamiones(); };
 
 /* ===== INICIALIZA ===== */
-renderChoferes(); renderCamiones(); renderAdminCamiones();
-if($("#u_nombre")){ const u=store.get("byc_user",""); if(u){ $("#u_nombre").value=u; $("#v_user").value=u; } }
+renderChoferes(); renderChoferList();
+renderCamiones(); renderAdminCamiones();
+const u=store.get("byc_user",""); if(u){$("#u_nombre").value=u; $("#v_user").value=u}
 const ffecha=$("#v_fecha"); if(ffecha && !ffecha.value) ffecha.value=todayISO();
 initOrigenDestino();
 updateAdminUI();
@@ -411,7 +442,6 @@ window.editarBor=i=>{const r=borradores[i]||{}; editIndex=i;
   $("#v_salida").value=r.salida||""; $("#v_llegada").value=r.llegada||""; $("#v_obs").value=r.observaciones||""; document.querySelector('.tab[data-tab="viaje"]').click()}
 window.eliminarBor=i=>{borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores()}
 
-/* Antidoble-click por fila y para “Sincronizar todos” */
 const sendingRow=new Set(); let sendingAll=false;
 window.enviarUno=async i=>{
   if(sendingRow.has(i)) return;
@@ -440,7 +470,7 @@ $("#btnSyncBorradores")?.addEventListener("click", async()=>{
   b.disabled=false; b.textContent="Sincronizar todos"; sendingAll=false;
 });
 
-/* ===== ENVÍO (antidoble-click) ===== */
+/* ===== ENVÍO ===== */
 async function enviarRegistro(reg,showMsg=true){
   try{
     const body=new URLSearchParams({payload:JSON.stringify([reg])});
@@ -475,10 +505,7 @@ $("#btnSync")?.addEventListener("click", async ()=>{
 
 /* ===== USUARIO ===== */
 $("#u_guardar")?.addEventListener("click",()=>{const u=$("#u_nombre")?.value.trim(); if(!u) return; store.set("byc_user",u); const v=$("#v_user"); if(v) v.value=u; alert("Usuario guardado.")});
-
-/* ===== REPARAR CACHÉ ===== */
 $("#u_reparar")?.addEventListener("click",()=>{
-  // limpia solo claves de la app
   ["byc_user","byc_choferes","byc_camiones","byc_lotes","byc_fincas","byc_borradores","byc_pendientes","byc_is_admin"].forEach(store.del);
   alert("Listo. Caché reparada. Cerrá y abrí el link otra vez.");
 });
