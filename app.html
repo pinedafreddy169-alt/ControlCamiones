@@ -1,112 +1,100 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Control de Camiones</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Control de Camiones – BYC</title>
   <style>
-    body {
-      background: #111;
-      color: #eee;
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 20px;
-    }
-    h1 { color: #f55; text-align: center; }
-    label { display:block; margin-top:12px; font-weight:bold; }
-    input, select, textarea {
-      width: 100%; padding: 12px; margin-top: 5px;
-      border-radius: 8px; border: none; font-size: 16px;
-    }
-    textarea { resize: vertical; }
-    .botones { text-align: center; margin-top: 20px; }
-    button {
-      background: #f55; border:none; border-radius:10px;
-      padding: 15px 25px; margin: 8px; font-size:16px; font-weight:bold;
-      color:#fff; cursor:pointer;
-    }
-    button:active { background:#d44; }
-    #lista { margin-top:20px; font-size:15px; }
-    .registro { padding:8px; margin:5px 0; background:#222; border-radius:6px; }
+    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;max-width:720px;margin:0 auto;padding:16px}
+    h1{margin:0 0 12px}
+    form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{font-size:.9rem;color:#333}
+    input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:1rem}
+    textarea{grid-column:1/-1;min-height:90px}
+    .row-2{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .actions{grid-column:1/-1;display:flex;gap:12px;margin-top:8px}
+    button{padding:12px 16px;border:0;border-radius:12px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    .primary{background:#2b7cff;color:#fff}
+    .ghost{background:#f2f2f2}
+    .ok{color:#0a7c2b;font-weight:600}
+    .error{color:#b00020;font-weight:600;white-space:pre-wrap}
   </style>
 </head>
 <body>
-  <h1>🚛 Control de Camiones</h1>
+  <h1>Control de Camiones</h1>
+  <p>Llena los datos y presioná <b>Enviar a Excel</b>. Se guarda en la pestaña <b>CHOFERES BYC</b>.</p>
 
-  <form id="formRegistro">
-    <label>📅 Fecha <input type="date" id="fecha"></label>
-    <label>🚚 Camión <input type="text" id="camion" placeholder="Camión 01"></label>
-    <label>🔖 Placa <input type="text" id="placa" placeholder="ABC-123"></label>
-    <label>👨‍✈️ Chofer <input type="text" id="chofer" placeholder="Nombre chofer"></label>
-    <label>🏭 Origen <input type="text" id="origen"></label>
-    <label>🏡 Destino <input type="text" id="destino"></label>
-    <label>⏰ Salida <input type="time" id="salida"></label>
-    <label>⏱ Llegada <input type="time" id="llegada"></label>
-    <label>📝 Observaciones <textarea id="observaciones"></textarea></label>
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbw-0PS8huGi_7VHS24rd6ywBajLoOAwJVVKUdxLMqOiDctqbn-kxeYhLNb-io2h3BaaiA/exec";
+  </script>
+
+  <form id="frm">
+    <div><label>Fecha</label><input type="date" name="fecha" required /></div>
+    <div><label>Camión</label><input type="text" name="camion" required /></div>
+    <div><label>Placa</label><input type="text" name="placa" /></div>
+    <div><label>Chofer</label><input type="text" name="chofer" required /></div>
+    <div><label>Origen</label><input type="text" name="origen" /></div>
+    <div><label>Destino</label><input type="text" name="destino" /></div>
+    <div class="row-2">
+      <div><label>Hora salida</label><input type="time" name="salida" /></div>
+      <div><label>Hora llegada</label><input type="time" name="llegada" /></div>
+    </div>
+    <textarea name="observaciones" placeholder="Observaciones"></textarea>
+    <div class="actions">
+      <button type="button" class="primary" id="btnEnviar">Enviar a Excel</button>
+      <button type="reset" class="ghost">Limpiar</button>
+    </div>
   </form>
 
-  <div class="botones">
-    <button type="button" onclick="guardarLocal()">💾 Guardar</button>
-    <button type="button" onclick="sincronizar()">🔄 Sincronizar</button>
-    <button type="reset" form="formRegistro">🧹 Limpiar</button>
-  </div>
+  <p id="msg"></p>
 
-  <h2>📋 Registros locales</h2>
-  <div id="lista"></div>
+  <script>
+    const $ = s => document.querySelector(s);
+    const msg = $("#msg");
 
-<script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-N1v3hc4Gumo3ZH_vBQ_mm_03i8n-llBJ31urziJgLV6-Qc8kBEy5m5AjOsccBTRGtw/exec";
-const STORAGE_KEY = "camiones_registros";
-
-function leer() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-function guardar(arr) { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
-function render() {
-  const lista = leer();
-  document.getElementById("lista").innerHTML = lista.map((r,i)=>
-    `<div class="registro">(${i+1}) ${r.fecha} - ${r.camion} - ${r.chofer} → ${r.destino}</div>`
-  ).join("");
-}
-
-function guardarLocal() {
-  const r = {
-    fecha: document.getElementById("fecha").value,
-    camion: document.getElementById("camion").value,
-    placa: document.getElementById("placa").value,
-    chofer: document.getElementById("chofer").value,
-    origen: document.getElementById("origen").value,
-    destino: document.getElementById("destino").value,
-    salida: document.getElementById("salida").value,
-    llegada: document.getElementById("llegada").value,
-    observaciones: document.getElementById("observaciones").value
-  };
-  if(!r.fecha || !r.camion || !r.chofer){ alert("⚠️ Fecha, Camión y Chofer son obligatorios"); return; }
-  const lista = leer();
-  lista.push(r);
-  guardar(lista);
-  render();
-  alert("✅ Guardado localmente");
-}
-
-async function sincronizar() {
-  const registros = leer();
-  if (!registros.length) { alert("No hay registros."); return; }
-  const params = new URLSearchParams();
-  params.append("payload", JSON.stringify(registros));
-
-  try {
-    const resp = await fetch(SCRIPT_URL, { method:"POST", body:params });
-    if (resp.ok) {
-      localStorage.removeItem(STORAGE_KEY);
-      render();
-      alert("🚀 Sincronización completada.");
-    } else {
-      alert("❌ Error HTTP " + resp.status);
+    function leerFormulario() {
+      const f = $("#frm");
+      return {
+        fecha: f.fecha.value,
+        camion: f.camion.value,
+        placa: f.placa.value,
+        chofer: f.chofer.value,
+        origen: f.origen.value,
+        destino: f.destino.value,
+        salida: f.salida.value,
+        llegada: f.llegada.value,
+        observaciones: f.observaciones.value
+      };
     }
-  } catch(e) {
-    alert("⚠️ Falló la sincronización: " + e.message);
-  }
-}
 
-render();
-</script>
+    async function enviar() {
+      msg.textContent = "Enviando…";
+      try {
+        const registro = leerFormulario();
+        const body = new URLSearchParams({ payload: JSON.stringify([registro]) });
+
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+          body
+        });
+
+        const text = await res.text();
+        let json;
+        try { json = JSON.parse(text); } catch { json = {ok: res.ok, raw: text}; }
+
+        if (json.ok) {
+          msg.innerHTML = `<span class="ok">✅ Enviado. Filas insertadas: ${json.insertados ?? 1}</span>`;
+          $("#frm").reset();
+        } else {
+          throw new Error(JSON.stringify(json, null, 2));
+        }
+      } catch (e) {
+        msg.innerHTML = `<span class="error">❌ Error:\n${String(e)}</span>`;
+      }
+    }
+
+    $("#btnEnviar").addEventListener("click", enviar);
+  </script>
 </body>
 </html>
