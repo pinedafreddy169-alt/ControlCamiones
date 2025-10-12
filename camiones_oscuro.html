@@ -37,6 +37,11 @@
   .muted{color:var(--muted)}
   .sep{height:1px;background:var(--border);margin:12px 0}
   @media (max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+  @media print{
+    body{background:#fff;color:#000}
+    .tabs,.actions,.badge,.lead{display:none !important}
+    .card{border:0}
+  }
 </style>
 </head>
 <body>
@@ -109,6 +114,8 @@
   <section id="borradores" class="card" hidden>
     <div class="actions">
       <button class="primary" id="btnSyncBorradores">Sincronizar todos a Excel</button>
+      <button class="btn" id="btnExportCSV">Exportar Excel (CSV)</button>
+      <button class="btn" id="btnExportPDF">Exportar PDF</button>
       <span id="estadoBor" class="muted"></span>
     </div>
     <div id="tablaBor" class="row"></div>
@@ -182,6 +189,13 @@ const store = {
 };
 function toast(el,msg,ok=true){ el.textContent=msg; el.className=ok?'ok':'error'; setTimeout(()=>{el.textContent=''; el.className='muted'},3500); }
 function todayISO(){ const d=new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); }
+function fmtCSV(val){ if(val==null) return ""; const s=String(val).replace(/"/g,'""'); return /[",\n]/.test(s)?`"${s}"`:s; }
+function dlBlob(filename, mime, content){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
+}
 
 /* ===== DATOS LOCALES ===== */
 let usuario   = store.get("byc_user","");
@@ -286,6 +300,8 @@ renderChoferes(); renderAdminChoferes();
 renderFincasLotes(); renderAdminFincasLotes();
 renderAdminCamiones();
 if(usuario){ $("#u_nombre").value = usuario; $("#v_user").value = usuario; }
+// Fecha por defecto hoy
+const f = document.getElementById('v_fecha'); if(f && !f.value) f.value = todayISO();
 
 /* ===== FORMULARIO ===== */
 function leerViaje(){
@@ -319,13 +335,13 @@ $("#btnBorrador").onclick = ()=>{
 function renderBorradores(){
   const cont = $("#tablaBor");
   if(!borradores.length){ cont.innerHTML="<p class='muted'>No hay borradores hoy.</p>"; return; }
-  let html = "<table><thead><tr>";
+  let html = "<table id='tablaBorradores'><thead><tr>";
   const cols = ["fecha","camion","placa","chofer","origen","destino","salida","llegada","observaciones"];
   cols.forEach(c=>html+=`<th>${c.toUpperCase()}</th>`); html+="<th>Acciones</th></tr></thead><tbody>";
   borradores.forEach((r,i)=>{
-    html += "<tr>"+cols.map(c=>`<td>${(r[c]??"")}</td>`).join("")
+    html += "<tr>"+cols.map(c=>`<td contenteditable='true' data-col='${c}' oninput='updateCell(${i},this)'>${(r[c]??"")}</td>`).join("")
          + `<td>
-              <button class="btn" onclick="editarBor(${i})">Editar</button>
+              <button class="btn" onclick="editarBor(${i})">Cargar</button>
               <button class="danger" onclick="eliminarBor(${i})">Eliminar</button>
               <button class="primary" onclick="enviarUno(${i})">Enviar</button>
             </td></tr>`;
@@ -333,7 +349,11 @@ function renderBorradores(){
   html += "</tbody></table>";
   cont.innerHTML = html;
 }
-// Exponer helpers
+window.updateCell = (i, td)=>{
+  const col = td.getAttribute('data-col');
+  borradores[i][col] = td.textContent;
+  store.set("byc_borradores",borradores);
+};
 window.editarBor = (i)=>{
   const r=borradores[i]; editIndex=i;
   $("#v_fecha").value=r.fecha; $("#v_camion").value=r.camion; fillPlacaFromCamion();
@@ -341,7 +361,6 @@ window.editarBor = (i)=>{
   $("#o_finca").value=r.origen_finca||""; $("#d_finca").value=r.destino_finca||""; renderFincasLotes();
   $("#o_lote").value=r.origen_lote||""; $("#d_lote").value=r.destino_lote||"";
   $("#v_salida").value=r.salida; $("#v_llegada").value=r.llegada; $("#v_obs").value=r.observaciones||"";
-  // cambiar a tab viaje
   document.querySelector('.tab[data-tab="viaje"]').click();
 };
 window.eliminarBor = (i)=>{ borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores(); };
@@ -363,11 +382,41 @@ $("#btnSyncBorradores").onclick = async ()=>{
   toast(est,`Enviados: ${ok} / Error: ${fail}`, fail===0);
 };
 
+// Exportar CSV
+$("#btnExportCSV").onclick = ()=>{
+  if(!borradores.length) return alert("No hay borradores.");
+  const cols = ["fecha","camion","placa","chofer","origen","destino","salida","llegada","observaciones"];
+  let csv = cols.map(c=>c.toUpperCase()).join(",") + "\n";
+  csv += borradores.map(r=>cols.map(c=>fmtCSV(r[c]??"")).join(",")).join("\n");
+  const fname = "borradores_" + todayISO() + ".csv";
+  dlBlob(fname, "text/csv;charset=utf-8", csv);
+};
+
+// Exportar PDF (imprime desde el navegador)
+$("#btnExportPDF").onclick = ()=>{
+  if(!borradores.length) return alert("No hay borradores.");
+  const cols = ["fecha","camion","placa","chofer","origen","destino","salida","llegada","observaciones"];
+  const w = window.open("", "_blank");
+  const style = `
+    <style>
+      body{font-family:Arial, sans-serif; padding:16px}
+      h2{margin:0 0 10px}
+      table{width:100%;border-collapse:collapse}
+      th,td{border:1px solid #888;padding:6px;font-size:12px}
+      th{background:#eee;text-align:left}
+    </style>`;
+  let html = `<html><head><meta charset="utf-8">${style}</head><body>`;
+  html += `<h2>Reporte de Borradores — ${todayISO()}</h2><table><thead><tr>`;
+  cols.forEach(c=>html+=`<th>${c.toUpperCase()}</th>`); html+="</tr></thead><tbody>";
+  borradores.forEach(r=>{ html+="<tr>"; cols.forEach(c=>html+=`<td>${(r[c]??"")}</td>`); html+="</tr>"; });
+  html += "</tbody></table></body></html>";
+  w.document.write(html); w.document.close(); w.focus(); w.print();
+};
+
 /* ===== ENVÍO / SINCRONIZACIÓN ===== */
 async function enviarRegistro(reg,showMsg=true){
   const estado=$("#estadoEnvio");
   try{
-    // mapear origen/destino en campos existentes (texto) y mandar extra split
     const body=new URLSearchParams({payload:JSON.stringify([reg])});
     const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
     const txt=await res.text(); let j; try{j=JSON.parse(txt);}catch{j={ok:res.ok,raw:txt};}
@@ -416,10 +465,3 @@ $("#u_guardar").onclick = ()=>{
 </script>
 </body>
 </html>
-"""
-
-path = "/mnt/data/camiones_oscuro_custom.html"
-with open(path, "w", encoding="utf-8") as f:
-    f.write(html)
-
-path
