@@ -145,6 +145,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 <script>
 /* ===== CONFIG ===== */
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyjDY7j7ehoQ7crRAh2tLT_PnRvVT384_YmUmJ5JOmwP8jBH23x45CksGy3plcsM5nLcg/exec";
+const ADMIN_LOTE_PASS = "admi12345"; // acepta con/sin espacios y en cualquier mayúscula/minúscula
 
 /* ===== UTIL ===== */
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
@@ -203,13 +204,11 @@ function renderCamiones(){ $("#v_camion").innerHTML=camiones.map(c=>`<option val
 function fillPlacaFromCamion(){ const v=$("#v_camion").value; const f=camiones.find(c=>c.camion===v); $("#v_placa").value=f?f.placa:"" }
 
 /* ===== FINCA → LOTE (corregido) ===== */
-// Construye las fincas UNA SOLA VEZ
 function buildFincaSelect(sel, defFinca){
   const s=document.querySelector(sel);
   s.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("");
   s.value = defFinca && fincas.includes(defFinca) ? defFinca : (fincas[0]||"");
 }
-// Actualiza lotes según la finca seleccionada (NO toca el select de fincas)
 function updateLotes(fincaSel,loteSel, defLote){
   const sF=document.querySelector(fincaSel), sL=document.querySelector(loteSel);
   const arr=lotes.filter(x=>x.finca===sF.value);
@@ -217,7 +216,6 @@ function updateLotes(fincaSel,loteSel, defLote){
   sL.value = (defLote && arr.some(x=>x.lote===defLote)) ? defLote : (arr[0]?.lote||"");
 }
 function initOrigenDestino(){
-  // por defecto Caño Blanco
   buildFincaSelect("#o_finca","Caño Blanco");
   buildFincaSelect("#d_finca","Caño Blanco");
   updateLotes("#o_finca","#o_lote");
@@ -239,15 +237,22 @@ function renderAdminFincasLotes(){
 }
 function delFinca(i){const nombre=fincas[i]; fincas.splice(i,1); lotes=lotes.filter(x=>x.finca!==nombre); store.set("byc_fincas",fincas); store.set("byc_lotes",lotes); renderAdminFincasLotes(); initOrigenDestino();}
 function delLote(i){lotes.splice(i,1); store.set("byc_lotes",lotes); renderAdminFincasLotes(); initOrigenDestino();}
+
+// Agregar chofer/camión
 $("#c_add").onclick=()=>{const v=$("#c_nuevo").value.trim(); if(!v) return; if(!choferes.includes(v)) choferes.push(v); store.set("byc_choferes",choferes); $("#c_nuevo").value=""; renderChoferes(); renderAdminChoferes()}
-$("#f_add").onclick=()=>{const v=$("#f_nueva").value.trim(); if(!v) return; if(!fincas.includes(v)) fincas.push(v); store.set("byc_fincas",fincas); $("#f_nueva").value=""; renderAdminFincasLotes(); initOrigenDestino()}
-$("#l_add").onclick=()=>{const lote=$("#l_nuevo").value.trim(); const finca=$("#l_fincaSel").value; if(!lote||!finca) return; lotes.push({finca,lote}); store.set("byc_lotes",lotes); $("#l_nuevo").value=""; renderAdminFincasLotes(); initOrigenDestino()}
 $("#m_add").onclick=()=>{const c=$("#m_camion").value.trim(); const p=$("#m_placa").value.trim(); if(!c||!p) return; camiones.push({camion:c,placa:p}); store.set("byc_camiones",camiones); $("#m_camion").value=""; $("#m_placa").value=""; renderAdminCamiones()}
 function renderAdminCamiones(){ $("#m_lista").innerHTML=camiones.map((c,i)=>`<div class="row grid3"><input value="${c.camion}" disabled><input value="${c.placa}" disabled><button class="danger" onclick="delCamion(${i})">Eliminar</button></div>`).join("")||'<p class="muted">Sin camiones.</p>'; renderCamiones() }
 function delCamion(i){camiones.splice(i,1); store.set("byc_camiones",camiones); renderAdminCamiones()}
 
+// Agregar finca/lote (con contraseña para LOTES)
+$("#f_add").onclick=()=>{const v=$("#f_nueva").value.trim(); if(!v) return; if(!fincas.includes(v)) fincas.push(v); store.set("byc_fincas",fincas); $("#f_nueva").value=""; renderAdminFincasLotes(); initOrigenDestino()}
+$("#l_add").onclick=()=>{const lote=$("#l_nuevo").value.trim(); const finca=$("#l_fincaSel").value; if(!lote||!finca) return;
+  const pwd=(prompt("Contraseña admin para registrar lotes:","")||"").replace(/\s+/g,"").toLowerCase();
+  if(pwd!==ADMIN_LOTE_PASS){ alert("Contraseña incorrecta."); return; }
+  lotes.push({finca,lote}); store.set("byc_lotes",lotes); $("#l_nuevo").value=""; renderAdminFincasLotes(); initOrigenDestino()
+}
+
 /* ===== INICIALIZA ===== */
-$$(".tab").forEach(()=>{}); // noop para Safari viejo
 renderChoferes(); renderAdminChoferes(); renderAdminCamiones(); renderAdminFincasLotes();
 if(usuario){$("#u_nombre").value=usuario; $("#v_user").value=usuario}
 const f=document.getElementById('v_fecha'); if(f&&!f.value) f.value=todayISO();
@@ -265,7 +270,7 @@ function leerViaje(){
 }
 $("#btnLimpiar").onclick=()=>{$$("#viaje input,#viaje textarea").forEach(e=>{if(e.id!=="v_user") e.value=""}); if(usuario) $("#v_user").value=usuario}
 
-/* ===== BORRADORES SENCILLOS ===== */
+/* ===== BORRADORES ===== */
 let editIndex=-1;
 function renderBorradores(){
   const cont=$("#tablaBor"); if(!borradores.length){cont.innerHTML="<p class='muted'>No hay borradores.</p>"; return}
@@ -274,7 +279,7 @@ function renderBorradores(){
   borradores.forEach((r,i)=>{html+="<tr>"+cols.map(c=>`<td>${r[c]??""}</td>`).join("")+
     `<td><button class="btn" onclick="editarBor(${i})">Cargar</button>
          <button class="danger" onclick="eliminarBor(${i})">Eliminar</button>
-         <button class="primary" onclick="enviarUno(${i})">Enviar</button></td></tr>`});
+         <button class="primary" id="btnEnviarBor-${i}" onclick="enviarUno(${i})" data-label="Enviar">Enviar</button></td></tr>`});
   html+="</tbody></table>"; cont.innerHTML=html
 }
 window.editarBor=i=>{const r=borradores[i]; editIndex=i; $("#v_fecha").value=r.fecha; $("#v_camion").value=r.camion; fillPlacaFromCamion();
@@ -283,13 +288,33 @@ $("#o_finca").value=r.origen_finca||$("#o_finca").value; updateLotes("#o_finca",
 $("#d_finca").value=r.destino_finca||$("#d_finca").value; updateLotes("#d_finca","#d_lote",r.destino_lote);
 $("#v_salida").value=r.salida; $("#v_llegada").value=r.llegada; $("#v_obs").value=r.observaciones||""; document.querySelector('.tab[data-tab="viaje"]').click()}
 window.eliminarBor=i=>{borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores()}
-window.enviarUno=async i=>{const r=borradores[i]; const ok=await enviarRegistro(r,false); if(ok){borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores(); toast($("#estadoBor"),"Enviado ✅")} else toast($("#estadoBor"),"Sin internet.",false)}
-$("#btnBorrador").onclick=()=>{const r=leerViaje(); if(editIndex>=0){borradores[editIndex]=r; editIndex=-1}else borradores.push(r); store.set("byc_borradores",borradores); toast($("#estadoEnvio"),"Borrador guardado ✅"); renderBorradores()}
-$("#btnSyncBorradores").onclick=async()=>{const est=$("#estadoBor"); if(!borradores.length) return toast(est,"No hay borradores");
-  let ok=0,fail=0,rest=[]; for(const r of borradores){const ex=await enviarRegistro(r,false); if(ex) ok++; else {fail++; rest.push(r)}}
-  borradores=rest; store.set("byc_borradores",borradores); renderBorradores(); toast(est,`OK ${ok} / Error ${fail}`, fail===0)}
 
-/* ===== ENVÍO (antidoble-click) ===== */
+/* Anti doble-click por fila y para "Sincronizar todos" */
+const sendingRow=new Set(); let sendingAll=false;
+
+window.enviarUno=async i=>{
+  if(sendingRow.has(i)) return;
+  sendingRow.add(i);
+  const btn=document.getElementById(`btnEnviarBor-${i}`);
+  if(btn){btn.disabled=true;btn.textContent='Enviando…'}
+  const r=borradores[i]; const ok=await enviarRegistro(r,false);
+  if(ok){borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores(); toast($("#estadoBor"),"Borrador enviado ✅")}
+  else {toast($("#estadoBor"),"Sin internet. Quedó en pendientes.",false); if(btn){btn.disabled=false;btn.textContent='Enviar'}}
+  sendingRow.delete(i);
+};
+
+$("#btnSyncBorradores").onclick=async()=>{
+  if(sendingAll) return;
+  const b=$("#btnSyncBorradores"); sendingAll=true; b.disabled=true; b.textContent="Enviando…";
+  const est=$("#estadoBor"); if(!borradores.length){toast(est,"No hay borradores"); b.disabled=false; b.textContent="Sincronizar todos"; sendingAll=false; return}
+  let ok=0,fail=0,rest=[];
+  for(const r of borradores){const ex=await enviarRegistro(r,false); if(ex) ok++; else {fail++; rest.push(r)}}
+  borradores=rest; store.set("byc_borradores",borradores); renderBorradores();
+  toast(est,`OK ${ok} / Error ${fail}`, fail===0);
+  b.disabled=false; b.textContent="Sincronizar todos"; sendingAll=false;
+};
+
+/* ===== ENVÍO (anti doble-click del botón principal) ===== */
 async function enviarRegistro(reg,showMsg=true){
   try{
     const body=new URLSearchParams({payload:JSON.stringify([reg])});
@@ -305,6 +330,8 @@ $("#btnEnviar").onclick=async()=>{
   const reg=leerViaje(); await enviarRegistro(reg,true);
   setTimeout(()=>{sending=false; setBtnLoading($("#btnEnviar"),false,$("#btnEnviar").dataset.label)},500);
 };
+
+/* ===== PENDIENTES / SINCRONIZAR ===== */
 $("#btnEnviarPendientes").onclick=async()=>{const est=$("#estadoSync"); if(!pendientes.length) return toast(est,"No hay pendientes");
   let ok=0,fail=0,nuevos=[]; for(const r of pendientes){const ex=await enviarRegistro(r,false); if(ex) ok++; else {fail++; nuevos.push(r)}}
   pendientes=nuevos; store.set("byc_pendientes",pendientes); toast(est,`Pendientes: OK ${ok} / Error ${fail}`, fail===0)}
