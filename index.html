@@ -3,50 +3,38 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Camiones BYC — Modo Oscuro</title>
+<title>Camiones BYC — Antipega</title>
 <style>
-  :root{
-    --bg:#0f1115;--panel:#151923;--muted:#8a90a2;--text:#e8ecf1;--accent:#5ea1ff;--danger:#ff5e7a;--ok:#2bd27f;--border:#232838;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  .wrap{max-width:1100px;margin:0 auto;padding:20px}
-  h1{font-size:1.9rem;margin:0 0 6px}
-  .lead{color:var(--muted);margin:0 0 16px}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
-  .tab{padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:#111524;color:var(--muted);cursor:pointer}
-  .tab.active{background:var(--accent);color:#07111f;border-color:transparent;font-weight:700}
-  label{font-size:.9rem;color:var(--muted)}
-  input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:#0c0f17;color:var(--text)}
-  textarea{min-height:84px}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .row{margin-bottom:12px}
-  .actions{display:flex;gap:10px;flex-wrap:wrap}
-  button{padding:12px 14px;border:0;border-radius:12px;cursor:pointer;font-weight:700}
-  .btn{background:#1b2233;color:var(--text);border:1px solid var(--border)}
-  .primary{background:var(--accent);color:#051226}
-  .danger{background:var(--danger);color:#22070c}
-  .ok{color:var(--ok);font-weight:700}
-  .muted{color:var(--muted)}
-  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;border:1px solid var(--border);background:#101525;color:var(--muted)}
-  .sep{height:1px;background:var(--border);margin:12px 0}
-  table{width:100%;border-collapse:collapse;margin-top:10px}
-  th,td{border:1px solid var(--border);padding:8px;font-size:.95rem}
-  th{background:#101525;color:var(--muted);text-align:left}
-  @media (max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
-  @media print{body{background:#fff;color:#000}.tabs,.actions,.badge,.lead{display:none !important}.card{border:0}}
+:root{--bg:#0f1115;--panel:#151923;--muted:#8a90a2;--text:#e8ecf1;--accent:#5ea1ff;--danger:#ff5e7a;--ok:#2bd27f;--border:#232838}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px} h1{font-size:1.9rem;margin:0 0 6px}.lead{color:var(--muted);margin:0 0 16px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.tab{padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:#111524;color:var(--muted);cursor:pointer}
+.tab.active{background:var(--accent);color:#07111f;border-color:transparent;font-weight:700}
+label{font-size:.9rem;color:var(--muted)}
+input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:#0c0f17;color:var(--text)}
+textarea{min-height:84px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.row{margin-bottom:12px}.actions{display:flex;gap:10px;flex-wrap:wrap}
+button{padding:12px 14px;border:0;border-radius:12px;cursor:pointer;font-weight:700}
+.btn{background:#1b2233;color:var(--text);border:1px solid var(--border)} .primary{background:var(--accent);color:#051226}
+.danger{background:var(--danger);color:#22070c} .muted{color:var(--muted)} .ok{color:var(--ok);font-weight:700} .error{color:var(--danger)}
+table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px solid var(--border);padding:8px;font-size:.95rem} th{background:#101525;color:var(--muted);text-align:left}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+@media print{body{background:#fff;color:#000}.tabs,.actions,.lead{display:none}.card{border:0}}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;border:1px solid var(--border);background:#101525;color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Camiones BYC <span class="badge">Modo Oscuro</span></h1>
-  <p class="lead">Viajes con Origen/Destino por Finca→Lote, gestión de Choferes, Fincas/Lotes y Camiones, borradores editables y sincronización con Google Sheets.</p>
+  <h1>Camiones BYC <span class="badge">Antipega</span></h1>
+  <p class="lead">Finca→Lote dependiente, borradores con antidoble-click, admin seguro y reparador de caché.</p>
 
   <div class="tabs">
     <button class="tab active" data-tab="viaje">Registrar viaje</button>
-    <button class="tab" data-tab="borradores">Borradores del día</button>
+    <button class="tab" data-tab="borradores">Borradores</button>
     <button class="tab" data-tab="choferes">Choferes</button>
     <button class="tab" data-tab="fincas">Fincas & Lotes</button>
     <button class="tab" data-tab="camiones">Camiones</button>
@@ -63,19 +51,19 @@
     </div>
     <div class="grid2 row">
       <div><label>Placa (auto)</label><input type="text" id="v_placa" readonly></div>
-      <div><label>Operador (usuario)</label><input type="text" id="v_user" placeholder="Tu nombre" /></div>
+      <div><label>Operador</label><input type="text" id="v_user" placeholder="Tu nombre"></div>
     </div>
 
     <div class="row"><strong>Origen</strong></div>
     <div class="grid2 row">
-      <div><label>Finca (Origen)</label><select id="o_finca"></select></div>
-      <div><label>Lote (Origen)</label><select id="o_lote"></select></div>
+      <div><label>Finca (origen)</label><select id="o_finca"></select></div>
+      <div><label>Lote (origen)</label><select id="o_lote"></select></div>
     </div>
 
     <div class="row"><strong>Destino</strong></div>
     <div class="grid2 row">
-      <div><label>Finca (Destino)</label><select id="d_finca"></select></div>
-      <div><label>Lote (Destino)</label><select id="d_lote"></select></div>
+      <div><label>Finca (destino)</label><select id="d_finca"></select></div>
+      <div><label>Lote (destino)</label><select id="d_lote"></select></div>
     </div>
 
     <div class="grid2 row">
@@ -87,7 +75,7 @@
 
     <div class="actions">
       <button class="primary" id="btnBorrador">Guardar borrador</button>
-      <button class="btn" id="btnEnviar">Enviar directo a Excel</button>
+      <button class="btn" id="btnEnviar" data-label="Enviar directo a Excel">Enviar directo a Excel</button>
       <button class="btn" id="btnLimpiar">Limpiar</button>
       <span id="estadoEnvio" class="muted"></span>
     </div>
@@ -96,9 +84,7 @@
   <!-- Borradores -->
   <section id="borradores" class="card" hidden>
     <div class="actions">
-      <button class="primary" id="btnSyncBorradores">Sincronizar todos a Excel</button>
-      <button class="btn" id="btnExportCSV">Exportar Excel (CSV)</button>
-      <button class="btn" id="btnExportPDF">Exportar PDF</button>
+      <button class="primary" id="btnSyncBorradores">Sincronizar todos</button>
       <span id="estadoBor" class="muted"></span>
     </div>
     <div id="tablaBor" class="row"></div>
@@ -107,33 +93,47 @@
   <!-- Choferes -->
   <section id="choferes" class="card" hidden>
     <div class="row grid2">
-      <div><label>Nuevo chofer</label><input type="text" id="c_nuevo" placeholder="Nombre del chofer"></div>
+      <div><label>Nuevo chofer</label><input type="text" id="c_nuevo"></div>
       <div style="display:flex;align-items:end"><button class="primary" id="c_add">Agregar</button></div>
     </div>
     <div id="c_lista"></div>
   </section>
 
-  <!-- Fincas & Lotes (admin) -->
+  <!-- Fincas & Lotes (admin seguro) -->
   <section id="fincas" class="card" hidden>
-    <div class="row grid2">
-      <div><label>Nueva finca</label><input type="text" id="f_nueva" placeholder="Ej. Buena Vista"></div>
-      <div style="display:flex;align-items:end"><button class="primary" id="f_add">Agregar finca</button></div>
+    <div id="f_lock" class="row">
+      <div class="grid3">
+        <div><label>Estado</label><input id="admin_status" readonly value="Bloqueado — solo lectura"></div>
+        <div><label>Contraseña admin</label><input type="password" id="admin_pass" placeholder="ADMI 12345"></div>
+        <div style="display:flex;align-items:end;gap:8px">
+          <button class="btn" id="btnUnlock">Desbloquear</button>
+          <button class="danger" id="btnLock" hidden>Bloquear</button>
+        </div>
+      </div>
+      <p class="muted">Solo el administrador puede agregar/eliminar fincas y lotes. Los demás en modo lectura.</p>
     </div>
+
+    <div id="f_admin" hidden>
+      <div class="row grid2">
+        <div><label>Nueva finca</label><input type="text" id="f_nueva" placeholder="Ej. Buena Vista"></div>
+        <div style="display:flex;align-items:end"><button class="primary" id="f_add">Agregar finca</button></div>
+      </div>
+      <div class="row grid3">
+        <div><label>Lote (texto)</label><input type="text" id="l_nuevo" placeholder="Ej. Lote 007"></div>
+        <div><label>Asignar a finca</label><select id="l_fincaSel"></select></div>
+        <div style="display:flex;align-items:end"><button class="primary" id="l_add">Agregar lote</button></div>
+      </div>
+    </div>
+
     <div id="f_lista" class="row"></div>
-    <div class="sep"></div>
-    <div class="row grid3">
-      <div><label>Lote (texto)</label><input type="text" id="l_nuevo" placeholder="Ej. Lote 007"></div>
-      <div><label>Asignar a finca</label><select id="l_fincaSel"></select></div>
-      <div style="display:flex;align-items:end"><button class="primary" id="l_add">Agregar lote</button></div>
-    </div>
-    <div id="l_lista"></div>
+    <div id="l_lista" class="row"></div>
   </section>
 
   <!-- Camiones -->
   <section id="camiones" class="card" hidden>
     <div class="row grid2">
-      <div><label>Camión</label><input type="text" id="m_camion" placeholder="Camión 01"></div>
-      <div><label>Placa</label><input type="text" id="m_placa" placeholder="ABC-123"></div>
+      <div><label>Camión</label><input type="text" id="m_camion"></div>
+      <div><label>Placa</label><input type="text" id="m_placa"></div>
     </div>
     <div class="actions"><button class="primary" id="m_add">Agregar camión</button></div>
     <div id="m_lista" class="row"></div>
@@ -152,278 +152,336 @@
   <!-- Usuario -->
   <section id="usuario" class="card" hidden>
     <div class="grid2 row">
-      <div><label>Nombre de usuario/operador</label><input type="text" id="u_nombre" placeholder="Ej. Freddy"></div>
-      <div style="display:flex;align-items:end"><button class="primary" id="u_guardar">Guardar usuario</button></div>
+      <div><label>Usuario/Operador</label><input type="text" id="u_nombre" placeholder="Ej. Freddy"></div>
+      <div style="display:flex;align-items:end;gap:8px">
+        <button class="primary" id="u_guardar">Guardar</button>
+        <button class="btn" id="u_reparar">Reparar caché</button>
+      </div>
     </div>
-    <p class="muted">El usuario se guarda localmente y se carga automáticamente en el formulario.</p>
+    <p class="muted">Si un teléfono se “pegó”, tocá “Reparar caché”.</p>
   </section>
 </div>
 
 <script>
 /* ===== CONFIG ===== */
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyjDY7j7ehoQ7crRAh2tLT_PnRvVT384_YmUmJ5JOmwP8jBH23x45CksGy3plcsM5nLcg/exec";
+const ADMIN_PASS_NORMALIZED = "admi12345";
+
+/* ===== ANTIPEGA GLOBAL: captura errores sin trabar ===== */
+window.onerror = (m, s, l, c, e) => { try{toast(document.getElementById('estadoEnvio')||document.body, "Error: "+m, false)}catch{}; return true; };
+window.onunhandledrejection = (ev) => { try{toast(document.getElementById('estadoEnvio')||document.body, "Error: "+(ev.reason?.message||ev.reason), false)}catch{}; ev.preventDefault?.(); return true; };
 
 /* ===== UTIL ===== */
-const $  = s => document.querySelector(s);
-const $$ = s => document.querySelectorAll(s);
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+function normalizePass(p){return (p||"").replace(/\s+/g,"").toLowerCase()}
+function todayISO(){const d=new Date();d.setHours(0,0,0,0);return d.toISOString().slice(0,10)}
+function toast(el,msg,ok=true){el.textContent=msg;el.className=ok?'ok':'error';setTimeout(()=>{el.textContent='';el.className='muted'},3500)}
+function setBtnLoading(btn,loading,label){if(!btn)return;if(loading){btn.disabled=true;btn.textContent='Enviando…'}else{btn.disabled=false;btn.textContent=label||btn.dataset.label||'Enviar'}}
+
+/* ===== STORE robusto ===== */
 const store = {
-  get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def}},
-  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
+  get(k, def){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def} },
+  set(k, v){ try{localStorage.setItem(k, JSON.stringify(v));return true}catch(e){return false} },
+  del(k){ try{localStorage.removeItem(k)}catch(e){} }
 };
-function toast(el,msg,ok=true){ el.textContent=msg; el.className=ok?'ok':'error'; setTimeout(()=>{el.textContent=''; el.className='muted'},3500); }
-function todayISO(){ const d=new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); }
-function fmtCSV(val){ if(val==null) return ""; const s=String(val).replace(/"/g,'""'); return /[",\n]/.test(s)?`"${s}"`:s; }
-function dlBlob(filename, mime, content){ const blob=new Blob([content],{type:mime}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},500); }
 
-/* ===== DATOS LOCALES ===== */
-let usuario  = store.get("byc_user","");
-let choferes = store.get("byc_choferes",["Freddy","Tatiana","Javier"]);
-let camiones = store.get("byc_camiones",[{"camion":"Camión 01","placa":"ABC-123"}]);
-let pendientes = store.get("byc_pendientes",[]);
-let borradores = store.get("byc_borradores",[]);
+/* ===== DEFAULTS ===== */
+const DEFAULTS = {
+  choferes: ["Freddy","Tatiana","Javier"],
+  camiones: [{camion:"Camión 01", placa:"ABC-123"}],
+  lotesRaw: [
+    {finca:"Buena Vista",lote:"Lote 001"},{finca:"Buena Vista",lote:"Lote 002"},{finca:"Buena Vista",lote:"Lote 003"},
+    {finca:"Buena Vista",lote:"Lote 005"},{finca:"Buena Vista",lote:"Lote 007"},{finca:"Buena Vista",lote:"Lote 008"},
+    {finca:"Buena Vista",lote:"Lote 009"},{finca:"Buena Vista",lote:"Lote 011"},{finca:"Buena Vista",lote:"Lote 014"},
+    {finca:"Buena Vista",lote:"Lote 015"},{finca:"Buena Vista",lote:"Lote 016"},
+    {finca:"Caño Blanco",lote:"Lote 001"},{finca:"Caño Blanco",lote:"Lote 002"},{finca:"Caño Blanco",lote:"Lote 003"},
+    {finca:"Caño Blanco",lote:"Lote 004"},{finca:"Caño Blanco",lote:"Lote 005"},{finca:"Caño Blanco",lote:"Lote 006"},
+    {finca:"Caño Blanco",lote:"Lote 007"},{finca:"Caño Blanco",lote:"Lote 008"},{finca:"Caño Blanco",lote:"Lote 009"},{finca:"Caño Blanco",lote:"Lote 011"},
+    {finca:"Chorcha",lote:"Lote 001"},
+    {finca:"Don Cuyo",lote:"Lote 001"},{finca:"Don Cuyo",lote:"Lote 002"},{finca:"Don Cuyo",lote:"Lote 003"},{finca:"Don Cuyo",lote:"Lote 004"},
+    {finca:"Enrique",lote:"Lote 001"},{finca:"Enrique",lote:"Lote 002"},
+    {finca:"Guayabito",lote:"Lote 001"},{finca:"Guayabito",lote:"Lote 002"},{finca:"Guayabito",lote:"Lote 003"},{finca:"Guayabito",lote:"Lote 004"},
+    {finca:"Guayabito",lote:"Lote 005"},{finca:"Guayabito",lote:"Lote 006"},{finca:"Guayabito",lote:"Lote 011"},{finca:"Guayabito",lote:"Lote 012"},
+    {finca:"Guayabito",lote:"Lote 014"},{finca:"Guayabito",lote:"Lote 015"},{finca:"Guayabito",lote:"Lote 017"},{finca:"Guayabito",lote:"Lote 019"},
+    {finca:"Guayabito",lote:"Lote 021"},{finca:"Guayabito",lote:"Lote 022"},{finca:"Guayabito",lote:"Lote 027"},
+    {finca:"Los Abuelos",lote:"Lote 001"},{finca:"Los Angeles",lote:"Lote 001"},
+    {finca:"Oscar",lote:"Lote 001"},{finca:"Oscar",lote:"Lote 002"},{finca:"Oscar",lote:"Lote 003"},
+    {finca:"Pajarilla",lote:"Lote 001"},
+    {finca:"Pataste",lote:"Lote 001"},{finca:"Pataste",lote:"Lote 002"},{finca:"Pataste",lote:"Lote 003"},{finca:"Pataste",lote:"Lote 004"},
+    {finca:"Pataste",lote:"Lote 006"},{finca:"Pataste",lote:"Lote 007"},{finca:"Pataste",lote:"Lote 008"},
+    {finca:"Progreso",lote:"Lote 001"},{finca:"Progreso",lote:"Lote 002"},{finca:"Progreso",lote:"Lote 003"},{finca:"Progreso",lote:"Lote 004"},{finca:"Progreso",lote:"Lote 005"},
+    {finca:"Rescate",lote:"Lote 001"},{finca:"Rescate",lote:"Lote 004"},{finca:"Rescate",lote:"Lote 005"},{finca:"Rescate",lote:"Lote 006"},
+    {finca:"Rescate",lote:"Lote 007"},{finca:"Rescate",lote:"Lote 008"},{finca:"Rescate",lote:"Lote 013"},
+    {finca:"San Luis",lote:"Lote 001"},{finca:"Tuto",lote:"Lote 001"}
+  ]
+};
 
-/* ===== FINCAS & LOTES (deduplicado) ===== */
-const LOTES_RAW = [
-  // Buena Vista
-  {finca:"Buena Vista", lote:"Lote 001"},
-  {finca:"Buena Vista", lote:"Lote 002"},
-  {finca:"Buena Vista", lote:"Lote 003"},
-  {finca:"Buena Vista", lote:"Lote 005"},
-  {finca:"Buena Vista", lote:"Lote 007"},
-  {finca:"Buena Vista", lote:"Lote 008"},
-  {finca:"Buena Vista", lote:"Lote 009"},
-  {finca:"Buena Vista", lote:"Lote 011"},
-  {finca:"Buena Vista", lote:"Lote 014"},
-  {finca:"Buena Vista", lote:"Lote 015"},
-  {finca:"Buena Vista", lote:"Lote 016"},
-  // Caño Blanco
-  {finca:"Caño Blanco", lote:"Lote 001"},
-  {finca:"Caño Blanco", lote:"Lote 002"},
-  {finca:"Caño Blanco", lote:"Lote 003"},
-  {finca:"Caño Blanco", lote:"Lote 004"},
-  {finca:"Caño Blanco", lote:"Lote 005"},
-  {finca:"Caño Blanco", lote:"Lote 006"},
-  {finca:"Caño Blanco", lote:"Lote 007"},
-  {finca:"Caño Blanco", lote:"Lote 008"},
-  {finca:"Caño Blanco", lote:"Lote 009"},
-  {finca:"Caño Blanco", lote:"Lote 011"},
-  // Chorcha
-  {finca:"Chorcha", lote:"Lote 001"},
-  // Don Cuyo
-  {finca:"Don Cuyo", lote:"Lote 001"},
-  {finca:"Don Cuyo", lote:"Lote 002"},
-  {finca:"Don Cuyo", lote:"Lote 003"},
-  {finca:"Don Cuyo", lote:"Lote 004"},
-  // Enrique
-  {finca:"Enrique", lote:"Lote 001"},
-  {finca:"Enrique", lote:"Lote 002"},
-  // Guayabito
-  {finca:"Guayabito", lote:"Lote 001"},
-  {finca:"Guayabito", lote:"Lote 002"},
-  {finca:"Guayabito", lote:"Lote 003"},
-  {finca:"Guayabito", lote:"Lote 004"},
-  {finca:"Guayabito", lote:"Lote 005"},
-  {finca:"Guayabito", lote:"Lote 006"},
-  {finca:"Guayabito", lote:"Lote 011"},
-  {finca:"Guayabito", lote:"Lote 012"},
-  {finca:"Guayabito", lote:"Lote 014"},
-  {finca:"Guayabito", lote:"Lote 015"},
-  {finca:"Guayabito", lote:"Lote 017"},
-  {finca:"Guayabito", lote:"Lote 019"},
-  {finca:"Guayabito", lote:"Lote 021"},
-  {finca:"Guayabito", lote:"Lote 022"},
-  {finca:"Guayabito", lote:"Lote 027"},
-  // Otros
-  {finca:"Los Abuelos", lote:"Lote 001"},
-  {finca:"Los Angeles", lote:"Lote 001"},
-  {finca:"Oscar", lote:"Lote 001"},
-  {finca:"Oscar", lote:"Lote 002"},
-  {finca:"Oscar", lote:"Lote 003"},
-  {finca:"Pajarilla", lote:"Lote 001"},
-  {finca:"Pataste", lote:"Lote 001"},
-  {finca:"Pataste", lote:"Lote 002"},
-  {finca:"Pataste", lote:"Lote 003"},
-  {finca:"Pataste", lote:"Lote 004"},
-  {finca:"Pataste", lote:"Lote 006"},
-  {finca:"Pataste", lote:"Lote 007"},
-  {finca:"Pataste", lote:"Lote 008"},
-  {finca:"Progreso", lote:"Lote 001"},
-  {finca:"Progreso", lote:"Lote 002"},
-  {finca:"Progreso", lote:"Lote 003"},
-  {finca:"Progreso", lote:"Lote 004"},
-  {finca:"Progreso", lote:"Lote 005"},
-  {finca:"Rescate", lote:"Lote 001"},
-  {finca:"Rescate", lote:"Lote 004"},
-  {finca:"Rescate", lote:"Lote 005"},
-  {finca:"Rescate", lote:"Lote 006"},
-  {finca:"Rescate", lote:"Lote 007"},
-  {finca:"Rescate", lote:"Lote 008"},
-  {finca:"Rescate", lote:"Lote 013"},
-  {finca:"San Luis", lote:"Lote 001"},
-  {finca:"Tuto", lote:"Lote 001"},
-];
-// dedup
-const _map = new Map(LOTES_RAW.map(r => [r.finca + "|" + r.lote, r]));
-let lotes = Array.from(_map.values());
-// fincas únicas
-let fincas = [...new Set(lotes.map(r => r.finca))].sort();
-
-// actualiza una sola vez en teléfonos
-const DATA_VERSION = 3;
-if (store.get("byc_version", 0) < DATA_VERSION) {
-  store.set("byc_fincas", fincas);
-  store.set("byc_lotes", lotes);
-  store.set("byc_version", DATA_VERSION);
-} else {
-  fincas = store.get("byc_fincas", fincas);
-  lotes  = store.get("byc_lotes", lotes);
+/* ===== CARGA SEGURA (repara si hay basura en storage) ===== */
+function dedupLotes(raw){
+  const ok = (raw||[]).filter(r=>r && typeof r.finca==="string" && typeof r.lote==="string");
+  const map=new Map(ok.map(r=>[r.finca+"|"+r.lote, {finca:r.finca.trim(), lote:r.lote.trim()}]));
+  return Array.from(map.values());
 }
+function safeArray(a, def){ return Array.isArray(a)?a:def }
+function safeString(s, def){ return (typeof s==="string")?s:def }
+
+let choferes = safeArray(store.get("byc_choferes", DEFAULTS.choferes), DEFAULTS.choferes);
+let camiones = safeArray(store.get("byc_camiones", DEFAULTS.camiones), DEFAULTS.camiones);
+let borradores = safeArray(store.get("byc_borradores", []), []);
+let pendientes = safeArray(store.get("byc_pendientes", []), []);
+let isAdmin = !!store.get("byc_is_admin", false);
+
+let lotes = dedupLotes(store.get("byc_lotes", DEFAULTS.lotesRaw));
+let fincas = [...new Set(lotes.map(r=>r.finca))].sort();
+
+// Si algo vino roto, lo reescribimos
+store.set("byc_choferes", choferes);
+store.set("byc_camiones", camiones);
+store.set("byc_lotes", lotes);
+store.set("byc_fincas", fincas);
 
 /* ===== TABS ===== */
-$$(".tab").forEach(b=>{
-  b.onclick=()=>{
-    $$(".tab").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-    ["viaje","borradores","choferes","fincas","camiones","sincronizar","usuario"].forEach(id=>$("#"+id).hidden=(id!==b.dataset.tab));
-    if(b.dataset.tab==="borradores") renderBorradores();
-  };
-});
+$$(".tab").forEach(b=>{b.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+["viaje","borradores","choferes","fincas","camiones","sincronizar","usuario"].forEach(id=>$("#"+id).hidden=(id!==b.dataset.tab));
+if(b.dataset.tab==="borradores") renderBorradores();
+if(b.dataset.tab==="fincas") updateAdminUI();};});
 
-/* ===== SELECTS & DEPENDENCIAS ===== */
-function renderChoferes(){ $("#v_chofer").innerHTML=choferes.map(n=>`<option value="${n}">${n}</option>`).join(""); }
-function renderCamiones(){
-  $("#v_camion").innerHTML = camiones.map(c=>`<option value="${c.camion}">${c.camion}</option>`).join("");
-  setTimeout(()=>{fillPlacaFromCamion();},0);
-}
-function fillPlacaFromCamion(){
-  const val = $("#v_camion").value;
-  const found = camiones.find(c=>c.camion===val);
-  $("#v_placa").value = found? found.placa : "";
-}
+/* ===== SELECTS CHOFER/CAMION ===== */
+function renderChoferes(){ const el=$("#v_chofer"); if(!el) return; el.innerHTML=choferes.map(n=>`<option value="${n}">${n}</option>`).join("") }
+function renderCamiones(){ const el=$("#v_camion"); if(!el) return; el.innerHTML=camiones.map(c=>`<option value="${c.camion}">${c.camion}</option>`).join(""); fillPlacaFromCamion(); }
+function fillPlacaFromCamion(){ const v=$("#v_camion")?.value; const f=camiones.find(c=>c.camion===v); const p=$("#v_placa"); if(p) p.value=f?f.placa:"" }
 
-// Finca → Lote dependientes, con Caño Blanco por defecto
-function fillLotes(fincaSel, loteSel, defaultFinca, defaultLote){
-  const sF = document.querySelector(fincaSel);
-  const sL = document.querySelector(loteSel);
-  sF.innerHTML = fincas.map(f => `<option value="${f}">${f}</option>`).join("");
-  const fincaElegida = sF.value || defaultFinca || fincas[0] || "";
-  sF.value = fincaElegida;
-  const arr = lotes.filter(x => x.finca === fincaElegida);
-  sL.innerHTML = arr.map(x => `<option value="${x.lote}">${x.lote}</option>`).join("");
-  sL.value = (defaultLote && arr.some(x=>x.lote===defaultLote)) ? defaultLote : (arr[0]?.lote || "");
+/* ===== FINCA → LOTE ===== */
+function buildFincaSelect(sel, defFinca){
+  const s=$(sel); if(!s) return;
+  s.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("");
+  s.value = defFinca && fincas.includes(defFinca) ? defFinca : (fincas[0]||"");
+}
+function updateLotes(fincaSel,loteSel, defLote){
+  const sF=$(fincaSel), sL=$(loteSel); if(!sF||!sL) return;
+  const arr=lotes.filter(x=>x.finca===sF.value);
+  sL.innerHTML=arr.map(x=>`<option value="${x.lote}">${x.lote}</option>`).join("");
+  sL.value = (defLote && arr.some(x=>x.lote===defLote)) ? defLote : (arr[0]?.lote||"");
 }
 function initOrigenDestino(){
-  fillLotes("#o_finca","#o_lote","Caño Blanco");
-  fillLotes("#d_finca","#d_lote","Caño Blanco");
-  $("#o_finca").addEventListener("change",()=>fillLotes("#o_finca","#o_lote"));
-  $("#d_finca").addEventListener("change",()=>fillLotes("#d_finca","#d_lote"));
+  buildFincaSelect("#o_finca","Caño Blanco");
+  buildFincaSelect("#d_finca","Caño Blanco");
+  updateLotes("#o_finca","#o_lote");
+  updateLotes("#d_finca","#d_lote");
+  $("#o_finca")?.addEventListener("change",()=>updateLotes("#o_finca","#o_lote"));
+  $("#d_finca")?.addEventListener("change",()=>updateLotes("#d_finca","#d_lote"));
 }
 
-/* ===== ADMIN LISTS ===== */
-function renderAdminChoferes(){
-  $("#c_lista").innerHTML = choferes.map((n,i)=>`
-    <div class="row grid2"><input value="${n}" disabled>
-      <button class="danger" onclick="delChofer(${i})">Eliminar</button></div>`).join("") || '<p class="muted">No hay choferes.</p>';
+/* ===== ADMIN (Fincas & Lotes) ===== */
+function setAdmin(v){ isAdmin=!!v; store.set("byc_is_admin",isAdmin); updateAdminUI(); }
+function updateAdminUI(){
+  const st=$("#admin_status"); if(st) st.value = isAdmin ? "Desbloqueado — administrador" : "Bloqueado — solo lectura";
+  const lockBtn=$("#btnLock"), adminBox=$("#f_admin");
+  if(lockBtn) lockBtn.hidden = !isAdmin;
+  if(adminBox) adminBox.hidden = !isAdmin;
+  renderAdminFincasLotes();
 }
-function delChofer(i){ choferes.splice(i,1); store.set("byc_choferes",choferes); renderChoferes(); renderAdminChoferes(); }
+$("#btnUnlock")?.addEventListener("click",()=>{
+  const ok = normalizePass($("#admin_pass")?.value) === ADMIN_PASS_NORMALIZED;
+  if(!ok){ alert("Contraseña incorrecta."); return; }
+  $("#admin_pass").value=""; setAdmin(true);
+});
+$("#btnLock")?.addEventListener("click",()=> setAdmin(false));
 
 function renderAdminFincasLotes(){
-  $("#f_lista").innerHTML = fincas.map((f,i)=>`
-    <div class="row grid2"><input value="${f}" disabled>
-      <button class="danger" onclick="delFinca(${i})">Eliminar</button></div>`).join("") || '<p class="muted">No hay fincas.</p>';
-  $("#l_fincaSel").innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("");
-
-  let html=""; fincas.forEach(f=>{
-    html+=`<h4 style="margin:10px 0 6px">${f}</h4>`;
-    const arr=lotes.filter(x=>x.finca===f);
-    if(!arr.length){ html+=`<p class="muted">Sin lotes</p>`; return; }
-    html+=`<div class="grid3">`+arr.map(x=>{
-      const i=lotes.indexOf(x);
-      return `<div class="row"><input value="${x.lote}" disabled>
-              <button class="danger" onclick="delLote(${i})">Eliminar</button></div>`;
-    }).join("")+`</div>`;
-  });
-  $("#l_lista").innerHTML=html;
+  const sel=$("#l_fincaSel"); if(sel && isAdmin){ sel.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join(""); }
+  const fList=$("#f_lista");
+  if(fList){
+    fList.innerHTML = fincas.map((f,i)=>`
+      <div class="row grid2">
+        <input value="${f}" disabled>
+        ${isAdmin ? `<button class="danger" onclick="delFinca(${i})">Eliminar</button>` : ``}
+      </div>`).join("") || '<p class="muted">Sin fincas.</p>';
+  }
+  const lList=$("#l_lista");
+  if(lList){
+    let html="";
+    fincas.forEach(f=>{
+      html+=`<h4 style="margin:10px 0 6px">${f}</h4>`;
+      const arr=lotes.filter(x=>x.finca===f);
+      if(!arr.length){ html+='<p class="muted">Sin lotes</p>'; return; }
+      html+='<div class="grid3">'+arr.map((x,idx)=>{
+        // índice estable: buscar por clave compuesta
+        const key=x.finca+"|"+x.lote;
+        return `<div class="row">
+          <input value="${x.lote}" disabled>
+          ${isAdmin ? `<button class="danger" onclick="delLote('${key}')">Eliminar</button>` : ``}
+        </div>`;
+      }).join("")+'</div>';
+    });
+    lList.innerHTML=html;
+  }
 }
-function delFinca(i){
-  const nombre=fincas[i]; fincas.splice(i,1); lotes=lotes.filter(x=>x.finca!==nombre);
-  store.set("byc_fincas",fincas); store.set("byc_lotes",lotes);
-  initOrigenDestino(); renderAdminFincasLotes();
-}
-function delLote(i){ lotes.splice(i,1); store.set("byc_lotes",lotes); initOrigenDestino(); renderAdminFincasLotes(); }
+// eliminar por clave (evita problemas con indexOf)
+window.delLote = (key)=>{
+  if(!isAdmin) return alert("Solo administrador.");
+  lotes = lotes.filter(x => (x.finca+"|"+x.lote)!==key);
+  fincas = [...new Set(lotes.map(r=>r.finca))].sort();
+  store.set("byc_lotes",lotes); store.set("byc_fincas",fincas);
+  updateAdminUI(); initOrigenDestino();
+};
+window.delFinca = (i)=>{
+  if(!isAdmin) return alert("Solo administrador.");
+  const nombre = fincas[i];
+  lotes = lotes.filter(x=>x.finca!==nombre);
+  fincas.splice(i,1);
+  store.set("byc_lotes",lotes); store.set("byc_fincas",fincas);
+  updateAdminUI(); initOrigenDestino();
+};
+$("#f_add")?.addEventListener("click",()=>{
+  if(!isAdmin) return alert("Solo administrador.");
+  const v=$("#f_nueva")?.value.trim(); if(!v) return;
+  if(!fincas.includes(v)) fincas.push(v);
+  fincas.sort();
+  store.set("byc_fincas",fincas);
+  $("#f_nueva").value=""; updateAdminUI(); initOrigenDestino();
+});
+$("#l_add")?.addEventListener("click",()=>{
+  if(!isAdmin) return alert("Solo administrador.");
+  const lote=$("#l_nuevo")?.value.trim(); const finca=$("#l_fincaSel")?.value;
+  if(!lote||!finca) return;
+  lotes.push({finca,lote});
+  lotes = dedupLotes(lotes);
+  fincas = [...new Set(lotes.map(r=>r.finca))].sort();
+  store.set("byc_lotes",lotes); store.set("byc_fincas",fincas);
+  $("#l_nuevo").value=""; updateAdminUI(); initOrigenDestino();
+});
 
-// Camiones admin
+/* ===== Camiones ===== */
+$("#m_add")?.addEventListener("click",()=>{
+  const c=$("#m_camion")?.value.trim(); const p=$("#m_placa")?.value.trim();
+  if(!c||!p) return;
+  camiones.push({camion:c,placa:p});
+  store.set("byc_camiones",camiones);
+  $("#m_camion").value=""; $("#m_placa").value="";
+  renderAdminCamiones(); renderCamiones();
+});
 function renderAdminCamiones(){
-  $("#m_lista").innerHTML = camiones.map((c,i)=>`
-   <div class="row grid3">
-     <input value="${c.camion}" disabled>
-     <input value="${c.placa}" disabled>
-     <button class="danger" onclick="delCamion(${i})">Eliminar</button>
-   </div>`).join("") || '<p class="muted">No hay camiones.</p>';
-  renderCamiones();
+  const el=$("#m_lista"); if(!el) return;
+  el.innerHTML = camiones.map((c,i)=>`
+    <div class="row grid3">
+      <input value="${c.camion}" disabled><input value="${c.placa}" disabled>
+      <button class="danger" onclick="delCamion(${i})">Eliminar</button>
+    </div>`).join("") || '<p class="muted">Sin camiones.</p>';
 }
-function delCamion(i){ camiones.splice(i,1); store.set("byc_camiones",camiones); renderAdminCamiones(); }
+window.delCamion = (i)=>{ camiones.splice(i,1); store.set("byc_camiones",camiones); renderAdminCamiones(); renderCamiones(); };
 
-/* ===== ADD HANDLERS ===== */
-$("#c_add").onclick=()=>{ const v=$("#c_nuevo").value.trim(); if(!v) return; if(!choferes.includes(v)) choferes.push(v); store.set("byc_choferes",choferes); $("#c_nuevo").value=""; renderChoferes(); renderAdminChoferes(); };
-$("#f_add").onclick=()=>{ const v=$("#f_nueva").value.trim(); if(!v) return; if(!fincas.includes(v)) fincas.push(v); store.set("byc_fincas",fincas); $("#f_nueva").value=""; renderAdminFincasLotes(); initOrigenDestino(); };
-$("#l_add").onclick=()=>{ const lote=$("#l_nuevo").value.trim(); const finca=$("#l_fincaSel").value; if(!lote||!finca) return; lotes.push({finca,lote}); store.set("byc_lotes",lotes); $("#l_nuevo").value=""; renderAdminFincasLotes(); initOrigenDestino(); };
-$("#m_add").onclick=()=>{ const c=$("#m_camion").value.trim(); const p=$("#m_placa").value.trim(); if(!c||!p) return; camiones.push({camion:c,placa:p}); store.set("byc_camiones",camiones); $("#m_camion").value=""; $("#m_placa").value=""; renderAdminCamiones(); };
-
-$("#v_camion").addEventListener("change", fillPlacaFromCamion);
-
-/* ===== INICIALIZACIÓN ===== */
-renderChoferes(); renderAdminChoferes();
-renderAdminCamiones();
-renderAdminFincasLotes();
+/* ===== INICIALIZA ===== */
+renderChoferes(); renderCamiones(); renderAdminCamiones();
+if($("#u_nombre")){ const u=store.get("byc_user",""); if(u){ $("#u_nombre").value=u; $("#v_user").value=u; } }
+const ffecha=$("#v_fecha"); if(ffecha && !ffecha.value) ffecha.value=todayISO();
 initOrigenDestino();
-if(usuario){ $("#u_nombre").value = usuario; $("#v_user").value = usuario; }
-const f = document.getElementById('v_fecha'); if(f && !f.value) f.value = todayISO();
+updateAdminUI();
 
 /* ===== FORMULARIO ===== */
 function leerViaje(){
-  const oText = ($("#o_finca").value || "") + ( $("#o_lote").value ? (" / "+$("#o_lote").value) : "" );
-  const dText = ($("#d_finca").value || "") + ( $("#d_lote").value ? (" / "+$("#d_lote").value) : "" );
-  return {
-    fecha:$("#v_fecha").value || todayISO(),
-    camion:$("#v_camion").value, placa:$("#v_placa").value,
-    chofer:$("#v_chofer").value, operador:$("#v_user").value || usuario,
-    origen:oText, destino:dText,
-    origen_finca:$("#o_finca").value, origen_lote:$("#o_lote").value,
-    destino_finca:$("#d_finca").value, destino_lote:$("#d_lote").value,
-    salida:$("#v_salida").value, llegada:$("#v_llegada").value,
-    observaciones:$("#v_obs").value,
-    _ts: Date.now()
-  };
+  const oText=($("#o_finca")?.value||"") + ($("#o_lote")?.value?(" / "+$("#o_lote").value):"");
+  const dText=($("#d_finca")?.value||"") + ($("#d_lote")?.value?(" / "+$("#d_lote").value):"");
+  return {fecha:$("#v_fecha")?.value||todayISO(),camion:$("#v_camion")?.value,placa:$("#v_placa")?.value,
+    chofer:$("#v_chofer")?.value,operador:$("#v_user")?.value||store.get("byc_user",""),
+    origen:oText,destino:dText, origen_finca:$("#o_finca")?.value, origen_lote:$("#o_lote")?.value,
+    destino_finca:$("#d_finca")?.value, destino_lote:$("#d_lote")?.value,
+    salida:$("#v_salida")?.value, llegada:$("#v_llegada")?.value, observaciones:$("#v_obs")?.value, _ts:Date.now()}
 }
-$("#btnLimpiar").onclick=()=>{ $$("#viaje input, #viaje textarea").forEach(e=>{ if(e.id!=="v_user") e.value=""; }); if(usuario) $("#v_user").value=usuario; };
+$("#btnLimpiar")?.addEventListener("click",()=>{$$("#viaje input,#viaje textarea").forEach(e=>{if(e.id!=="v_user") e.value=""}); const u=store.get("byc_user",""); if(u) $("#v_user").value=u});
 
 /* ===== BORRADORES ===== */
-let editIndex = -1;
-$("#btnBorrador").onclick = ()=>{ const r=leerViaje(); if(editIndex>=0){ borradores[editIndex]=r; editIndex=-1; } else { borradores.push(r); } store.set("byc_borradores",borradores); toast($("#estadoEnvio"), "Borrador guardado ✅"); renderBorradores(); };
-
+let editIndex=-1;
 function renderBorradores(){
-  const cont=$("#tablaBor");
-  if(!borradores.length){ cont.innerHTML="<p class='muted'>No hay borradores hoy.</p>"; return; }
-  let html="<table id='tablaBorradores'><thead><tr>";
+  const cont=$("#tablaBor"); if(!cont) return;
+  if(!Array.isArray(borradores)||!borradores.length){cont.innerHTML="<p class='muted'>No hay borradores.</p>"; return}
   const cols=["fecha","camion","placa","chofer","origen","destino","salida","llegada","observaciones"];
-  cols.forEach(c=>html+=`<th>${c.toUpperCase()}</th>`); html+="<th>Acciones</th></tr></thead><tbody>";
-  borradores.forEach((r,i)=>{ html+="<tr>"+cols.map(c=>`<td contenteditable='true' data-col='${c}' oninput='updateCell(${i},this)'>${(r[c]??"")}</td>`).join("")+`<td><button class="btn" onclick="editarBor(${i})">Cargar</button><button class="danger" onclick="eliminarBor(${i})">Eliminar</button><button class="primary" onclick="enviarUno(${i})">Enviar</button></td></tr>`; });
-  html+="</tbody></table>"; cont.innerHTML=html;
+  let html="<table><thead><tr>"+cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";
+  borradores.forEach((r,i)=>{html+="<tr>"+cols.map(c=>`<td>${(r&&r[c])??""}</td>`).join("")+
+    `<td><button class="btn" onclick="editarBor(${i})">Cargar</button>
+         <button class="danger" onclick="eliminarBor(${i})">Eliminar</button>
+         <button class="primary" id="btnEnviarBor-${i}" onclick="enviarUno(${i})" data-label="Enviar">Enviar</button></td></tr>`});
+  html+="</tbody></table>"; cont.innerHTML=html
 }
-window.updateCell=(i,td)=>{ const col=td.getAttribute('data-col'); borradores[i][col]=td.textContent; store.set("byc_borradores",borradores); };
-window.editarBor=(i)=>{ const r=borradores[i]; editIndex=i;
-  $("#v_fecha").value=r.fecha; $("#v_camion").value=r.camion; fillPlacaFromCamion();
-  $("#v_placa").value=r.placa; $("#v_chofer").value=r.chofer; $("#v_user").value=r.operador||usuario||"";
-  $("#o_finca").value=r.origen_finca||""; $("#d_finca").value=r.destino_finca||""; initOrigenDestino(); // repinta opciones
-  $("#o_finca").value=r.origen_finca||$("#o_finca").value; fillLotes("#o_finca","#o_lote");
-  $("#d_finca").value=r.destino_finca||$("#d_finca").value; fillLotes("#d_finca","#d_lote");
-  $("#o_lote").value=r.origen_lote||$("#o_lote").value; $("#d_lote").value=r.destino_lote||$("#d_lote").value;
-  $("#v_salida").value=r.salida; $("#v_llegada").value=r.llegada; $("#v_obs").value=r.observaciones||"";
-  document.querySelector('.tab[data-tab="viaje"]').click();
-};
-window.eliminarBor=(i)=>{ borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores(); };
-window.enviarUno=async(i)=>{ const r=borradores[i]; const ok=await enviarRegistro(r,false); if(ok){ borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores(); toast($("#estadoBor"),"Borrador enviado ✅"); } else { toast($("#estadoBor"),"Sin internet. Quedó en pendientes.",false); } };
+window.editarBor=i=>{const r=borradores[i]||{}; editIndex=i;
+  $("#v_fecha").value=r.fecha||todayISO(); $("#v_camion").value=r.camion||$("#v_camion").value; fillPlacaFromCamion();
+  $("#v_placa").value=r.placa||""; $("#v_chofer").value=r.chofer||$("#v_chofer").value; $("#v_user").value=r.operador||store.get("byc_user","")||"";
+  $("#o_finca").value=r.origen_finca||$("#o_finca").value; updateLotes("#o_finca","#o_lote",r.origen_lote);
+  $("#d_finca").value=r.destino_finca||$("#d_finca").value; updateLotes("#d_finca","#d_lote",r.destino_lote);
+  $("#v_salida").value=r.salida||""; $("#v_llegada").value=r.llegada||""; $("#v_obs").value=r.observaciones||""; document.querySelector('.tab[data-tab="viaje"]').click()}
+window.eliminarBor=i=>{borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores()}
 
-$("#btnSyncBorradores").onclick=async()=>{ const est=$("#estadoBor"); if(!borradores.length) return toast(est,"No hay borradores");
-  let ok=0,fail=0,rest=[]; for(const r of borradores){ const ex=await enviarRegistro(r,false); if(ex) ok++; else {fail++; rest
+/* Antidoble-click por fila y para “Sincronizar todos” */
+const sendingRow=new Set(); let sendingAll=false;
+window.enviarUno=async i=>{
+  if(sendingRow.has(i)) return;
+  sendingRow.add(i);
+  const btn=document.getElementById(`btnEnviarBor-${i}`); if(btn){btn.disabled=true;btn.textContent='Enviando…'}
+  const r=borradores[i]; const ok=await enviarRegistro(r,false);
+  if(ok){borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores(); toast($("#estadoBor"),"Borrador enviado ✅")}
+  else {toast($("#estadoBor"),"Sin internet. Quedó en pendientes.",false); if(btn){btn.disabled=false;btn.textContent='Enviar'}}
+  sendingRow.delete(i);
+};
+$("#btnBorrador")?.addEventListener("click",()=>{
+  const r=leerViaje();
+  if(editIndex>=0){borradores[editIndex]=r; editIndex=-1}else borradores.push(r);
+  const ok=store.set("byc_borradores",borradores);
+  toast($("#estadoEnvio"), ok ? "Borrador guardado ✅" : "Guardado temporal (abrí fuera de WhatsApp)", ok);
+  renderBorradores();
+});
+$("#btnSyncBorradores")?.addEventListener("click", async()=>{
+  if(sendingAll) return;
+  const b=$("#btnSyncBorradores"); sendingAll=true; b.disabled=true; b.textContent="Enviando…";
+  const est=$("#estadoBor"); if(!borradores.length){toast(est,"No hay borradores"); b.disabled=false; b.textContent="Sincronizar todos"; sendingAll=false; return}
+  let ok=0,fail=0,rest=[];
+  for(const r of borradores){const ex=await enviarRegistro(r,false); if(ex) ok++; else {fail++; rest.push(r)}}
+  borradores=rest; store.set("byc_borradores",borradores); renderBorradores();
+  toast(est,`OK ${ok} / Error ${fail}`, fail===0);
+  b.disabled=false; b.textContent="Sincronizar todos"; sendingAll=false;
+});
+
+/* ===== ENVÍO (antidoble-click) ===== */
+async function enviarRegistro(reg,showMsg=true){
+  try{
+    const body=new URLSearchParams({payload:JSON.stringify([reg])});
+    const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
+    const txt=await res.text(); let j; try{j=JSON.parse(txt)}catch{j={ok:res.ok,raw:txt}}
+    if(!j.ok) throw new Error(j.error||JSON.stringify(j));
+    if(showMsg) toast($("#estadoEnvio"),"Enviado ✅"); return true
+  }catch(e){ if(showMsg) toast($("#estadoEnvio"),"Sin internet. Guardado en pendientes.",false); pendientes.push(reg); store.set("byc_pendientes",pendientes); return false }
+}
+let sending=false;
+$("#btnEnviar")?.addEventListener("click", async ()=>{
+  if(sending) return; sending=true; setBtnLoading($("#btnEnviar"),true);
+  const reg=leerViaje(); await enviarRegistro(reg,true);
+  setTimeout(()=>{sending=false; setBtnLoading($("#btnEnviar"),false,$("#btnEnviar").dataset.label)},500);
+});
+
+/* ===== PENDIENTES / SINCRONIZAR ===== */
+$("#btnEnviarPendientes")?.addEventListener("click", async ()=>{
+  const est=$("#estadoSync"); if(!pendientes.length) return toast(est,"No hay pendientes");
+  let ok=0,fail=0,nuevos=[]; for(const r of pendientes){const ex=await enviarRegistro(r,false); if(ex) ok++; else {fail++; nuevos.push(r)}}
+  pendientes=nuevos; store.set("byc_pendientes",pendientes); toast(est,`Pendientes: OK ${ok} / Error ${fail}`, fail===0)
+});
+$("#btnSync")?.addEventListener("click", async ()=>{
+  const est=$("#estadoSync"), tabla=$("#tabla"); if(est) est.textContent="Leyendo…";
+  try{
+    const res=await fetch(GAS_URL+"?action=getData"); const j=await res.json(); if(!j.ok) throw new Error(j.error||"Error");
+    if(est) est.textContent=`Registros: ${j.data.length}`; const headers=(j.headers&&j.headers.length)?j.headers:Object.keys(j.data[0]||{});
+    let html="<table><thead><tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbody>";
+    j.data.forEach(r=>{html+="<tr>"+headers.map(h=>`<td>${r[h]??""}</td>`).join("")+"</tr>"}); html+="</tbody></table>"; if(tabla) tabla.innerHTML=html
+  }catch(e){ if(est) toast(est,String(e),false) }
+});
+
+/* ===== USUARIO ===== */
+$("#u_guardar")?.addEventListener("click",()=>{const u=$("#u_nombre")?.value.trim(); if(!u) return; store.set("byc_user",u); const v=$("#v_user"); if(v) v.value=u; alert("Usuario guardado.")});
+
+/* ===== REPARAR CACHÉ ===== */
+$("#u_reparar")?.addEventListener("click",()=>{
+  // limpia solo claves de la app
+  ["byc_user","byc_choferes","byc_camiones","byc_lotes","byc_fincas","byc_borradores","byc_pendientes","byc_is_admin"].forEach(store.del);
+  alert("Listo. Caché reparada. Cerrá y abrí el link otra vez.");
+});
+</script>
+</body>
+</html>
