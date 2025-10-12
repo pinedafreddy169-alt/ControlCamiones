@@ -1,261 +1,141 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <title>Control de Camiones — BYC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root { --bg:#0f1115; --card:#171a21; --txt:#e7ecf2; --muted:#9aa4b2; --pri:#ef4444; --pri2:#b91c1c; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:var(--txt); }
-    header { padding:16px 20px; border-bottom:1px solid #222833; display:flex; align-items:center; gap:12px; }
-    header h1 { font-size:20px; margin:0; color:#ff6b6b; }
-    nav { display:flex; gap:8px; padding:10px 20px; border-bottom:1px solid #222833; flex-wrap:wrap; }
-    .tab { padding:8px 12px; border-radius:10px; background:#1d232f; color:var(--muted); cursor:pointer; border:1px solid #242b38; }
-    .tab.active { color:#fff; background:#2a3242; border-color:#2f394d; }
-    main { padding:16px 20px; max-width:1000px; margin:0 auto; }
-    .card { background:var(--card); border:1px solid #222833; border-radius:16px; padding:16px; }
-    label { display:block; margin:10px 0 6px; font-weight:600; color:#cfd6df; }
-    input, select, textarea { width:100%; background:#12161d; color:#e7ecf2; border:1px solid #2a3242; border-radius:10px; padding:10px 12px; font-size:16px; }
-    textarea { min-height:90px; resize:vertical; }
-    .grid { display:grid; gap:12px; }
-    @media (min-width:720px){ .grid.cols-2 { grid-template-columns:1fr 1fr; } .grid.cols-3 { grid-template-columns: repeat(3,1fr);} }
-    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
-    button { border:0; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer; }
-    .btn { background:#293246; color:#e7ecf2; }
-    .btn-primary { background:var(--pri); color:#fff; }
-    .btn-primary:active { background:var(--pri2); }
-    .muted { color:var(--muted); }
-    .list { margin-top:12px; }
-    .row { padding:10px; border:1px solid #222833; border-radius:12px; background:#12161d; margin-bottom:8px; font-size:14px; }
-    .right { text-align:right; }
-  </style>
+<meta charset="utf-8">
+<title>Control Camiones — MIN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--txt:#e7ecf2;--muted:#9aa4b2;--pri:#ef4444;}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:18px}
+  h1{margin:0 0 12px;color:#ff6b6b}
+  label{display:block;margin:10px 0 6px;font-weight:600;color:#cfd6df}
+  input,textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid #2a3242;background:#12161d;color:#e7ecf2}
+  textarea{min-height:80px}
+  .grid{display:grid;gap:10px}
+  @media(min-width:700px){.cols-3{grid-template-columns:repeat(3,1fr)} .cols-2{grid-template-columns:repeat(2,1fr)}}
+  .card{background:var(--card);border:1px solid #222833;border-radius:14px;padding:14px;margin-top:12px}
+  .row{background:#12161d;border:1px solid #222833;border-radius:10px;padding:8px;margin:6px 0;font-size:14px}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;background:#293246;color:#e7ecf2}
+  .primary{background:var(--pri);color:#fff}
+  .small{padding:8px 12px}
+  .muted{color:var(--muted)}
+</style>
 </head>
 <body>
-  <header>
-    <span style="font-size:22px">🚛</span>
-    <h1>Control de Camiones — BYC</h1>
-  </header>
+<div class="wrap">
+  <h1>🚛 Control Camiones — Modo mínimo</h1>
 
-  <nav>
-    <div class="tab active" data-tab="registro">Registro</div>
-    <div class="tab" data-tab="registros">Registros</div>
-    <div class="tab" data-tab="catalogos">Choferes & Camiones</div>
-    <div class="muted" id="localCount" style="margin-left:auto">Registros locales: 0</div>
-  </nav>
+  <div class="card">
+    <div class="grid cols-3">
+      <div><label>Fecha</label><input type="date" id="fecha"></div>
+      <div><label>Camión</label><input id="camion" placeholder="Camión 01"></div>
+      <div><label>Placa</label><input id="placa" placeholder="ABC-123"></div>
+    </div>
+    <div class="grid cols-3">
+      <div><label>Chofer</label><input id="chofer" placeholder="Nombre"></div>
+      <div><label>Origen</label><input id="origen" placeholder="Finca/Lote"></div>
+      <div><label>Destino</label><input id="destino" placeholder="Finca/Lote"></div>
+    </div>
+    <div class="grid cols-2">
+      <div><label>Salida</label><input type="time" id="salida"></div>
+      <div><label>Llegada</label><input type="time" id="llegada"></div>
+    </div>
+    <label>Observaciones</label><textarea id="obs"></textarea>
 
-  <main>
-    <!-- TAB REGISTRO -->
-    <section id="tab-registro" class="card">
-      <div class="grid cols-3">
-        <div>
-          <label>Fecha</label>
-          <input type="date" id="fecha"/>
-        </div>
-        <div>
-          <label>Camión</label>
-          <select id="camion"></select>
-        </div>
-        <div>
-          <label>Placa</label>
-          <input type="text" id="placa" placeholder="ABC-123"/>
-        </div>
-      </div>
+    <div class="actions">
+      <button id="btnGuardar">💾 Guardar local</button>
+      <button id="btnPing" class="small">🧪 Probar conexión</button>
+      <button id="btnSync" class="primary">🔄 Sincronizar</button>
+      <div style="margin-left:auto" class="muted" id="count">Registros locales: 0</div>
+    </div>
+  </div>
 
-      <div class="grid cols-3">
-        <div>
-          <label>Chofer</label>
-          <select id="chofer"></select>
-        </div>
-        <div>
-          <label>Origen — Finca/Lote</label>
-          <input type="text" id="origen" placeholder="Finca/Lote"/>
-        </div>
-        <div>
-          <label>Destino — Finca/Lote</label>
-          <input type="text" id="destino" placeholder="Finca/Lote"/>
-        </div>
-      </div>
+  <div class="card">
+    <div class="actions">
+      <button id="btnBorrar" class="small">Borrar locales</button>
+      <button id="btnExport" class="small">Exportar JSON</button>
+    </div>
+    <div id="lista" class="muted">Sin registros…</div>
+  </div>
+</div>
 
-      <div class="grid cols-2">
-        <div>
-          <label>Salida</label>
-          <input type="time" id="salida"/>
-        </div>
-        <div>
-          <label>Llegada</label>
-          <input type="time" id="llegada"/>
-        </div>
-      </div>
+<script>
+/*** CONFIG FIJA (sin panel de config) ***/
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbx-N1v3hc4Gumo3ZH_vBQ_mm_03i8n-llBJ31urziJgLV6-Qc8kBEy5m5AjOsccBTRGtw/exec";
+const KEY = "camiones_registros";
 
-      <div>
-        <label>Observaciones</label>
-        <textarea id="observaciones" placeholder="Notas u observaciones..."></textarea>
-      </div>
+/*** helpers local ***/
+const $ = sel => document.querySelector(sel);
+const read = () => JSON.parse(localStorage.getItem(KEY) || "[]");
+const write = a => localStorage.setItem(KEY, JSON.stringify(a));
+const clearLocal = () => localStorage.removeItem(KEY);
 
-      <div class="actions">
-        <button class="btn" type="button" id="btnGuardar">Guardar</button>
-        <button class="btn" type="button" id="btnPDF">Descargar PDF</button>
-        <button class="btn-primary" type="button" id="btnSync">Sincronizar</button>
-        <div class="muted right" style="flex:1 1 auto"></div>
-      </div>
-    </section>
+function count() { $("#count").textContent = "Registros locales: " + read().length; }
+function render() {
+  const arr = read();
+  $("#lista").innerHTML = arr.length ? arr.map((r,i)=>
+    `<div class="row">(${i+1}) ${r.fecha||""} — ${r.camion||""} — ${r.chofer||""} — ${r.origen||""} → ${r.destino||""}</div>`
+  ).join("") : "Sin registros…";
+}
 
-    <!-- TAB REGISTROS -->
-    <section id="tab-registros" class="card" style="display:none">
-      <div class="actions">
-        <button class="btn" type="button" id="btnBorrarLocal">Borrar locales</button>
-        <button class="btn" type="button" id="btnExportJSON">Exportar JSON</button>
-      </div>
-      <div class="list" id="listaRegistros"></div>
-    </section>
+/*** UI ***/
+function getForm() {
+  return {
+    fecha: $("#fecha").value,
+    camion: $("#camion").value,
+    placa: $("#placa").value,
+    chofer: $("#chofer").value,
+    origen: $("#origen").value,
+    destino: $("#destino").value,
+    salida: $("#salida").value,
+    llegada: $("#llegada").value,
+    observaciones: $("#obs").value
+  };
+}
 
-    <!-- TAB CATALOGOS -->
-    <section id="tab-catalogos" class="card" style="display:none">
-      <div class="grid cols-2">
-        <div>
-          <label>Camiones (uno por línea)</label>
-          <textarea id="catCamiones">Camión 01
-Camión 02
-Camión 03</textarea>
-        </div>
-        <div>
-          <label>Choferes (uno por línea)</label>
-          <textarea id="catChoferes">Braulio
-Víctor
-Roberto</textarea>
-        </div>
-      </div>
-      <div class="actions">
-        <button class="btn" type="button" id="btnAplicarCatalogos">Aplicar catálogos</button>
-      </div>
-    </section>
-  </main>
+$("#btnGuardar").addEventListener("click", ()=>{
+  const r = getForm();
+  if (!r.fecha || !r.camion || !r.chofer) { alert("⚠️ Fecha, Camión y Chofer son obligatorios"); return; }
+  const arr = read(); arr.push(r); write(arr); count(); render();
+  alert("✅ Guardado local.");
+});
 
-  <!-- jsPDF para PDF simple -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+$("#btnPing").addEventListener("click", async ()=>{
+  try {
+    const resp = await fetch(ENDPOINT + "?ping=1", { method:"GET" });
+    const txt = await resp.text();
+    alert("PING: HTTP " + resp.status + " — " + txt.slice(0,60));
+  } catch(e) { alert("PING fallo: " + (e.message||e)); }
+});
 
-  <script>
-  /********** CONFIG **********/
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-N1v3hc4Gumo3ZH_vBQ_mm_03i8n-llBJ31urziJgLV6-Qc8kBEy5m5AjOsccBTRGtw/exec";
-  const STORAGE_KEY = "camiones_registros"; // ¡que sea el mismo en todo el proyecto!
+$("#btnSync").addEventListener("click", async ()=>{
+  const registros = read();
+  if (!registros.length) { alert("No hay registros."); return; }
+  const params = new URLSearchParams();
+  params.append("payload", JSON.stringify(registros));
+  try {
+    const resp = await fetch(ENDPOINT, { method:"POST", body:params });
+    const ok = resp.ok;
+    let body = ""; try { body = await resp.text(); } catch {}
+    if (ok) { clearLocal(); count(); render(); alert("🚀 Sincronizado. " + (body || "")); }
+    else { alert("❌ HTTP " + resp.status + " " + body); }
+  } catch(e) { alert("⚠️ Falló fetch: " + (e.message||e)); }
+});
 
-  /********** STATE **********/
-  const $ = (sel) => document.querySelector(sel);
+$("#btnBorrar").addEventListener("click", ()=>{
+  if (confirm("¿Borrar locales?")) { clearLocal(); count(); render(); }
+});
 
-  // Navegación de tabs
-  document.querySelectorAll('.tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      const tab = t.dataset.tab;
-      ['registro','registros','catalogos'].forEach(name => {
-        $('#tab-' + name).style.display = (name === tab) ? '' : 'none';
-      });
-    });
-  });
+$("#btnExport").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(read(),null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = "camiones_local.json"; a.click();
+  URL.revokeObjectURL(url);
+});
 
-  // Catálogos -> selects
-  function aplicarCatalogos() {
-    const camiones = $('#catCamiones').value.split(/\n+/).map(s => s.trim()).filter(Boolean);
-    const choferes = $('#catChoferes').value.split(/\n+/).map(s => s.trim()).filter(Boolean);
-    const camionSel = $('#camion'); const choferSel = $('#chofer');
-    camionSel.innerHTML = camiones.map(c => `<option>${c}</option>`).join('');
-    choferSel.innerHTML = choferes.map(c => `<option>${c}</option>`).join('');
-  }
-  $('#btnAplicarCatalogos').addEventListener('click', aplicarCatalogos);
-  aplicarCatalogos();
-
-  // LocalStorage helpers
-  const readLocal = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  const writeLocal = (arr) => localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-  const clearLocal = () => localStorage.removeItem(STORAGE_KEY);
-
-  function refreshLocalCount() {
-    const n = readLocal().length;
-    $('#localCount').textContent = `Registros locales: ${n}`;
-  }
-
-  function renderLista() {
-    const arr = readLocal();
-    const cont = $('#listaRegistros');
-    cont.innerHTML = arr.length ? arr.map((r,i) =>
-      `<div class="row">(${i+1}) ${r.fecha || ''} — ${r.camion || ''} — ${r.chofer || ''} — ${r.origen || ''} → ${r.destino || ''}</div>`
-    ).join('') : '<div class="muted">Sin registros locales…</div>';
-  }
-
-  // Captura del formulario
-  function getFormData() {
-    return {
-      fecha: $('#fecha').value,
-      camion: $('#camion').value,
-      placa: $('#placa').value,
-      chofer: $('#chofer').value,
-      origen: $('#origen').value,
-      destino: $('#destino').value,
-      salida: $('#salida').value,
-      llegada: $('#llegada').value,
-      observaciones: $('#observaciones').value
-    };
-  }
-
-  // Guardar
-  $('#btnGuardar').addEventListener('click', () => {
-    const r = getFormData();
-    if (!r.fecha || !r.camion || !r.chofer) { alert('⚠️ Fecha, Camión y Chofer son obligatorios'); return; }
-    const arr = readLocal(); arr.push(r); writeLocal(arr);
-    refreshLocalCount(); renderLista();
-    alert('✅ Registro guardado localmente');
-  });
-
-  // Exportar PDF simple
-  $('#btnPDF').addEventListener('click', () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const r = getFormData();
-    let y = 12;
-    doc.setFontSize(14); doc.text('Registro de Camión — BYC', 10, y); y += 8;
-    doc.setFontSize(11);
-    Object.entries(r).forEach(([k,v]) => { doc.text(`${k.toUpperCase()}: ${v||''}`, 10, y); y += 7; });
-    doc.save('registro_camion.pdf');
-  });
-
-  // Sincronizar
-  $('#btnSync').addEventListener('click', async () => {
-    const registros = readLocal();
-    if (!registros.length) { alert('No hay registros locales.'); return; }
-
-    const params = new URLSearchParams();
-    params.append('payload', JSON.stringify(registros));
-
-    try {
-      const resp = await fetch(SCRIPT_URL, { method:'POST', body: params });
-      if (resp.ok) {
-        clearLocal(); refreshLocalCount(); renderLista();
-        alert('🚀 Sincronización completada');
-      } else {
-        alert('❌ Falló la sincronización (HTTP ' + resp.status + ')');
-      }
-    } catch (e) {
-      alert('⚠️ Falló la sincronización: ' + (e?.message || e));
-    }
-  });
-
-  // Tab Registros: utilidades
-  $('#btnBorrarLocal')?.addEventListener('click', () => {
-    if (confirm('¿Borrar todos los registros locales?')) {
-      clearLocal(); refreshLocalCount(); renderLista();
-    }
-  });
-  $('#btnExportJSON')?.addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(readLocal(), null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'camiones_local.json'; a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  // Inicial
-  refreshLocalCount(); renderLista();
-  </script>
+count(); render();
+</script>
 </body>
 </html>
