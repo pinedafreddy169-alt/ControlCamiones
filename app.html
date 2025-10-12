@@ -5,74 +5,60 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Control de Camiones – BYC</title>
   <style>
-    :root{--c1:#2b7cff;--bg:#fff;--txt:#111;--muted:#666}
-    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt);max-width:900px;margin:0 auto;padding:20px}
-    h1{font-size:2.2rem;margin:0 0 6px}
-    p.lead{color:var(--muted);margin:0 0 18px}
+    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#fff;max-width:900px;margin:0 auto;padding:20px}
+    h1{font-size:1.8rem;margin-bottom:10px}
+    p.lead{color:#555;margin-bottom:20px}
     form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    label{font-size:.92rem;color:#333}
-    input,select,textarea{width:100%;padding:12px;border:1px solid #d8d8d8;border-radius:12px;font-size:1rem;background:#fff}
-    textarea{grid-column:1/-1;min-height:90px}
+    label{font-size:.9rem;color:#222}
+    input,select,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:1rem}
+    textarea{grid-column:1/-1;min-height:80px}
     .row-2{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .actions{grid-column:1/-1;display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
-    button{padding:12px 16px;border:0;border-radius:12px;cursor:pointer;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-    .primary{background:var(--c1);color:#fff}
+    .actions{grid-column:1/-1;display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+    button{padding:12px 16px;border:0;border-radius:10px;cursor:pointer;font-weight:600}
+    .primary{background:#2b7cff;color:#fff}
     .ghost{background:#f2f2f2}
-    .ok{color:#0a7c2b;font-weight:700}
-    .error{color:#b00020;font-weight:700;white-space:pre-wrap}
-    table{width:100%;border-collapse:collapse;margin-top:14px}
-    th,td{border:1px solid #e5e5e5;padding:8px;font-size:.96rem}
-    th{background:#f7f7f7;text-align:left}
-    .grid-3{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    @media (max-width:720px){form{grid-template-columns:1fr}.row-2,.grid-3{grid-template-columns:1fr}}
+    .ok{color:#0a7c2b;font-weight:600}
+    .error{color:#b00020;font-weight:600;white-space:pre-wrap}
+    table{width:100%;border-collapse:collapse;margin-top:16px}
+    th,td{border:1px solid #ddd;padding:6px;font-size:.9rem}
+    th{background:#f5f5f5}
   </style>
 </head>
 <body>
   <h1>Control de Camiones</h1>
-  <p class="lead">Completa y presioná <b>Enviar a Excel</b>. Luego usá <b>🔄 Sincronizar</b> para ver lo guardado.</p>
+  <p class="lead">Registra viajes y sincroniza con la hoja <b>CHOFERES BYC</b>.</p>
 
-  <!-- URL de tu script (la que dijiste) -->
+  <!-- URL del script de Apps Script -->
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbw-0PS8huGi_7VHS24rd6ywBajLoOAwJVVKUdxLMqOiDctqbn-kxeYhLNb-io2h3BaaiA/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyjDY7j7ehoQ7crRAh2tLT_PnRvVT384_YmUmJ5JOmwP8jBH23x45CksGy3plcsM5nLcg/exec";
   </script>
 
-  <!-- Sugerencias de Fincas/Lotes (editable) -->
+  <!-- Listas de Fincas y Lotes -->
   <script>
-    const FINCAS = [
-      "Buena Vista","Guayabito","Caño Blanco","Don Cuyo","Chorcha","Los Abuelos","Rescate","Pataste","Los Ángeles"
-    ];
-    const LOTES = [
-      "Lote 001","Lote 002","Lote 003","Lote 004","Lote 007","Lote 009","Lote 011","Lote 014","Lote 015","Lote 016","Lote 017","Lote 021","Lote 027"
-    ];
+    const FINCAS = ["Buena Vista","Guayabito","Caño Blanco","Don Cuyo","Chorcha","Los Abuelos","Rescate","Pataste","Los Ángeles"];
+    const LOTES = ["Lote 001","Lote 002","Lote 003","Lote 004","Lote 007","Lote 009","Lote 011","Lote 014","Lote 015","Lote 016","Lote 017","Lote 021","Lote 027"];
   </script>
 
   <form id="frm">
-    <div><label>Fecha</label><input type="date" name="fecha" required /></div>
-    <div><label>Camión</label><input type="text" name="camion" required /></div>
+    <div><label>Fecha</label><input type="date" name="fecha" required></div>
+    <div><label>Camión</label><input type="text" name="camion" required></div>
+    <div><label>Placa</label><input type="text" name="placa"></div>
+    <div><label>Chofer</label><input type="text" name="chofer" required></div>
+    <div><label>Origen</label><input type="text" name="origen"></div>
+    <div><label>Destino</label><input type="text" name="destino"></div>
 
-    <div><label>Placa</label><input type="text" name="placa" /></div>
-    <div><label>Chofer</label><input type="text" name="chofer" required /></div>
-
-    <div><label>Origen</label><input type="text" name="origen" /></div>
-    <div><label>Destino</label><input type="text" name="destino" /></div>
-
-    <div class="grid-3">
-      <div>
-        <label>Finca</label>
-        <input list="dlFincas" name="finca" placeholder="Seleccioná o escribí" />
-        <datalist id="dlFincas"></datalist>
-      </div>
-      <div>
-        <label>Lote</label>
-        <input list="dlLotes" name="lote" placeholder="Seleccioná o escribí" />
-        <datalist id="dlLotes"></datalist>
-      </div>
-      <div></div>
+    <div><label>Finca</label>
+      <input list="dlFincas" name="finca" placeholder="Selecciona o escribe">
+      <datalist id="dlFincas"></datalist>
+    </div>
+    <div><label>Lote</label>
+      <input list="dlLotes" name="lote" placeholder="Selecciona o escribe">
+      <datalist id="dlLotes"></datalist>
     </div>
 
     <div class="row-2">
-      <div><label>Hora salida</label><input type="time" name="salida" /></div>
-      <div><label>Hora llegada</label><input type="time" name="llegada" /></div>
+      <div><label>Hora salida</label><input type="time" name="salida"></div>
+      <div><label>Hora llegada</label><input type="time" name="llegada"></div>
     </div>
 
     <textarea name="observaciones" placeholder="Observaciones"></textarea>
@@ -90,94 +76,56 @@
   <script>
     const $ = s => document.querySelector(s);
     const msg = $("#msg");
-    const wrapTabla = $("#tabla");
+    const tabla = $("#tabla");
 
-    // cargar datalists
-    (function initLists(){
-      $("#dlFincas").innerHTML = FINCAS.map(f=>`<option value="${f}">`).join("");
-      $("#dlLotes").innerHTML  = LOTES.map(l=>`<option value="${l}">`).join("");
-    })();
+    // llenar listas
+    $("#dlFincas").innerHTML = FINCAS.map(f=>`<option value="${f}">`).join("");
+    $("#dlLotes").innerHTML  = LOTES.map(l=>`<option value="${l}">`).join("");
 
-    function leerFormulario() {
+    function leerFormulario(){
       const f = $("#frm");
       return {
-        fecha: f.fecha.value,
-        camion: f.camion.value,
-        placa: f.placa.value,
-        chofer: f.chofer.value,
-        origen: f.origen.value,
-        destino: f.destino.value,
-        salida: f.salida.value,
-        llegada: f.llegada.value,
-        finca: f.finca.value,     // NUEVO
-        lote: f.lote.value,       // NUEVO
-        observaciones: f.observaciones.value
+        fecha:f.fecha.value,camion:f.camion.value,placa:f.placa.value,chofer:f.chofer.value,
+        origen:f.origen.value,destino:f.destino.value,
+        finca:f.finca.value,lote:f.lote.value,
+        salida:f.salida.value,llegada:f.llegada.value,
+        observaciones:f.observaciones.value
       };
     }
 
-    async function enviar() {
-      msg.textContent = "Enviando…";
-      try {
-        const registro = leerFormulario();
-        const body = new URLSearchParams({ payload: JSON.stringify([registro]) });
-
-        const res = await fetch(GAS_URL, {
-          method: "POST",
-          headers: {"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
-          body
-        });
-
-        const text = await res.text();
-        let json;
-        try { json = JSON.parse(text); } catch { json = {ok: res.ok, raw: text}; }
-
-        if (json.ok) {
-          msg.innerHTML = `<span class="ok">✅ Enviado. Filas insertadas: ${json.insertados ?? 1}</span>`;
-          $("#frm").reset();
-        } else {
-          throw new Error(json.error || JSON.stringify(json));
-        }
-      } catch (e) {
-        msg.innerHTML = `<span class="error">❌ Error:\n${String(e)}</span>`;
-      }
+    async function enviar(){
+      msg.textContent="Enviando...";
+      try{
+        const reg = leerFormulario();
+        const body=new URLSearchParams({payload:JSON.stringify([reg])});
+        const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
+        const t=await res.text();let j;
+        try{j=JSON.parse(t);}catch{j={ok:res.ok,raw:t};}
+        if(j.ok){msg.innerHTML=`<span class="ok">✅ Enviado (${j.insertados} fila)</span>`;$("#frm").reset();}
+        else throw new Error(j.error||JSON.stringify(j));
+      }catch(e){msg.innerHTML=`<span class="error">❌ ${e}</span>`;}
     }
 
-    async function sincronizar() {
-      msg.textContent = "Sincronizando...";
-      try {
-        const res = await fetch(GAS_URL + "?action=getData");
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error || "Error al sincronizar");
-        msg.innerHTML = `<span class="ok">✅ Datos sincronizados (${json.data.length})</span>`;
-        mostrarTabla(json.headers, json.data);
-      } catch (e) {
-        msg.innerHTML = `<span class="error">❌ Error:\n${String(e)}</span>`;
-      }
+    async function sincronizar(){
+      msg.textContent="Sincronizando...";
+      try{
+        const res=await fetch(GAS_URL+"?action=getData");const j=await res.json();
+        if(!j.ok) throw new Error(j.error||"Error sync");
+        msg.innerHTML=`<span class="ok">✅ Datos sincronizados (${j.data.length})</span>`;
+        mostrarTabla(j.headers,j.data);
+      }catch(e){msg.innerHTML=`<span class="error">❌ ${e}</span>`;}
     }
 
-    function mostrarTabla(headers, data) {
-      if (!data || !data.length) {
-        wrapTabla.innerHTML = "<p>No hay datos registrados.</p>";
-        return;
-      }
-      const cols = headers && headers.length ? headers : Object.keys(data[0]);
-
-      let html = "<table><thead><tr>";
-      cols.forEach(c => html += `<th>${c}</th>`);
-      html += "</tr></thead><tbody>";
-
-      data.forEach(row => {
-        html += "<tr>";
-        cols.forEach(c => html += `<td>${row[c] ?? ""}</td>`);
-        html += "</tr>";
-      });
-
-      html += "</tbody></table>";
-      wrapTabla.innerHTML = html;
+    function mostrarTabla(headers,data){
+      if(!data.length){tabla.innerHTML="<p>No hay registros.</p>";return;}
+      let html="<table><thead><tr>";
+      headers.forEach(h=>html+=`<th>${h}</th>`);html+="</tr></thead><tbody>";
+      data.forEach(r=>{html+="<tr>";headers.forEach(h=>html+=`<td>${r[h]??""}</td>`);html+="</tr>";});
+      html+="</tbody></table>";tabla.innerHTML=html;
     }
 
-    $("#btnEnviar").addEventListener("click", enviar);
-    $("#btnSync").addEventListener("click", sincronizar);
+    $("#btnEnviar").addEventListener("click",enviar);
+    $("#btnSync").addEventListener("click",sincronizar);
   </script>
 </body>
 </html>
