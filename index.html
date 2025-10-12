@@ -200,8 +200,91 @@ function dlBlob(filename, mime, content){
 /* ===== DATOS LOCALES ===== */
 let usuario   = store.get("byc_user","");
 let choferes  = store.get("byc_choferes",["Freddy","Tatiana","Javier"]);
-let fincas    = store.get("byc_fincas",["Buena Vista","Guayabito","Caño Blanco","Don Cuyo"]);
-let lotes     = store.get("byc_lotes",[{"finca":"Buena Vista","lote":"Lote 001"},{"finca":"Buena Vista","lote":"Lote 007"},{"finca":"Guayabito","lote":"Lote 021"}]);
+
+/* ===== Fincas y Lotes integradas (del CSV) ===== */
+let fincas = store.get("byc_fincas", ["Buena Vista","Caño Blanco","Chorcha","Don Cuyo","Enrique","Guayabito","Los Abuelos","Los Angeles","Oscar","Pajarilla","Pataste","Progreso","Rescate","San Luis","Tuto"]);
+
+let lotes  = store.get("byc_lotes", [
+  {"finca":"Buena Vista","lote":"Lote 007"},
+  {"finca":"Guayabito","lote":"Lote 021"},
+  {"finca":"Guayabito","lote":"Lote 027"},
+  {"finca":"Buena Vista","lote":"Lote 002"},
+  {"finca":"Buena Vista","lote":"Lote 009"},
+  {"finca":"Buena Vista","lote":"Lote 011"},
+  {"finca":"Buena Vista","lote":"Lote 014"},
+  {"finca":"Buena Vista","lote":"Lote 015"},
+  {"finca":"Buena Vista","lote":"Lote 016"},
+  {"finca":"Buena Vista","lote":"Lote 017"},
+  {"finca":"Buena Vista","lote":"Lote 018"},
+  {"finca":"Buena Vista","lote":"Lote 019"},
+  {"finca":"Buena Vista","lote":"Lote 020"},
+  {"finca":"Buena Vista","lote":"Lote 022"},
+  {"finca":"Buena Vista","lote":"Lote 023"},
+  {"finca":"Buena Vista","lote":"Lote 024"},
+  {"finca":"Buena Vista","lote":"Lote 025"},
+  {"finca":"Buena Vista","lote":"Lote 026"},
+  {"finca":"Buena Vista","lote":"Lote 027"},
+  {"finca":"Buena Vista","lote":"Lote 028"},
+  {"finca":"Buena Vista","lote":"Lote 029"},
+  {"finca":"Buena Vista","lote":"Lote 030"},
+  {"finca":"Buena Vista","lote":"Lote 031"},
+  {"finca":"Buena Vista","lote":"Lote 032"},
+  {"finca":"Buena Vista","lote":"Lote 033"},
+  {"finca":"Buena Vista","lote":"Lote 034"},
+  {"finca":"Buena Vista","lote":"Lote 035"},
+  {"finca":"Caño Blanco","lote":"Lote 001"},
+  {"finca":"Caño Blanco","lote":"Lote 002"},
+  {"finca":"Chorcha","lote":"Lote 001"},
+  {"finca":"Don Cuyo","lote":"Lote 001"},
+  {"finca":"Enrique","lote":"Lote 001"},
+  {"finca":"Guayabito","lote":"Lote 001"},
+  {"finca":"Guayabito","lote":"Lote 002"},
+  {"finca":"Guayabito","lote":"Lote 003"},
+  {"finca":"Guayabito","lote":"Lote 004"},
+  {"finca":"Guayabito","lote":"Lote 005"},
+  {"finca":"Guayabito","lote":"Lote 006"},
+  {"finca":"Guayabito","lote":"Lote 007"},
+  {"finca":"Guayabito","lote":"Lote 008"},
+  {"finca":"Guayabito","lote":"Lote 009"},
+  {"finca":"Guayabito","lote":"Lote 010"},
+  {"finca":"Guayabito","lote":"Lote 011"},
+  {"finca":"Guayabito","lote":"Lote 012"},
+  {"finca":"Guayabito","lote":"Lote 013"},
+  {"finca":"Guayabito","lote":"Lote 014"},
+  {"finca":"Guayabito","lote":"Lote 015"},
+  {"finca":"Guayabito","lote":"Lote 016"},
+  {"finca":"Guayabito","lote":"Lote 017"},
+  {"finca":"Guayabito","lote":"Lote 018"},
+  {"finca":"Guayabito","lote":"Lote 019"},
+  {"finca":"Guayabito","lote":"Lote 020"},
+  {"finca":"Guayabito","lote":"Lote 022"},
+  {"finca":"Guayabito","lote":"Lote 023"},
+  {"finca":"Guayabito","lote":"Lote 024"},
+  {"finca":"Guayabito","lote":"Lote 025"},
+  {"finca":"Guayabito","lote":"Lote 026"},
+  {"finca":"Guayabito","lote":"Lote 028"},
+  {"finca":"Guayabito","lote":"Lote 029"},
+  {"finca":"Guayabito","lote":"Lote 030"},
+  {"finca":"Los Abuelos","lote":"Lote 001"},
+  {"finca":"Los Angeles","lote":"Lote 001"},
+  {"finca":"Oscar","lote":"Lote 001"},
+  {"finca":"Pajarilla","lote":"Lote 001"},
+  {"finca":"Pataste","lote":"Lote 001"},
+  {"finca":"Progreso","lote":"Lote 001"},
+  {"finca":"Rescate","lote":"Lote 001"},
+  {"finca":"San Luis","lote":"Lote 001"},
+  {"finca":"Tuto","lote":"Lote 001"}
+]);
+
+// Fuerza actualizar listas desde el código (sobrescribe una sola vez)
+const DATA_VERSION = 2;
+if (store.get("byc_version", 0) < DATA_VERSION) {
+  store.set("byc_fincas", fincas);
+  store.set("byc_lotes", lotes);
+  store.set("byc_version", DATA_VERSION);
+}
+
+/* ===== Más datos ===== */
 let camiones  = store.get("byc_camiones",[{"camion":"Camión 01","placa":"ABC-123"}]);
 let pendientes = store.get("byc_pendientes",[]);
 let borradores = store.get("byc_borradores",[]);
@@ -462,23 +545,6 @@ $("#u_guardar").onclick = ()=>{
   $("#v_user").value = usuario;
   alert("Usuario guardado.");
 };
-</script> 
-<!-- Parche: desactivar y quitar el PIN / Seguridad (versiones viejas) -->
-<script>
-  // Quita el overlay si existiera
-  document.getElementById('lock')?.remove();
-  // Quita la pestaña "Seguridad" del menú si existiera
-  document.querySelector('.tab[data-tab="seguridad"]')?.remove();
-  // Quita la sección de seguridad si existiera
-  document.getElementById('seguridad')?.remove();
-  // Anula funciones de bloqueo que pudieron quedar en el código viejo
-  window.lock = function(){};
-  window.unlock = function(){};
-  // Por las dudas, al cargar también lo removemos
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('lock')?.remove();
-  });
 </script>
- </body>
+</body>
 </html>
-
