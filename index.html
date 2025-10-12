@@ -462,6 +462,23 @@ $("#u_guardar").onclick = ()=>{
   $("#v_user").value = usuario;
   alert("Usuario guardado.");
 };
+</script> 
+<!-- Parche: desactivar y quitar el PIN / Seguridad (versiones viejas) -->
+<script>
+  // Quita el overlay si existiera
+  document.getElementById('lock')?.remove();
+  // Quita la pestaña "Seguridad" del menú si existiera
+  document.querySelector('.tab[data-tab="seguridad"]')?.remove();
+  // Quita la sección de seguridad si existiera
+  document.getElementById('seguridad')?.remove();
+  // Anula funciones de bloqueo que pudieron quedar en el código viejo
+  window.lock = function(){};
+  window.unlock = function(){};
+  // Por las dudas, al cargar también lo removemos
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('lock')?.remove();
+  });
 </script>
-</body>
+ </body>
 </html>
+
