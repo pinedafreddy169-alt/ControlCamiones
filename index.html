@@ -110,7 +110,7 @@
     </div>
   </section>
 
-  <!-- Borradores del día (local y editables) -->
+  <!-- Borradores del día -->
   <section id="borradores" class="card" hidden>
     <div class="actions">
       <button class="primary" id="btnSyncBorradores">Sincronizar todos a Excel</button>
@@ -156,7 +156,7 @@
     <div id="m_lista" class="row"></div>
   </section>
 
-  <!-- Sincronizar lectura -->
+  <!-- Sincronizar -->
   <section id="sincronizar" class="card" hidden>
     <div class="actions">
       <button class="primary" id="btnSync">🔄 Leer hoja</button>
@@ -200,94 +200,114 @@ function dlBlob(filename, mime, content){
 /* ===== DATOS LOCALES ===== */
 let usuario   = store.get("byc_user","");
 let choferes  = store.get("byc_choferes",["Freddy","Tatiana","Javier"]);
+let camiones  = store.get("byc_camiones",[{"camion":"Camión 01","placa":"ABC-123"}]);
+let pendientes = store.get("byc_pendientes",[]);
+let borradores = store.get("byc_borradores",[]);
 
-/* ===== Fincas y Lotes integradas (del CSV) ===== */
-let fincas = store.get("byc_fincas", ["Buena Vista","Caño Blanco","Chorcha","Don Cuyo","Enrique","Guayabito","Los Abuelos","Los Angeles","Oscar","Pajarilla","Pataste","Progreso","Rescate","San Luis","Tuto"]);
+/* ===== LOTES OFICIALES (deduplicados) ===== */
+const LOTES_RAW = [
+  // Buena Vista
+  {finca:"Buena Vista", lote:"Lote 001"},
+  {finca:"Buena Vista", lote:"Lote 002"},
+  {finca:"Buena Vista", lote:"Lote 003"},
+  {finca:"Buena Vista", lote:"Lote 005"},
+  {finca:"Buena Vista", lote:"Lote 007"},
+  {finca:"Buena Vista", lote:"Lote 008"},
+  {finca:"Buena Vista", lote:"Lote 009"},
+  {finca:"Buena Vista", lote:"Lote 011"},
+  {finca:"Buena Vista", lote:"Lote 014"},
+  {finca:"Buena Vista", lote:"Lote 015"},
+  {finca:"Buena Vista", lote:"Lote 016"},
 
-let lotes  = store.get("byc_lotes", [
-  {"finca":"Buena Vista","lote":"Lote 007"},
-  {"finca":"Guayabito","lote":"Lote 021"},
-  {"finca":"Guayabito","lote":"Lote 027"},
-  {"finca":"Buena Vista","lote":"Lote 002"},
-  {"finca":"Buena Vista","lote":"Lote 009"},
-  {"finca":"Buena Vista","lote":"Lote 011"},
-  {"finca":"Buena Vista","lote":"Lote 014"},
-  {"finca":"Buena Vista","lote":"Lote 015"},
-  {"finca":"Buena Vista","lote":"Lote 016"},
-  {"finca":"Buena Vista","lote":"Lote 017"},
-  {"finca":"Buena Vista","lote":"Lote 018"},
-  {"finca":"Buena Vista","lote":"Lote 019"},
-  {"finca":"Buena Vista","lote":"Lote 020"},
-  {"finca":"Buena Vista","lote":"Lote 022"},
-  {"finca":"Buena Vista","lote":"Lote 023"},
-  {"finca":"Buena Vista","lote":"Lote 024"},
-  {"finca":"Buena Vista","lote":"Lote 025"},
-  {"finca":"Buena Vista","lote":"Lote 026"},
-  {"finca":"Buena Vista","lote":"Lote 027"},
-  {"finca":"Buena Vista","lote":"Lote 028"},
-  {"finca":"Buena Vista","lote":"Lote 029"},
-  {"finca":"Buena Vista","lote":"Lote 030"},
-  {"finca":"Buena Vista","lote":"Lote 031"},
-  {"finca":"Buena Vista","lote":"Lote 032"},
-  {"finca":"Buena Vista","lote":"Lote 033"},
-  {"finca":"Buena Vista","lote":"Lote 034"},
-  {"finca":"Buena Vista","lote":"Lote 035"},
-  {"finca":"Caño Blanco","lote":"Lote 001"},
-  {"finca":"Caño Blanco","lote":"Lote 002"},
-  {"finca":"Chorcha","lote":"Lote 001"},
-  {"finca":"Don Cuyo","lote":"Lote 001"},
-  {"finca":"Enrique","lote":"Lote 001"},
-  {"finca":"Guayabito","lote":"Lote 001"},
-  {"finca":"Guayabito","lote":"Lote 002"},
-  {"finca":"Guayabito","lote":"Lote 003"},
-  {"finca":"Guayabito","lote":"Lote 004"},
-  {"finca":"Guayabito","lote":"Lote 005"},
-  {"finca":"Guayabito","lote":"Lote 006"},
-  {"finca":"Guayabito","lote":"Lote 007"},
-  {"finca":"Guayabito","lote":"Lote 008"},
-  {"finca":"Guayabito","lote":"Lote 009"},
-  {"finca":"Guayabito","lote":"Lote 010"},
-  {"finca":"Guayabito","lote":"Lote 011"},
-  {"finca":"Guayabito","lote":"Lote 012"},
-  {"finca":"Guayabito","lote":"Lote 013"},
-  {"finca":"Guayabito","lote":"Lote 014"},
-  {"finca":"Guayabito","lote":"Lote 015"},
-  {"finca":"Guayabito","lote":"Lote 016"},
-  {"finca":"Guayabito","lote":"Lote 017"},
-  {"finca":"Guayabito","lote":"Lote 018"},
-  {"finca":"Guayabito","lote":"Lote 019"},
-  {"finca":"Guayabito","lote":"Lote 020"},
-  {"finca":"Guayabito","lote":"Lote 022"},
-  {"finca":"Guayabito","lote":"Lote 023"},
-  {"finca":"Guayabito","lote":"Lote 024"},
-  {"finca":"Guayabito","lote":"Lote 025"},
-  {"finca":"Guayabito","lote":"Lote 026"},
-  {"finca":"Guayabito","lote":"Lote 028"},
-  {"finca":"Guayabito","lote":"Lote 029"},
-  {"finca":"Guayabito","lote":"Lote 030"},
-  {"finca":"Los Abuelos","lote":"Lote 001"},
-  {"finca":"Los Angeles","lote":"Lote 001"},
-  {"finca":"Oscar","lote":"Lote 001"},
-  {"finca":"Pajarilla","lote":"Lote 001"},
-  {"finca":"Pataste","lote":"Lote 001"},
-  {"finca":"Progreso","lote":"Lote 001"},
-  {"finca":"Rescate","lote":"Lote 001"},
-  {"finca":"San Luis","lote":"Lote 001"},
-  {"finca":"Tuto","lote":"Lote 001"}
-]);
+  // Caño Blanco
+  {finca:"Caño Blanco", lote:"Lote 001"},
+  {finca:"Caño Blanco", lote:"Lote 002"},
+  {finca:"Caño Blanco", lote:"Lote 003"},
+  {finca:"Caño Blanco", lote:"Lote 004"},
+  {finca:"Caño Blanco", lote:"Lote 005"},
+  {finca:"Caño Blanco", lote:"Lote 006"},
+  {finca:"Caño Blanco", lote:"Lote 007"},
+  {finca:"Caño Blanco", lote:"Lote 008"},
+  {finca:"Caño Blanco", lote:"Lote 009"},
+  {finca:"Caño Blanco", lote:"Lote 011"},
 
-// Fuerza actualizar listas desde el código (sobrescribe una sola vez)
-const DATA_VERSION = 2;
+  // Chorcha
+  {finca:"Chorcha", lote:"Lote 001"},
+
+  // Don Cuyo
+  {finca:"Don Cuyo", lote:"Lote 001"},
+  {finca:"Don Cuyo", lote:"Lote 002"},
+  {finca:"Don Cuyo", lote:"Lote 003"},
+  {finca:"Don Cuyo", lote:"Lote 004"},
+
+  // Enrique
+  {finca:"Enrique", lote:"Lote 001"},
+  {finca:"Enrique", lote:"Lote 002"},
+
+  // Guayabito
+  {finca:"Guayabito", lote:"Lote 001"},
+  {finca:"Guayabito", lote:"Lote 002"},
+  {finca:"Guayabito", lote:"Lote 003"},
+  {finca:"Guayabito", lote:"Lote 004"},
+  {finca:"Guayabito", lote:"Lote 005"},
+  {finca:"Guayabito", lote:"Lote 006"},
+  {finca:"Guayabito", lote:"Lote 011"},
+  {finca:"Guayabito", lote:"Lote 012"},
+  {finca:"Guayabito", lote:"Lote 014"},
+  {finca:"Guayabito", lote:"Lote 015"},
+  {finca:"Guayabito", lote:"Lote 017"},
+  {finca:"Guayabito", lote:"Lote 019"},
+  {finca:"Guayabito", lote:"Lote 021"},
+  {finca:"Guayabito", lote:"Lote 022"},
+  {finca:"Guayabito", lote:"Lote 027"},
+
+  // Otros
+  {finca:"Los Abuelos", lote:"Lote 001"},
+  {finca:"Los Angeles", lote:"Lote 001"},
+  {finca:"Oscar", lote:"Lote 001"},
+  {finca:"Oscar", lote:"Lote 002"},
+  {finca:"Oscar", lote:"Lote 003"},
+  {finca:"Pajarilla", lote:"Lote 001"},
+  {finca:"Pataste", lote:"Lote 001"},
+  {finca:"Pataste", lote:"Lote 002"},
+  {finca:"Pataste", lote:"Lote 003"},
+  {finca:"Pataste", lote:"Lote 004"},
+  {finca:"Pataste", lote:"Lote 006"},
+  {finca:"Pataste", lote:"Lote 007"},
+  {finca:"Pataste", lote:"Lote 008"},
+  {finca:"Progreso", lote:"Lote 001"},
+  {finca:"Progreso", lote:"Lote 002"},
+  {finca:"Progreso", lote:"Lote 003"},
+  {finca:"Progreso", lote:"Lote 004"},
+  {finca:"Progreso", lote:"Lote 005"},
+  {finca:"Rescate", lote:"Lote 001"},
+  {finca:"Rescate", lote:"Lote 004"},
+  {finca:"Rescate", lote:"Lote 005"},
+  {finca:"Rescate", lote:"Lote 006"},
+  {finca:"Rescate", lote:"Lote 007"},
+  {finca:"Rescate", lote:"Lote 008"},
+  {finca:"Rescate", lote:"Lote 013"},
+  {finca:"San Luis", lote:"Lote 001"},
+  {finca:"Tuto", lote:"Lote 001"},
+];
+
+// Dedup (un solo par finca|lote)
+const _map = new Map(LOTES_RAW.map(r => [r.finca+"|"+r.lote, r]));
+let lotes = Array.from(_map.values());
+
+// Fincas únicas y ordenadas
+let fincas = [...new Set(lotes.map(r => r.finca))].sort();
+
+// Actualiza una sola vez en los teléfonos
+const DATA_VERSION = 3;
 if (store.get("byc_version", 0) < DATA_VERSION) {
   store.set("byc_fincas", fincas);
   store.set("byc_lotes", lotes);
   store.set("byc_version", DATA_VERSION);
+} else {
+  fincas = store.get("byc_fincas", fincas);
+  lotes  = store.get("byc_lotes", lotes);
 }
-
-/* ===== Más datos ===== */
-let camiones  = store.get("byc_camiones",[{"camion":"Camión 01","placa":"ABC-123"}]);
-let pendientes = store.get("byc_pendientes",[]);
-let borradores = store.get("byc_borradores",[]);
 
 /* ===== TABS ===== */
 $$(".tab").forEach(b=>{
@@ -311,16 +331,30 @@ function fillPlacaFromCamion(){
   $("#v_placa").value = found? found.placa : "";
 }
 
-function renderFincasLotes(){
-  // Origen
-  const sfO=$("#o_finca"); sfO.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("");
-  const fincaO=sfO.value || fincas[0] || "";
-  $("#o_lote").innerHTML = lotes.filter(x=>x.finca===fincaO).map(x=>`<option value="${x.lote}">${x.lote}</option>`).join("");
+/* ===== FINCA → LOTE (dependiente, por defecto Caño Blanco) ===== */
+function fillLotes(fincaSel, loteSel, defaultFinca, defaultLote){
+  const sF = document.querySelector(fincaSel);
+  const sL = document.querySelector(loteSel);
 
-  // Destino
-  const sfD=$("#d_finca"); sfD.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("");
-  const fincaD=sfD.value || fincas[0] || "";
-  $("#d_lote").innerHTML = lotes.filter(x=>x.finca===fincaD).map(x=>`<option value="${x.lote}">${x.lote}</option>`).join("");
+  // llena fincas
+  sF.innerHTML = fincas.map(f => `<option value="${f}">${f}</option>`).join("");
+
+  // finca seleccionada (por defecto Caño Blanco)
+  const fincaElegida = sF.value || defaultFinca || fincas[0] || "";
+  sF.value = fincaElegida;
+
+  // lotes de esa finca
+  const arr = lotes.filter(x => x.finca === fincaElegida);
+  sL.innerHTML = arr.map(x => `<option value="${x.lote}">${x.lote}</option>`).join("");
+
+  // lote seleccionado (si no hay preferido, el primero)
+  sL.value = (defaultLote && arr.some(x=>x.lote===defaultLote)) ? defaultLote : (arr[0]?.lote || "");
+}
+function initOrigenDestino(){
+  fillLotes("#o_finca", "#o_lote", "Caño Blanco");
+  fillLotes("#d_finca", "#d_lote", "Caño Blanco");
+  $("#o_finca").addEventListener("change", () => fillLotes("#o_finca","#o_lote"));
+  $("#d_finca").addEventListener("change", () => fillLotes("#d_finca","#d_lote"));
 }
 
 /* ===== ADMIN LISTS ===== */
@@ -352,9 +386,9 @@ function renderAdminFincasLotes(){
 function delFinca(i){
   const nombre=fincas[i]; fincas.splice(i,1); lotes=lotes.filter(x=>x.finca!==nombre);
   store.set("byc_fincas",fincas); store.set("byc_lotes",lotes);
-  renderFincasLotes(); renderAdminFincasLotes();
+  initOrigenDestino(); renderAdminFincasLotes();
 }
-function delLote(i){ lotes.splice(i,1); store.set("byc_lotes",lotes); renderFincasLotes(); renderAdminFincasLotes(); }
+function delLote(i){ lotes.splice(i,1); store.set("byc_lotes",lotes); initOrigenDestino(); renderAdminFincasLotes(); }
 
 // Camiones admin
 function renderAdminCamiones(){
@@ -370,20 +404,18 @@ function delCamion(i){ camiones.splice(i,1); store.set("byc_camiones",camiones);
 
 /* ===== ADD HANDLERS ===== */
 $("#c_add").onclick=()=>{ const v=$("#c_nuevo").value.trim(); if(!v) return; if(!choferes.includes(v)) choferes.push(v); store.set("byc_choferes",choferes); $("#c_nuevo").value=""; renderChoferes(); renderAdminChoferes(); };
-$("#f_add").onclick=()=>{ const v=$("#f_nueva").value.trim(); if(!v) return; if(!fincas.includes(v)) fincas.push(v); store.set("byc_fincas",fincas); $("#f_nueva").value=""; renderFincasLotes(); renderAdminFincasLotes(); };
-$("#l_add").onclick=()=>{ const lote=$("#l_nuevo").value.trim(); const finca=$("#l_fincaSel").value; if(!lote||!finca) return; lotes.push({finca,lote}); store.set("byc_lotes",lotes); $("#l_nuevo").value=""; renderFincasLotes(); renderAdminFincasLotes(); };
+$("#f_add").onclick=()=>{ const v=$("#f_nueva").value.trim(); if(!v) return; if(!fincas.includes(v)) fincas.push(v); store.set("byc_fincas",fincas); $("#f_nueva").value=""; initOrigenDestino(); renderAdminFincasLotes(); };
+$("#l_add").onclick=()=>{ const lote=$("#l_nuevo").value.trim(); const finca=$("#l_fincaSel").value; if(!lote||!finca) return; lotes.push({finca,lote}); store.set("byc_lotes",lotes); $("#l_nuevo").value=""; initOrigenDestino(); renderAdminFincasLotes(); };
 $("#m_add").onclick=()=>{ const c=$("#m_camion").value.trim(); const p=$("#m_placa").value.trim(); if(!c||!p) return; camiones.push({camion:c,placa:p}); store.set("byc_camiones",camiones); $("#m_camion").value=""; $("#m_placa").value=""; renderAdminCamiones(); };
 
 $("#v_camion").addEventListener("change", fillPlacaFromCamion);
-$("#o_finca").addEventListener("change", renderFincasLotes);
-$("#d_finca").addEventListener("change", renderFincasLotes);
 
 /* ===== INICIALIZACIÓN ===== */
 renderChoferes(); renderAdminChoferes();
-renderFincasLotes(); renderAdminFincasLotes();
 renderAdminCamiones();
+initOrigenDestino();         // <<--- importante
+renderAdminFincasLotes();
 if(usuario){ $("#u_nombre").value = usuario; $("#v_user").value = usuario; }
-// Fecha por defecto hoy
 const f = document.getElementById('v_fecha'); if(f && !f.value) f.value = todayISO();
 
 /* ===== FORMULARIO ===== */
@@ -548,3 +580,4 @@ $("#u_guardar").onclick = ()=>{
 </script>
 </body>
 </html>
+
