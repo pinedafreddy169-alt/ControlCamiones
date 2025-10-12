@@ -4,142 +4,89 @@
   <meta charset="UTF-8">
   <title>Control de Camiones</title>
   <style>
-    body {
-      background: #111;
-      color: #eee;
-      font-family: Arial, sans-serif;
-    }
-    h1 { color: #f55; }
+    body { background:#111; color:#eee; font-family:Arial; padding:20px; }
+    h1 { color:#f55; }
     label { display:block; margin-top:10px; }
-    input, select, textarea {
-      width: 100%; padding: 5px; margin-top: 3px;
-    }
-    button { margin: 10px 5px; padding: 10px 15px; }
-    #registros { margin-top: 20px; }
+    input, select, textarea { width:100%; padding:5px; margin-top:3px; }
+    button { margin:10px 5px; padding:10px 15px; }
   </style>
 </head>
 <body>
   <h1>🚛 Control de Camiones</h1>
 
-  <form id="registroForm">
-    <label>Fecha
-      <input type="date" id="fecha">
-    </label>
-    <label>Camión
-      <select id="camion">
-        <option>Camión 01</option>
-        <option>Camión 02</option>
-      </select>
-    </label>
-    <label>Placa
-      <input type="text" id="placa" placeholder="ABC-123">
-    </label>
-    <label>Chofer
-      <input type="text" id="chofer" placeholder="Nombre del chofer">
-    </label>
-    <label>Origen Finca
-      <input type="text" id="origenFinca">
-    </label>
-    <label>Origen Lote
-      <input type="text" id="origenLote">
-    </label>
-    <label>Destino Finca
-      <input type="text" id="destinoFinca">
-    </label>
-    <label>Destino Lote
-      <input type="text" id="destinoLote">
-    </label>
-    <label>Hora de salida
-      <input type="time" id="salida">
-    </label>
-    <label>Hora de llegada
-      <input type="time" id="llegada">
-    </label>
-    <label>Observaciones
-      <textarea id="observaciones"></textarea>
-    </label>
-    <button type="button" onclick="guardarRegistro()">Guardar</button>
-    <button type="button" onclick="descargarPDF()">Descargar PDF</button>
-    <button type="button" id="btnSync">Sincronizar</button>
+  <form id="formRegistro">
+    <label>Fecha <input type="date" id="fecha"></label>
+    <label>Camión <input type="text" id="camion"></label>
+    <label>Placa <input type="text" id="placa"></label>
+    <label>Chofer <input type="text" id="chofer"></label>
+    <label>Origen <input type="text" id="origen"></label>
+    <label>Destino <input type="text" id="destino"></label>
+    <label>Salida <input type="time" id="salida"></label>
+    <label>Llegada <input type="time" id="llegada"></label>
+    <label>Observaciones <textarea id="observaciones"></textarea></label>
+
+    <button type="button" onclick="guardarLocal()">Guardar</button>
+    <button type="button" onclick="sincronizar()">Sincronizar</button>
     <button type="reset">Limpiar</button>
   </form>
 
-  <h2>Registros locales</h2>
-  <div id="registros"></div>
+  <h2>📋 Registros locales</h2>
+  <div id="lista"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-jQF8M0DEWy-z6l4uxFcjq_l964ZR77AP-jJeWtwSKKMN444GZ6hBmDjRY2HI4zN6lw/exec";
-  const STORAGE_KEY = "camiones_registros";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-jQF8M0DEWy-z6l4uxFcjq_l964ZR77AP-jJeWtwSKKMN444GZ6hBmDjRY2HI4zN6lw/exec";
+const STORAGE_KEY = "camiones_registros";
 
-  function leerRegistros() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  }
-  function guardarLocal(registros) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(registros));
-  }
-  function renderizarRegistros() {
-    const lista = leerRegistros();
-    const div = document.getElementById("registros");
-    div.innerHTML = lista.map((r,i) =>
-      `<div>(${i+1}) ${r.fecha} - ${r.camion} - ${r.chofer} - ${r.origenFinca}→${r.destinoFinca}</div>`
-    ).join("");
-  }
+function leer() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+function guardar(arr) { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+function render() {
+  const lista = leer();
+  document.getElementById("lista").innerHTML = lista.map((r,i)=>
+    `<div>(${i+1}) ${r.fecha} - ${r.camion} - ${r.chofer} → ${r.destino}</div>`
+  ).join("");
+}
 
-  function guardarRegistro() {
-    const r = {
-      fecha: document.getElementById("fecha").value,
-      camion: document.getElementById("camion").value,
-      placa: document.getElementById("placa").value,
-      chofer: document.getElementById("chofer").value,
-      origenFinca: document.getElementById("origenFinca").value,
-      origenLote: document.getElementById("origenLote").value,
-      destinoFinca: document.getElementById("destinoFinca").value,
-      destinoLote: document.getElementById("destinoLote").value,
-      salida: document.getElementById("salida").value,
-      llegada: document.getElementById("llegada").value,
-      observaciones: document.getElementById("observaciones").value,
-    };
-    const lista = leerRegistros();
-    lista.push(r);
-    guardarLocal(lista);
-    renderizarRegistros();
-    alert("Registro guardado localmente.");
-  }
+function guardarLocal() {
+  const r = {
+    fecha: document.getElementById("fecha").value,
+    camion: document.getElementById("camion").value,
+    placa: document.getElementById("placa").value,
+    chofer: document.getElementById("chofer").value,
+    origen: document.getElementById("origen").value,
+    destino: document.getElementById("destino").value,
+    salida: document.getElementById("salida").value,
+    llegada: document.getElementById("llegada").value,
+    observaciones: document.getElementById("observaciones").value
+  };
+  const lista = leer();
+  lista.push(r);
+  guardar(lista);
+  render();
+  alert("✅ Registro guardado localmente.");
+}
 
-  async function sincronizar() {
-    const registros = leerRegistros();
-    if (!registros.length) { alert("No hay registros para enviar."); return; }
-    const params = new URLSearchParams();
-    params.append("payload", JSON.stringify(registros));
-    try {
-      const resp = await fetch(SCRIPT_URL, { method: "POST", body: params });
-      if (resp.ok) {
-        localStorage.removeItem(STORAGE_KEY);
-        renderizarRegistros();
-        alert("¡Sincronización completada!");
-      } else {
-        alert("Falló la sincronización (HTTP " + resp.status + ")");
-      }
-    } catch (e) {
-      alert("Falló la sincronización: " + e.message);
+async function sincronizar() {
+  const registros = leer();
+  if (!registros.length) { alert("No hay registros."); return; }
+
+  const params = new URLSearchParams();
+  params.append("payload", JSON.stringify(registros));
+
+  try {
+    const resp = await fetch(SCRIPT_URL, { method:"POST", body:params });
+    if (resp.ok) {
+      localStorage.removeItem(STORAGE_KEY);
+      render();
+      alert("🚀 Sincronización completada.");
+    } else {
+      alert("❌ Error HTTP " + resp.status);
     }
+  } catch(e) {
+    alert("⚠️ Falló la sincronización: " + e.message);
   }
+}
 
-  document.getElementById("btnSync").addEventListener("click", sincronizar);
-
-  function descargarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const registros = leerRegistros();
-    doc.text("Registros de Camiones", 10, 10);
-    registros.forEach((r,i) => {
-      doc.text(`${i+1}) ${r.fecha} ${r.camion} ${r.chofer} ${r.origenFinca}→${r.destinoFinca}`, 10, 20+ i*10);
-    });
-    doc.save("camiones.pdf");
-  }
-
-  renderizarRegistros();
+render();
 </script>
 </body>
 </html>
