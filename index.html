@@ -41,7 +41,6 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     <button class="tab" data-tab="fincas">Fincas & Lotes</button>
     <button class="tab" data-tab="camiones">Camiones</button>
     <button class="tab" data-tab="sincronizar">Sincronizar</button>
-    <button class="tab" data-tab="usuario">Usuario</button>
   </div>
 
   <!-- Registrar viaje -->
@@ -53,7 +52,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     </div>
     <div class="grid2 row">
       <div><label>Placa (auto)</label><input type="text" id="v_placa" readonly></div>
-      <div><label>Operador</label><input type="text" id="v_user" placeholder="Tu nombre"></div>
+      <div><!-- espacio vacío para mantener balance --></div>
     </div>
 
     <div class="row"><strong>Origen</strong></div>
@@ -92,7 +91,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     </div>
     <div class="grid2 row">
       <div><label>Placa (auto)</label><input type="text" id="tm_placa" readonly></div>
-      <div><label>Operador</label><input type="text" id="tm_user" placeholder="Tu nombre"></div>
+      <div><!-- espacio --></div>
     </div>
 
     <div class="grid2 row">
@@ -117,7 +116,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
         </select>
       </div>
       <div><label>Si es “Otro”, especifique</label><input type="text" id="tm_labor_otro" placeholder="Detalle del motivo"></div>
-      <div><label>Minutos rodando</label><input type="number" id="tm_rodando_min" min="0" step="1" placeholder="0"></div>
+      <div><!-- eliminado rodando_min --></div>
     </div>
 
     <div class="row"><label>Observaciones</label><textarea id="tm_obs" placeholder="Notas del tiempo muerto"></textarea></div>
@@ -205,18 +204,6 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     </div>
     <div id="tabla"></div>
   </section>
-
-  <!-- Usuario -->
-  <section id="usuario" class="card" hidden>
-    <div class="grid2 row">
-      <div><label>Usuario/Operador</label><input type="text" id="u_nombre" placeholder="Ej. Freddy"></div>
-      <div style="display:flex;align-items:end;gap:8px">
-        <button class="primary" id="u_guardar">Guardar</button>
-        <button class="btn" id="u_reparar">Reparar caché</button>
-      </div>
-    </div>
-    <p class="muted">Si un teléfono se “pegó”, tocá “Reparar caché”.</p>
-  </section>
 </div>
 
 <script>
@@ -286,7 +273,6 @@ let choferes = safeArray(store.get("byc_choferes", DEFAULTS.choferes), DEFAULTS.
 let camiones = safeArray(store.get("byc_camiones", DEFAULTS.camiones), DEFAULTS.camiones);
 let borradores = safeArray(store.get("byc_borradores", []), []);
 let pendientes = safeArray(store.get("byc_pendientes", []), []);
-// TM
 let tm_borradores = safeArray(store.get("byc_tm_borradores", []), []);
 let tm_pendientes = safeArray(store.get("byc_tm_pendientes", []), []);
 let isAdmin = !!store.get("byc_is_admin", false);
@@ -301,7 +287,7 @@ store.set("byc_fincas", fincas);
 
 /* ===== TABS ===== */
 $$(".tab").forEach(b=>{b.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
-["viaje","tm","borradores","choferes","fincas","camiones","sincronizar","usuario"].forEach(id=>$("#"+id).hidden=(id!==b.dataset.tab));
+["viaje","tm","borradores","choferes","fincas","camiones","sincronizar"].forEach(id=>$("#"+id).hidden=(id!==b.dataset.tab));
 if(b.dataset.tab==="borradores") renderBorradores();
 if(b.dataset.tab==="tm") renderTMBorradores();
 if(b.dataset.tab==="fincas") updateAdminUI();
@@ -475,7 +461,6 @@ window.delCamion = (i)=>{ camiones.splice(i,1); store.set("byc_camiones",camione
 /* ===== INICIALIZA ===== */
 renderChoferes(); renderChoferList();
 renderCamiones(); renderAdminCamiones();
-const u=store.get("byc_user",""); if(u){$("#u_nombre").value=u; $("#v_user").value=u; $("#tm_user").value=u}
 const ffecha=$("#v_fecha"); if(ffecha && !ffecha.value) ffecha.value=todayISO();
 const ftm=$("#tm_fecha"); if(ftm && !ftm.value) ftm.value=todayISO();
 initOrigenDestino();
@@ -487,12 +472,12 @@ function leerViaje(){
   const dText=($("#d_finca")?.value||"") + ($("#d_lote")?.value?(" / "+$("#d_lote").value):"");
   return { _form:"viaje",
     fecha:$("#v_fecha")?.value||todayISO(),camion:$("#v_camion")?.value,placa:$("#v_placa")?.value,
-    chofer:$("#v_chofer")?.value,operador:$("#v_user")?.value||store.get("byc_user",""),
+    chofer:$("#v_chofer")?.value,
     origen:oText,destino:dText, origen_finca:$("#o_finca")?.value, origen_lote:$("#o_lote")?.value,
     destino_finca:$("#d_finca")?.value, destino_lote:$("#d_lote")?.value,
     salida:$("#v_salida")?.value, llegada:$("#v_llegada")?.value, observaciones:$("#v_obs")?.value, _ts:Date.now()}
 }
-$("#btnLimpiar")?.addEventListener("click",()=>{$$("#viaje input,#viaje textarea").forEach(e=>{if(e.id!=="v_user") e.value=""}); const u=store.get("byc_user",""); if(u) $("#v_user").value=u});
+$("#btnLimpiar")?.addEventListener("click",()=>{$$("#viaje input,#viaje textarea").forEach(e=>{e.value=""});});
 
 /* ===== BORRADORES VIAJES ===== */
 let editIndex=-1;
@@ -509,10 +494,12 @@ function renderBorradores(){
 }
 window.editarBor=i=>{const r=borradores[i]||{}; editIndex=i;
   $("#v_fecha").value=r.fecha||todayISO(); $("#v_camion").value=r.camion||$("#v_camion").value; fillPlacaFromCamion("#v_camion","#v_placa");
-  $("#v_placa").value=r.placa||""; $("#v_chofer").value=r.chofer||$("#v_chofer").value; $("#v_user").value=r.operador||store.get("byc_user","")||"";
+  $("#v_placa").value=r.placa||""; $("#v_chofer").value=r.chofer||$("#v_chofer").value;
   $("#o_finca").value=r.origen_finca||$("#o_finca").value; updateLotes("#o_finca","#o_lote",r.origen_lote);
   $("#d_finca").value=r.destino_finca||$("#d_finca").value; updateLotes("#d_finca","#d_lote",r.destino_lote);
-  $("#v_salida").value=r.salida||""; $("#v_llegada").value=r.llegada||""; $("#v_obs").value=r.observaciones||""; document.querySelector('.tab[data-tab="viaje"]').click()}
+  $("#v_salida").value=r.salida||""; $("#v_llegada").value=r.llegada||""; $("#v_obs").value=r.observaciones||"";
+  document.querySelector('.tab[data-tab="viaje"]').click()
+}
 window.eliminarBor=i=>{borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores()}
 
 const sendingRow=new Set(); let sendingAll=false;
@@ -550,21 +537,19 @@ function leerTM(){
   return { _form:"tiempos_muertos",
     fecha:$("#tm_fecha")?.value||todayISO(), chofer:$("#tm_chofer")?.value,
     camion:$("#tm_camion")?.value, placa:$("#tm_placa")?.value,
-    operador:$("#tm_user")?.value||store.get("byc_user",""),
     inicio:$("#tm_inicio")?.value, fin:$("#tm_fin")?.value,
     labor, labor_base:laborSel,
-    rodando_min: ($("#tm_rodando_min")?.value||"").toString().trim(),
     observaciones:$("#tm_obs")?.value, _ts:Date.now()
   };
 }
-$("#tm_btnLimpiar")?.addEventListener("click",()=>{$$("#tm input,#tm textarea, #tm select").forEach(e=>{if(e.id!=="tm_user") e.value=""}); const u=store.get("byc_user",""); if(u) $("#tm_user").value=u; const ftm=$("#tm_fecha"); if(ftm && !ftm.value) ftm.value=todayISO(); $("#tm_labor").value="Esperando personal"});
+$("#tm_btnLimpiar")?.addEventListener("click",()=>{$$("#tm input,#tm textarea, #tm select").forEach(e=>{if(e.id!=="tm_user") e.value=""}); $("#tm_labor").value="Esperando personal"; const ftm=$("#tm_fecha"); if(ftm && !ftm.value) ftm.value=todayISO();});
 
 /* ===== BORRADORES TM ===== */
 let tm_editIndex=-1;
 function renderTMBorradores(){
   const cont=$("#tm_tablaBor"); if(!cont) return;
   if(!Array.isArray(tm_borradores)||!tm_borradores.length){cont.innerHTML="<p class='muted'>No hay borradores TM.</p>"; return}
-  const cols=[["fecha","FECHA"],["chofer","CHOFER"],["camion","CAMIÓN"],["inicio","INICIO"],["fin","FIN"],["labor","LABOR"],["rodando_min","RODANDO (min)"],["observaciones","OBS"]];
+  const cols=[["fecha","FECHA"],["chofer","CHOFER"],["camion","CAMIÓN"],["inicio","INICIO"],["fin","FIN"],["labor","LABOR"],["observaciones","OBS"]];
   let html="<table><thead><tr>"+cols.map(([k,t])=>`<th>${t}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";
   tm_borradores.forEach((r,i)=>{html+="<tr>"+cols.map(([k])=>`<td>${(r&&r[k])??""}</td>`).join("")+
     `<td><button class="btn" onclick="tm_editar(${i})">Cargar</button>
@@ -574,11 +559,10 @@ function renderTMBorradores(){
 }
 window.tm_editar=i=>{const r=tm_borradores[i]||{}; tm_editIndex=i;
   $("#tm_fecha").value=r.fecha||todayISO(); $("#tm_camion").value=r.camion||$("#tm_camion").value; fillPlacaFromCamion("#tm_camion","#tm_placa");
-  $("#tm_placa").value=r.placa||""; $("#tm_chofer").value=r.chofer||$("#tm_chofer").value; $("#tm_user").value=r.operador||store.get("byc_user","")||"";
+  $("#tm_placa").value=r.placa||""; $("#tm_chofer").value=r.chofer||$("#tm_chofer").value;
   $("#tm_inicio").value=r.inicio||""; $("#tm_fin").value=r.fin||"";
   $("#tm_labor").value=r.labor_base||r.labor||"Esperando personal";
   $("#tm_labor_otro").value=(r.labor_base==="Otro")? (r.labor||"") : "";
-  $("#tm_rodando_min").value=r.rodando_min||"";
   $("#tm_obs").value=r.observaciones||"";
   document.querySelector('.tab[data-tab="tm"]').click()
 }
@@ -676,14 +660,6 @@ $("#btnSync")?.addEventListener("click", async ()=>{
     let html="<table><thead><tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbody>";
     j.data.forEach(r=>{html+="<tr>"+headers.map(h=>`<td>${r[h]??""}</td>`).join("")+"</tr>"}); html+="</tbody></table>"; if(tabla) tabla.innerHTML=html
   }catch(e){ if(est) toast(est,String(e),false) }
-});
-
-/* ===== USUARIO ===== */
-$("#u_guardar")?.addEventListener("click",()=>{const u=$("#u_nombre")?.value.trim(); if(!u) return; store.set("byc_user",u);
-  const v1=$("#v_user"), v2=$("#tm_user"); if(v1) v1.value=u; if(v2) v2.value=u; alert("Usuario guardado.")});
-$("#u_reparar")?.addEventListener("click",()=>{
-  ["byc_user","byc_choferes","byc_camiones","byc_lotes","byc_fincas","byc_borradores","byc_pendientes","byc_tm_borradores","byc_tm_pendientes","byc_is_admin"].forEach(store.del);
-  alert("Listo. Caché reparada. Cerrá y abrí el link otra vez.");
 });
 </script>
 </body>
