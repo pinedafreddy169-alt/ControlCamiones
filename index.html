@@ -1,58 +1,55 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Camiones BYC — Viajes + Tiempos muertos</title>
-<style>
-:root{--bg:#0f1115;--panel:#151923;--muted:#8a90a2;--text:#e8ecf1;--accent:#5ea1ff;--danger:#ff5e7a;--ok:#2bd27f;--border:#232838}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
-.wrap{max-width:1100px;margin:0 auto;padding:20px} h1{font-size:1.9rem;margin:0 0 6px}.lead{color:var(--muted);margin:0 0 16px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
-.tab{padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:#111524;color:var(--muted);cursor:pointer}
-.tab.active{background:var(--accent);color:#07111f;border-color:transparent;font-weight:700}
-label{font-size:.9rem;color:var(--muted)}
-input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:#0c0f17;color:var(--text)}
-textarea{min-height:84px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.row{margin-bottom:12px}.actions{display:flex;gap:10px;flex-wrap:wrap}
-button{padding:12px 14px;border:0;border-radius:12px;cursor:pointer;font-weight:700}
-.btn{background:#1b2233;color:var(--text);border:1px solid var(--border)} .primary{background:var(--accent);color:#051226}
-.danger{background:var(--danger);color:#22070c} .muted{color:var(--muted)} .ok{color:var(--ok);font-weight:700} .error{color:var(--danger)}
-table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px solid var(--border);padding:8px;font-size:.95rem} th{background:#101525;color:var(--muted);text-align:left}
-@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
-.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;border:1px solid var(--border);background:#101525;color:var(--muted)}
-.hr{height:1px;background:var(--border);margin:12px 0}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Camiones BYC — Viajes + Tiempos Muertos</title>
+  <style>
+    :root{
+      --bg:#0f1115;--panel:#151923;--muted:#8a90a2;--text:#e8ecf1;
+      --accent:#5ea1ff;--danger:#ff5e7a;--ok:#2bd27f;--border:#232838;
+    }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    h1{margin:0 0 6px;font-size:1.9rem}
+    .lead{margin:0 0 16px;color:var(--muted)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px}
+    .tab{padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:#101626;color:var(--muted);cursor:pointer}
+    .tab.active{background:var(--accent);color:#081321;border-color:transparent;font-weight:700}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+    label{font-size:.9rem;color:var(--muted)}
+    input,select,textarea,button{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#101626;color:var(--text)}
+    textarea{min-height:90px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .row{margin-bottom:12px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{background:#1b2233} .primary{background:var(--accent);color:#061228;font-weight:700}
+    .ok{color:var(--ok);font-weight:700} .error{color:var(--danger);font-weight:700} .muted{color:var(--muted)}
+    table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px solid var(--border);padding:8px;font-size:.95rem} th{background:#101626;color:var(--muted);text-align:left}
+    @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Camiones BYC <span class="badge">Antipega</span></h1>
-  <p class="lead">Viajes, Tiempos muertos, borradores y sincronización con Google Sheets.</p>
+  <h1>Camiones BYC</h1>
+  <p class="lead">Viajes, Tiempos Muertos y sincronización con Google Sheets.</p>
 
   <div class="tabs">
     <button class="tab active" data-tab="viaje">Registrar viaje</button>
     <button class="tab" data-tab="tm">Tiempos muertos</button>
-    <button class="tab" data-tab="borradores">Borradores</button>
-    <button class="tab" data-tab="choferes">Choferes</button>
-    <button class="tab" data-tab="fincas">Fincas & Lotes</button>
-    <button class="tab" data-tab="camiones">Camiones</button>
-    <button class="tab" data-tab="sincronizar">Sincronizar</button>
-    <button class="tab" data-tab="usuario">Usuario</button>
   </div>
 
-  <!-- Registrar viaje -->
+  <!-- VIAJE -->
   <section id="viaje" class="card">
     <div class="grid3 row">
       <div><label>Fecha</label><input type="date" id="v_fecha"></div>
-      <div><label>Chofer</label><select id="v_chofer"></select></div>
-      <div><label>Camión</label><select id="v_camion"></select></div>
+      <div><label>Chofer</label><input id="v_chofer" placeholder="Nombre del chofer"></div>
+      <div><label>Camión</label><input id="v_camion" placeholder="Unidad"></div>
     </div>
     <div class="grid2 row">
-      <div><label>Placa (auto)</label><input type="text" id="v_placa" readonly></div>
-      <div><label>Operador</label><input type="text" id="v_user" placeholder="Tu nombre"></div>
+      <div><label>Placa</label><input id="v_placa" placeholder="Placa"></div>
+      <div><label>Operador</label><input id="v_user" placeholder="Tu nombre (opcional)"></div>
     </div>
 
     <div class="row"><strong>Origen</strong></div>
@@ -75,305 +72,222 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     <div class="row"><label>Observaciones</label><textarea id="v_obs" placeholder="Notas del viaje"></textarea></div>
 
     <div class="actions">
-      <button class="primary" id="btnBorrador">Guardar borrador</button>
-      <button class="btn" id="btnEnviar" data-label="Enviar directo a Excel">Enviar directo a Excel</button>
+      <button class="primary" id="btnEnviar" data-label="Enviar a Excel">Enviar a Excel</button>
       <button class="btn" id="btnLimpiar">Limpiar</button>
       <span id="estadoEnvio" class="muted"></span>
     </div>
   </section>
 
-  <!-- Tiempos muertos -->
+  <!-- TM -->
   <section id="tm" class="card" hidden>
     <div class="grid3 row">
       <div><label>Fecha</label><input type="date" id="tm_fecha"></div>
-      <div><label>Chofer</label><select id="tm_chofer"></select></div>
-      <div><label>Camión</label><select id="tm_camion"></select></div>
+      <div><label>Chofer</label><input id="tm_chofer" placeholder="Nombre del chofer"></div>
+      <div><label>Camión</label><input id="tm_camion" placeholder="Unidad"></div>
     </div>
-    <div class="grid2 row">
-      <div><label>Placa (auto)</label><input type="text" id="tm_placa" readonly></div>
-      <div><label>Operador</label><input type="text" id="tm_user" placeholder="Tu nombre"></div>
-    </div>
-
     <div class="grid2 row">
       <div><label>Hora inicio</label><input type="time" id="tm_inicio"></div>
       <div><label>Hora fin</label><input type="time" id="tm_fin"></div>
     </div>
-
-    <div class="grid3 row">
+    <div class="grid2 row">
       <div>
-        <label>Labor / motivo</label>
+        <label>Motivo / Labor</label>
         <select id="tm_labor">
-          <option value="Esperando personal">Esperando personal</option>
-          <option value="Mantenimiento del vehículo">Mantenimiento del vehículo</option>
-          <option value="Lavado del vehículo">Lavado del vehículo</option>
-          <option value="Carga de materiales">Carga de materiales</option>
-          <option value="Descarga de materiales">Descarga de materiales</option>
-          <option value="Carga y descarga">Carga y descarga</option>
-          <option value="Repostaje de combustible">Repostaje de combustible</option>
-          <option value="Documentación / Papeleo">Documentación / Papeleo</option>
-          <option value="Inspección / Revisión">Inspección / Revisión</option>
-          <option value="Otro">Otro…</option>
+          <option>Esperando personal</option>
+          <option>Mantenimiento del vehículo</option>
+          <option>Lavado del vehículo</option>
+          <option>Carga de materiales</option>
+          <option>Descarga de materiales</option>
+          <option>Documentación / Papeleo</option>
+          <option>Otro</option>
         </select>
       </div>
-      <div><label>Si es “Otro”, especifique</label><input type="text" id="tm_labor_otro" placeholder="Detalle del motivo"></div>
-      <div><label>Minutos rodando</label><input type="number" id="tm_rodando_min" min="0" step="1" placeholder="0"></div>
+      <div><label>Observaciones</label><input id="tm_obs" placeholder="Detalle (opcional)"></div>
     </div>
-
-    <div class="row"><label>Observaciones</label><textarea id="tm_obs" placeholder="Notas del tiempo muerto"></textarea></div>
-
     <div class="actions">
-      <button class="primary" id="tm_btnBorrador">Guardar borrador</button>
-      <button class="btn" id="tm_btnEnviar" data-label="Enviar TM a Excel">Enviar TM a Excel</button>
-      <button class="btn" id="tm_btnLimpiar">Limpiar</button>
+      <button class="primary" id="tm_btnEnviar" data-label="Enviar TM a Excel">Enviar TM a Excel</button>
       <span id="tm_estadoEnvio" class="muted"></span>
-    </div>
-
-    <div class="hr"></div>
-
-    <div class="actions">
-      <button class="primary" id="tm_btnSyncBorradores">Sincronizar todos (TM)</button>
-      <span id="tm_estadoBor" class="muted"></span>
-    </div>
-    <div id="tm_tablaBor" class="row"></div>
-  </section>
-
-  <!-- Borradores (Viajes) -->
-  <section id="borradores" class="card" hidden>
-    <div class="actions">
-      <button class="primary" id="btnSyncBorradores">Sincronizar todos</button>
-      <span id="estadoBor" class="muted"></span>
-    </div>
-    <div id="tablaBor" class="row"></div>
-  </section>
-
-  <!-- Choferes -->
-  <section id="choferes" class="card" hidden>
-    <div class="row grid2">
-      <div><label>Nuevo chofer</label><input type="text" id="c_nuevo" placeholder="Nombre del chofer"></div>
-      <div style="display:flex;align-items:end"><button class="primary" id="c_add">Agregar</button></div>
-    </div>
-    <div id="c_lista" class="row"></div>
-  </section>
-
-  <!-- Fincas & Lotes (admin: ADMI 12345) -->
-  <section id="fincas" class="card" hidden>
-    <div id="f_lock" class="row">
-      <div class="grid3">
-        <div><label>Estado</label><input id="admin_status" readonly value="Bloqueado — solo lectura"></div>
-        <div><label>Contraseña admin</label><input type="password" id="admin_pass" placeholder="ADMI 12345"></div>
-        <div style="display:flex;align-items:end;gap:8px">
-          <button class="btn" id="btnUnlock">Desbloquear</button>
-          <button class="danger" id="btnLock" hidden>Bloquear</button>
-        </div>
-      </div>
-      <p class="muted">Solo el administrador puede agregar/eliminar fincas y lotes.</p>
-    </div>
-
-    <div id="f_admin" hidden>
-      <div class="row grid2">
-        <div><label>Nueva finca</label><input type="text" id="f_nueva" placeholder="Ej. Buena Vista"></div>
-        <div style="display:flex;align-items:end"><button class="primary" id="f_add">Agregar finca</button></div>
-      </div>
-      <div class="row grid3">
-        <div><label>Lote (texto)</label><input type="text" id="l_nuevo" placeholder="Ej. Lote 007"></div>
-        <div><label>Asignar a finca</label><select id="l_fincaSel"></select></div>
-        <div style="display:flex;align-items:end"><button class="primary" id="l_add">Agregar lote</button></div>
-      </div>
-    </div>
-
-    <div id="f_lista" class="row"></div>
-    <div id="l_lista" class="row"></div>
-  </section>
-
-  <!-- Camiones -->
-  <section id="camiones" class="card" hidden>
-    <div class="row grid2">
-      <div><label>Camión</label><input type="text" id="m_camion"></div>
-      <div><label>Placa</label><input type="text" id="m_placa"></div>
-    </div>
-    <div class="actions"><button class="primary" id="m_add">Agregar camión</button></div>
-    <div id="m_lista" class="row"></div>
-  </section>
-
-  <!-- Sincronizar -->
-  <section id="sincronizar" class="card" hidden>
-    <div class="actions">
-      <button class="primary" id="btnSync">🔄 Leer hoja</button>
-      <button class="btn" id="btnEnviarPendientes">Enviar pendientes</button>
-      <span id="estadoSync" class="muted"></span>
-    </div>
-    <div id="tabla"></div>
-  </section>
-
-  <!-- Usuario -->
-  <section id="usuario" class="card" hidden>
-    <div class="grid2 row">
-      <div><label>Usuario/Operador</label><input type="text" id="u_nombre" placeholder="Ej. Freddy"></div>
-      <div style="display:flex;align-items:end;gap:8px">
-        <button class="primary" id="u_guardar">Guardar</button>
-        <button class="btn" id="u_reparar">Reparar caché</button>
-      </div>
     </div>
   </section>
 </div>
 
 <script>
-/* ===== CONFIG (TU URL NUEVA) ===== */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwvF01Q6QRgYE-WJxIX3TyZ-bFmoD2db0kzzsPVoC4MTRhm1yBM88dmz506eyX0a6qKBA/exec";
-const ADMIN_PASS_NORMALIZED = "admi12345";
+/* ================= CONFIG ================= */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyQOsvg9RiNDfCA3WNQiWZLmeVThFCKQfnWq9bkSx5uVxRKF3xFKznsx7qulC8ksYeHsA/exec";
 
-/* ===== HELPERS ===== */
-const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-function normalizePass(p){return (p||"").replace(/\\s+/g,"").toLowerCase()}
-function todayISO(){const d=new Date();d.setHours(0,0,0,0);return d.toISOString().slice(0,10)}
-function toast(el,msg,ok=true){el.textContent=msg;el.className=ok?'ok':'error';setTimeout(()=>{el.textContent='';el.className='muted'},4000)}
-function setBtnLoading(btn,loading,label){if(!btn)return;if(loading){btn.disabled=true;btn.textContent='Enviando…'}else{btn.disabled=false;btn.textContent=label||btn.dataset.label||'Enviar'}}
+/* ====== DATOS: FINCAS & LOTES (desde tu lista) ====== */
+const LOTES_RAW = [
+  // Buena Vista
+  ["Buena Vista","Lote 001"],["Buena Vista","Lote 002"],["Buena Vista","Lote 003"],
+  ["Buena Vista","Lote 005"],["Buena Vista","Lote 007"],["Buena Vista","Lote 008"],
+  ["Buena Vista","Lote 009"],["Buena Vista","Lote 011"],["Buena Vista","Lote 014"],
+  ["Buena Vista","Lote 015"],["Buena Vista","Lote 016"],
+  // Caño Blanco
+  ["Caño Blanco","Lote 001"],["Caño Blanco","Lote 002"],["Caño Blanco","Lote 003"],
+  ["Caño Blanco","Lote 004"],["Caño Blanco","Lote 005"],["Caño Blanco","Lote 006"],
+  ["Caño Blanco","Lote 007"],["Caño Blanco","Lote 008"],["Caño Blanco","Lote 009"],
+  ["Caño Blanco","Lote 011"],
+  // Chorcha
+  ["Chorcha","Lote 001"],
+  // Don Cuyo
+  ["Don Cuyo","Lote 001"],["Don Cuyo","Lote 002"],["Don Cuyo","Lote 003"],["Don Cuyo","Lote 004"],
+  // Enrique
+  ["Enrique","Lote 001"],["Enrique","Lote 002"],
+  // Guayabito
+  ["Guayabito","Lote 001"],["Guayabito","Lote 002"],["Guayabito","Lote 003"],["Guayabito","Lote 004"],
+  ["Guayabito","Lote 005"],["Guayabito","Lote 006"],["Guayabito","Lote 011"],["Guayabito","Lote 012"],
+  ["Guayabito","Lote 014"],["Guayabito","Lote 015"],["Guayabito","Lote 017"],["Guayabito","Lote 019"],
+  ["Guayabito","Lote 021"],["Guayabito","Lote 022"],["Guayabito","Lote 027"],
+  // Los Abuelos / Los Angeles
+  ["Los Abuelos","Lote 001"],["Los Angeles","Lote 001"],
+  // Oscar
+  ["Oscar","Lote 001"],["Oscar","Lote 002"],["Oscar","Lote 003"],
+  // Pajarilla
+  ["Pajarilla","Lote 001"],
+  // Pataste
+  ["Pataste","Lote 001"],["Pataste","Lote 002"],["Pataste","Lote 003"],["Pataste","Lote 004"],
+  ["Pataste","Lote 006"],["Pataste","Lote 007"],["Pataste","Lote 008"],
+  // Progreso
+  ["Progreso","Lote 001"],["Progreso","Lote 002"],["Progreso","Lote 003"],["Progreso","Lote 004"],["Progreso","Lote 005"],
+  // Rescate
+  ["Rescate","Lote 001"],["Rescate","Lote 004"],["Rescate","Lote 005"],["Rescate","Lote 006"],
+  ["Rescate","Lote 007"],["Rescate","Lote 008"],["Rescate","Lote 013"],
+  // San Luis, Tuto
+  ["San Luis","Lote 001"],["Tuto","Lote 001"]
+];
 
-/* ===== STORE ===== */
-const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},
-             set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch{return false}},
-             del(k){try{localStorage.removeItem(k)}catch{}}};
-
-/* ===== DATA BASE ===== */
-const DEFAULTS={choferes:["Freddy","Tatiana","Javier"],camiones:[{camion:"Camión 01",placa:"ABC-123"}],lotesRaw:[
-{finca:"Buena Vista",lote:"Lote 001"},{finca:"Buena Vista",lote:"Lote 002"},{finca:"Buena Vista",lote:"Lote 003"},{finca:"Buena Vista",lote:"Lote 005"},{finca:"Buena Vista",lote:"Lote 007"},{finca:"Buena Vista",lote:"Lote 008"},{finca:"Buena Vista",lote:"Lote 009"},{finca:"Buena Vista",lote:"Lote 011"},{finca:"Buena Vista",lote:"Lote 014"},{finca:"Buena Vista",lote:"Lote 015"},{finca:"Buena Vista",lote:"Lote 016"},
-{finca:"Caño Blanco",lote:"Lote 001"},{finca:"Caño Blanco",lote:"Lote 002"},{finca:"Caño Blanco",lote:"Lote 003"},{finca:"Caño Blanco",lote:"Lote 004"},{finca:"Caño Blanco",lote:"Lote 005"},{finca:"Caño Blanco",lote:"Lote 006"},{finca:"Caño Blanco",lote:"Lote 007"},{finca:"Caño Blanco",lote:"Lote 008"},{finca:"Caño Blanco",lote:"Lote 009"},{finca:"Caño Blanco",lote:"Lote 011"},
-{finca:"Chorcha",lote:"Lote 001"},
-{finca:"Don Cuyo",lote:"Lote 001"},{finca:"Don Cuyo",lote:"Lote 002"},{finca:"Don Cuyo",lote:"Lote 003"},{finca:"Don Cuyo",lote:"Lote 004"},
-{finca:"Enrique",lote:"Lote 001"},{finca:"Enrique",lote:"Lote 002"},
-{finca:"Guayabito",lote:"Lote 001"},{finca:"Guayabito",lote:"Lote 002"},{finca:"Guayabito",lote:"Lote 003"},{finca:"Guayabito",lote:"Lote 004"},{finca:"Guayabito",lote:"Lote 005"},{finca:"Guayabito",lote:"Lote 006"},{finca:"Guayabito",lote:"Lote 011"},{finca:"Guayabito",lote:"Lote 012"},{finca:"Guayabito",lote:"Lote 014"},{finca:"Guayabito",lote:"Lote 015"},{finca:"Guayabito",lote:"Lote 017"},{finca:"Guayabito",lote:"Lote 019"},{finca:"Guayabito",lote:"Lote 021"},{finca:"Guayabito",lote:"Lote 022"},{finca:"Guayabito",lote:"Lote 027"},
-{finca:"Los Abuelos",lote:"Lote 001"},{finca:"Los Angeles",lote:"Lote 001"},
-{finca:"Oscar",lote:"Lote 001"},{finca:"Oscar",lote:"Lote 002"},{finca:"Oscar",lote:"Lote 003"},
-{finca:"Pajarilla",lote:"Lote 001"},
-{finca:"Pataste",lote:"Lote 001"},{finca:"Pataste",lote:"Lote 002"},{finca:"Pataste",lote:"Lote 003"},{finca:"Pataste",lote:"Lote 004"},{finca:"Pataste",lote:"Lote 006"},{finca:"Pataste",lote:"Lote 007"},{finca:"Pataste",lote:"Lote 008"},
-{finca:"Progreso",lote:"Lote 001"},{finca:"Progreso",lote:"Lote 002"},{finca:"Progreso",lote:"Lote 003"},{finca:"Progreso",lote:"Lote 004"},{finca:"Progreso",lote:"Lote 005"},
-{finca:"Rescate",lote:"Lote 001"},{finca:"Rescate",lote:"Lote 004"},{finca:"Rescate",lote:"Lote 005"},{finca:"Rescate",lote:"Lote 006"},{finca:"Rescate",lote:"Lote 007"},{finca:"Rescate",lote:"Lote 008"},{finca:"Rescate",lote:"Lote 013"},
-{finca:"San Luis",lote:"Lote 001"},{finca:"Tuto",lote:"Lote 001"}]};
-
-function dedupLotes(raw){const ok=(raw||[]).filter(r=>r&&typeof r.finca==="string"&&typeof r.lote==="string");const map=new Map(ok.map(r=>[r.finca+"|"+r.lote,{finca:r.finca.trim(),lote:r.lote.trim()}]));return Array.from(map.values())}
-function safeArray(a,d){return Array.isArray(a)?a:d}
-
-let choferes=safeArray(store.get("byc_choferes",DEFAULTS.choferes),DEFAULTS.choferes);
-let camiones=safeArray(store.get("byc_camiones",DEFAULTS.camiones),DEFAULTS.camiones);
-let borradores=safeArray(store.get("byc_borradores",[]),[]);
-let pendientes=safeArray(store.get("byc_pendientes",[]),[]);
-let tm_borradores=safeArray(store.get("byc_tm_borradores",[]),[]);
-let tm_pendientes=safeArray(store.get("byc_tm_pendientes",[]),[]);
-let isAdmin=!!store.get("byc_is_admin",false);
-
-let lotes=dedupLotes(store.get("byc_lotes",DEFAULTS.lotesRaw));
-let fincas=[...new Set(lotes.map(r=>r.finca))].sort();
-store.set("byc_choferes",choferes);store.set("byc_camiones",camiones);store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);
-
-/* ===== TABS ===== */
-$$(".tab").forEach(b=>{b.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
-["viaje","tm","borradores","choferes","fincas","camiones","sincronizar","usuario"].forEach(id=>$("#"+id).hidden=(id!==b.dataset.tab));
-if(b.dataset.tab==="borradores") renderBorradores();
-if(b.dataset.tab==="tm") renderTMBorradores();
-if(b.dataset.tab==="fincas") updateAdminUI();
-if(b.dataset.tab==="choferes") renderChoferList();
-};});
-
-/* ===== CHOFER/CAMIÓN ===== */
-function renderChoferes(){const elV=$("#v_chofer"),elTM=$("#tm_chofer");const opts=choferes.map(n=>`<option value="${n}">${n}</option>`).join("");if(elV)elV.innerHTML=opts;if(elTM)elTM.innerHTML=opts}
-function renderCamiones(){const elV=$("#v_camion"),elTM=$("#tm_camion");const opts=camiones.map(c=>`<option value="${c.camion}">${c.camion}</option>`).join("");if(elV){elV.innerHTML=opts;fillPlacaFromCamion("#v_camion","#v_placa")}if(elTM){elTM.innerHTML=opts;fillPlacaFromCamion("#tm_camion","#tm_placa")}}
-function fillPlacaFromCamion(selCamion,selPlaca){const sc=$(selCamion),sp=$(selPlaca);if(!sc||!sp)return;const f=camiones.find(c=>c.camion===sc.value);sp.value=f?f.placa:""}
-$("#v_camion")?.addEventListener("change",()=>fillPlacaFromCamion("#v_camion","#v_placa"));
-$("#tm_camion")?.addEventListener("change",()=>fillPlacaFromCamion("#tm_camion","#tm_placa"));
-
-/* ===== FINCA → LOTE ===== */
-function buildFincaSelect(sel,defFinca){const s=$(sel);if(!s)return;s.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("");s.value=defFinca&&fincas.includes(defFinca)?defFinca:(fincas[0]||"")}
-function updateLotes(fincaSel,loteSel,defLote){const sF=$(fincaSel),sL=$(loteSel);if(!sF||!sL)return;const arr=lotes.filter(x=>x.finca===sF.value);sL.innerHTML=arr.map(x=>`<option value="${x.lote}">${x.lote}</option>`).join("");sL.value=(defLote&&arr.some(x=>x.lote===defLote))?defLote:(arr[0]?.lote||"")}
-function initOrigenDestino(){buildFincaSelect("#o_finca","Caño Blanco");buildFincaSelect("#d_finca","Caño Blanco");updateLotes("#o_finca","#o_lote");updateLotes("#d_finca","#d_lote");$("#o_finca")?.addEventListener("change",()=>updateLotes("#o_finca","#o_lote"));$("#d_finca")?.addEventListener("change",()=>updateLotes("#d_finca","#d_lote"))}
-
-/* ===== ADMIN FINCAS/LOTES ===== */
-function setAdmin(v){isAdmin=!!v;store.set("byc_is_admin",isAdmin);updateAdminUI()}
-function updateAdminUI(){const st=$("#admin_status");if(st)st.value=isAdmin?"Desbloqueado — administrador":"Bloqueado — solo lectura";const lockBtn=$("#btnLock"),adminBox=$("#f_admin");if(lockBtn)lockBtn.hidden=!isAdmin;if(adminBox)adminBox.hidden=!isAdmin;renderAdminFincasLotes()}
-$("#btnUnlock")?.addEventListener("click",()=>{const ok=normalizePass($("#admin_pass")?.value)===ADMIN_PASS_NORMALIZED;if(!ok){alert("Contraseña incorrecta.");return}$("#admin_pass").value="";setAdmin(true)});
-$("#btnLock")?.addEventListener("click",()=>setAdmin(false));
-
-function renderAdminFincasLotes(){
-  const sel=$("#l_fincaSel");if(sel&&isAdmin){sel.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("")}
-  const fList=$("#f_lista");if(fList){fList.innerHTML=fincas.map((f,i)=>`<div class="row grid2"><input value="${f}" disabled>${isAdmin?`<button class="danger" onclick="delFinca(${i})">Eliminar</button>`:""}</div>`).join("")||'<p class="muted">Sin fincas.</p>'}
-  const lList=$("#l_lista");if(lList){let html="";fincas.forEach(f=>{html+=`<h4 style="margin:10px 0 6px">${f}</h4>`;const arr=lotes.filter(x=>x.finca===f);if(!arr.length){html+='<p class="muted">Sin lotes</p>';return}html+='<div class="grid3">'+arr.map(x=>{const key=x.finca+"|"+x.lote;return `<div class="row"><input value="${x.lote}" disabled>${isAdmin?`<button class="danger" onclick="delLote('${key}')">Eliminar</button>`:""}</div>`}).join("")+'</div>'});lList.innerHTML=html}
+/* ====== Utilidades de datos (dedupe + orden) ====== */
+function dedup(arr){
+  const m = new Map();
+  arr.forEach(([f,l])=>{
+    const k = f.trim()+"|"+l.trim();
+    if(!m.has(k)) m.set(k,{finca:f.trim(), lote:l.trim()});
+  });
+  return Array.from(m.values());
 }
-window.delLote=key=>{if(!isAdmin)return alert("Solo administrador.");lotes=lotes.filter(x=>(x.finca+"|"+x.lote)!==key);fincas=[...new Set(lotes.map(r=>r.finca))].sort();store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);updateAdminUI();initOrigenDestino()};
-window.delFinca=i=>{if(!isAdmin)return alert("Solo administrador.");const nombre=fincas[i];lotes=lotes.filter(x=>x.finca!==nombre);fincas.splice(i,1);store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);updateAdminUI();initOrigenDestino()};
-$("#f_add")?.addEventListener("click",()=>{if(!isAdmin)return alert("Solo administrador.");const v=$("#f_nueva")?.value.trim();if(!v)return;if(!fincas.includes(v))fincas.push(v);fincas.sort();store.set("byc_fincas",fincas);$("#f_nueva").value="";updateAdminUI();initOrigenDestino()});
-$("#l_add")?.addEventListener("click",()=>{if(!isAdmin)return alert("Solo administrador.");const lote=$("#l_nuevo")?.value.trim();const finca=$("#l_fincaSel")?.value;if(!lote||!finca)return;lotes.push({finca,lote});const map=new Map(lotes.map(r=>[r.finca+"|"+r.lote,r]));lotes=[...map.values()];fincas=[...new Set(lotes.map(r=>r.finca))].sort();store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);$("#l_nuevo").value="";updateAdminUI();initOrigenDestino()});
+const LOTES = dedup(LOTES_RAW);
+const FINCAS = [...new Set(LOTES.map(x=>x.finca))].sort();
 
-/* ===== CHOFERES ===== */
-function renderChoferList(){const cont=$("#c_lista");if(!cont)return;if(!choferes.length){cont.innerHTML='<p class="muted">Sin choferes.</p>';return}cont.innerHTML=choferes.map((n,i)=>`<div class="row grid2"><input value="${n}" disabled><button class="danger" onclick="delChofer(${i})">Eliminar</button></div>`).join("")}
-window.delChofer=i=>{choferes.splice(i,1);store.set("byc_choferes",choferes);renderChoferes();renderChoferList()};
-$("#c_add")?.addEventListener("click",()=>{const v=($("#c_nuevo")?.value||"").trim();if(!v){alert("Escribí el nombre del chofer.");return}if(!choferes.includes(v))choferes.push(v);const ok=store.set("byc_choferes",choferes);$("#c_nuevo").value="";renderChoferes();renderChoferList();toast($("#estadoEnvio"),ok?"Chofer agregado ✅":"Agregado temporal (abrí fuera de WhatsApp)",ok)});
+/* ====== UI helpers ====== */
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+function setBtnLoading(btn,loading,label){
+  if(!btn) return;
+  if(loading){ btn.disabled = true; btn.textContent = "Enviando…"; }
+  else { btn.disabled = false; btn.textContent = label || btn.dataset.label || "Enviar"; }
+}
+function toast(el,msg,ok=true){
+  if(!el) return;
+  el.textContent = msg;
+  el.className = ok ? "ok" : "error";
+  setTimeout(()=>{el.textContent="";el.className="muted"},4000);
+}
 
-/* ===== CAMIONES ===== */
-$("#m_add")?.addEventListener("click",()=>{const c=$("#m_camion")?.value.trim();const p=$("#m_placa")?.value.trim();if(!c||!p)return;camiones.push({camion:c,placa:p});store.set("byc_camiones",camiones);$("#m_camion").value="";$("#m_placa").value="";renderAdminCamiones();renderCamiones()});
-function renderAdminCamiones(){const el=$("#m_lista");if(!el)return;el.innerHTML=camiones.map((c,i)=>`<div class="row grid3"><input value="${c.camion}" disabled><input value="${c.placa}" disabled><button class="danger" onclick="delCamion(${i})">Eliminar</button></div>`).join("")||'<p class="muted">Sin camiones.</p>'}
-window.delCamion=i=>{camiones.splice(i,1);store.set("byc_camiones",camiones);renderAdminCamiones();renderCamiones()};
+/* ====== Fincas & Lotes selectors ====== */
+function fillFincas(sel, def){
+  const el = $(sel);
+  el.innerHTML = FINCAS.map(f=>`<option value="${f}">${f}</option>`).join("");
+  el.value = FINCAS.includes(def) ? def : FINCAS[0];
+}
+function fillLotes(fincaSel, loteSel, defLote){
+  const f = $(fincaSel).value;
+  const elL = $(loteSel);
+  const arr = LOTES.filter(x=>x.finca===f);
+  elL.innerHTML = arr.map(x=>`<option value="${x.lote}">${x.lote}</option>`).join("");
+  elL.value = arr.some(x=>x.lote===defLote) ? defLote : (arr[0]?.lote || "");
+}
+function initOrigenDestino(){
+  // Por defecto: Caño Blanco
+  fillFincas("#o_finca","Caño Blanco"); fillLotes("#o_finca","#o_lote");
+  fillFincas("#d_finca","Caño Blanco"); fillLotes("#d_finca","#d_lote");
+  $("#o_finca").addEventListener("change",()=>fillLotes("#o_finca","#o_lote"));
+  $("#d_finca").addEventListener("change",()=>fillLotes("#d_finca","#d_lote"));
+}
 
-/* ===== INICIALIZA ===== */
-renderChoferes();renderChoferList();renderCamiones();renderAdminCamiones?.();
-const u=store.get("byc_user","");if(u){$("#u_nombre").value=u;$("#v_user").value=u;$("#tm_user").value=u}
-const ffecha=$("#v_fecha");if(ffecha&&!ffecha.value)ffecha.value=todayISO();
-const ftm=$("#tm_fecha");if(ftm&&!ftm.value)ftm.value=todayISO();
-initOrigenDestino();updateAdminUI();
+/* ====== Tabs ====== */
+$$(".tab").forEach(b=>b.onclick=()=>{
+  $$(".tab").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  ["viaje","tm"].forEach(id=>$("#"+id).hidden=(id!==b.dataset.tab));
+});
 
-/* ===== VIAJE ===== */
-function leerViaje(){const oText=($("#o_finca")?.value||"")+($("#o_lote")?.value?(" / "+$("#o_lote").value):"");const dText=($("#d_finca")?.value||"")+($("#d_lote")?.value?(" / "+$("#d_lote").value):"");return{_form:"viaje",fecha:$("#v_fecha")?.value||todayISO(),camion:$("#v_camion")?.value,placa:$("#v_placa")?.value,chofer:$("#v_chofer")?.value,operador:$("#v_user")?.value||store.get("byc_user",""),origen:oText,destino:dText,origen_finca:$("#o_finca")?.value,origen_lote:$("#o_lote")?.value,destino_finca:$("#d_finca")?.value,destino_lote:$("#d_lote")?.value,salida:$("#v_salida")?.value,llegada:$("#v_llegada")?.value,observaciones:$("#v_obs")?.value,_ts:Date.now()}}
-$("#btnLimpiar")?.addEventListener("click",()=>{$$("#viaje input,#viaje textarea").forEach(e=>{if(e.id!=="v_user")e.value=""});const u=store.get("byc_user","");if(u)$("#v_user").value=u});
+/* ====== Inicial ====== */
+(function init(){
+  const hoy = new Date(); const iso = hoy.toISOString().slice(0,10);
+  $("#v_fecha").value = iso; $("#tm_fecha").value = iso;
+  initOrigenDestino();
+})();
 
-/* ===== BORRADORES VIAJE ===== */
-let editIndex=-1;
-function renderBorradores(){const cont=$("#tablaBor");if(!cont)return;if(!Array.isArray(borradores)||!borradores.length){cont.innerHTML="<p class='muted'>No hay borradores.</p>";return}const cols=["fecha","camion","placa","chofer","origen","destino","salida","llegada","observaciones"];let html="<table><thead><tr>"+cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";borradores.forEach((r,i)=>{html+="<tr>"+cols.map(c=>`<td>${(r&&r[c])??""}</td>`).join("")+`<td><button class="btn" onclick="editarBor(${i})">Cargar</button><button class="danger" onclick="eliminarBor(${i})">Eliminar</button><button class="primary" id="btnEnviarBor-${i}" onclick="enviarUno(${i})" data-label="Enviar">Enviar</button></td></tr>`});html+="</tbody></table>";cont.innerHTML=html}
-window.editarBor=i=>{const r=borradores[i]||{};editIndex=i;$("#v_fecha").value=r.fecha||todayISO();$("#v_camion").value=r.camion||$("#v_camion").value;fillPlacaFromCamion("#v_camion","#v_placa");$("#v_placa").value=r.placa||"";$("#v_chofer").value=r.chofer||$("#v_chofer").value;$("#v_user").value=r.operador||store.get("byc_user","")||"";$("#o_finca").value=r.origen_finca||$("#o_finca").value;updateLotes("#o_finca","#o_lote",r.origen_lote);$("#d_finca").value=r.destino_finca||$("#d_finca").value;updateLotes("#d_finca","#d_lote",r.destino_lote);$("#v_salida").value=r.salida||"";$("#v_llegada").value=r.llegada||"";$("#v_obs").value=r.observaciones||"";document.querySelector('.tab[data-tab="viaje"]').click()}
-window.eliminarBor=i=>{borradores.splice(i,1);store.set("byc_borradores",borradores);renderBorradores()}
-const sendingRow=new Set();let sendingAll=false;
-window.enviarUno=async i=>{if(sendingRow.has(i))return;sendingRow.add(i);const btn=document.getElementById(`btnEnviarBor-${i}`);if(btn){btn.disabled=true;btn.textContent='Enviando…'}const r=borradores[i];const ok=await enviarRegistro(r,false);if(ok){borradores.splice(i,1);store.set("byc_borradores",borradores);renderBorradores();toast($("#estadoBor"),"Borrador enviado ✅")}else{toast($("#estadoBor"),"Error al enviar. Quedó en pendientes.",false);if(btn){btn.disabled=false;btn.textContent='Enviar'}}sendingRow.delete(i)}
-$("#btnBorrador")?.addEventListener("click",()=>{const r=leerViaje();if(editIndex>=0){borradores[editIndex]=r;editIndex=-1}else borradores.push(r);const ok=store.set("byc_borradores",borradores);toast($("#estadoEnvio"),ok?"Borrador guardado ✅":"Guardado temporal (abrí fuera de WhatsApp)",ok);renderBorradores()});
-$("#btnSyncBorradores")?.addEventListener("click",async()=>{if(sendingAll)return;const b=$("#btnSyncBorradores");sendingAll=true;b.disabled=true;b.textContent="Enviando…";const est=$("#estadoBor");if(!borradores.length){toast(est,"No hay borradores");b.disabled=false;b.textContent="Sincronizar todos";sendingAll=false;return}let ok=0,fail=0,rest=[];for(const r of borradores){const ex=await enviarRegistro(r,false);if(ex)ok++;else{fail++;rest.push(r)}}borradores=rest;store.set("byc_borradores",borradores);renderBorradores();toast(est,`OK ${ok} / Error ${fail}`,fail===0);b.disabled=false;b.textContent="Sincronizar todos";sendingAll=false});
+/* ====== LECTURA DE FORMULARIOS ====== */
+function leerViaje(){
+  const origen = `${$("#o_finca").value} / ${$("#o_lote").value}`;
+  const destino = `${$("#d_finca").value} / ${$("#d_lote").value}`;
+  return {
+    fecha: $("#v_fecha").value,
+    camion: $("#v_camion").value,
+    placa: $("#v_placa").value,
+    chofer: $("#v_chofer").value,
+    operador: $("#v_user").value,
+    origen, destino,
+    salida: $("#v_salida").value,
+    llegada: $("#v_llegada").value,
+    observaciones: $("#v_obs").value,
+    _ts: Date.now()
+  };
+}
+function leerTM(){
+  return {
+    _form: "tiempos_muertos",
+    fecha: $("#tm_fecha").value,
+    chofer: $("#tm_chofer").value,
+    camion: $("#tm_camion").value,
+    inicio: $("#tm_inicio").value,
+    fin: $("#tm_fin").value,
+    labor: $("#tm_labor").value,
+    observaciones: $("#tm_obs").value,
+    _ts: Date.now()
+  };
+}
 
-/* ===== TM ===== */
-function leerTM(){const laborSel=$("#tm_labor")?.value||"";const labor=laborSel==="Otro"?($("#tm_labor_otro")?.value||"Otro"):laborSel;return{_form:"tiempos_muertos",fecha:$("#tm_fecha")?.value||todayISO(),chofer:$("#tm_chofer")?.value,camion:$("#tm_camion")?.value,placa:$("#tm_placa")?.value,operador:$("#tm_user")?.value||store.get("byc_user",""),inicio:$("#tm_inicio")?.value,fin:$("#tm_fin")?.value,labor,labor_base:laborSel,rodando_min:($("#tm_rodando_min")?.value||"").toString().trim(),observaciones:$("#tm_obs")?.value,_ts:Date.now()}}
-$("#tm_btnLimpiar")?.addEventListener("click",()=>{$$("#tm input,#tm textarea,#tm select").forEach(e=>{if(e.id!=="tm_user")e.value=""});const u=store.get("byc_user","");if(u)$("#tm_user").value=u;const ftm=$("#tm_fecha");if(ftm&&!ftm.value)ftm.value=todayISO();$("#tm_labor").value="Esperando personal"});
-
-let tm_editIndex=-1;
-function renderTMBorradores(){const cont=$("#tm_tablaBor");if(!cont)return;if(!Array.isArray(tm_borradores)||!tm_borradores.length){cont.innerHTML="<p class='muted'>No hay borradores TM.</p>";return}const cols=[["fecha","FECHA"],["chofer","CHOFER"],["camion","CAMIÓN"],["inicio","INICIO"],["fin","FIN"],["labor","LABOR"],["rodando_min","RODANDO (min)"],["observaciones","OBS"]];let html="<table><thead><tr>"+cols.map(([k,t])=>`<th>${t}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";tm_borradores.forEach((r,i)=>{html+="<tr>"+cols.map(([k])=>`<td>${(r&&r[k])??""}</td>`).join("")+`<td><button class="btn" onclick="tm_editar(${i})">Cargar</button><button class="danger" onclick="tm_eliminar(${i})">Eliminar</button><button class="primary" id="tm_btnEnviarBor-${i}" onclick="tm_enviarUno(${i})" data-label="Enviar">Enviar</button></td></tr>`});html+="</tbody></table>";cont.innerHTML=html}
-window.tm_editar=i=>{const r=tm_borradores[i]||{};tm_editIndex=i;$("#tm_fecha").value=r.fecha||todayISO();$("#tm_camion").value=r.camion||$("#tm_camion").value;fillPlacaFromCamion("#tm_camion","#tm_placa");$("#tm_placa").value=r.placa||"";$("#tm_chofer").value=r.chofer||$("#tm_chofer").value;$("#tm_user").value=r.operador||store.get("byc_user","")||"";$("#tm_inicio").value=r.inicio||"";$("#tm_fin").value=r.fin||"";$("#tm_labor").value=r.labor_base||r.labor||"Esperando personal";$("#tm_labor_otro").value=(r.labor_base==="Otro")?(r.labor||""):"";$("#tm_rodando_min").value=r.rodando_min||"";$("#tm_obs").value=r.observaciones||"";document.querySelector('.tab[data-tab="tm"]').click()}
-window.tm_eliminar=i=>{tm_borradores.splice(i,1);store.set("byc_tm_borradores",tm_borradores);renderTMBorradores()}
-
-const tm_sendingRow=new Set();let tm_sendingAll=false;let tm_sending=false;
-window.tm_enviarUno=async i=>{if(tm_sendingRow.has(i))return;tm_sendingRow.add(i);const btn=document.getElementById(`tm_btnEnviarBor-${i}`);if(btn){btn.disabled=true;btn.textContent='Enviando…'}const r=tm_borradores[i];const ok=await enviarRegistro(r,false);if(ok){tm_borradores.splice(i,1);store.set("byc_tm_borradores",tm_borradores);renderTMBorradores();toast($("#tm_estadoBor"),"Borrador TM enviado ✅")}else{toast($("#tm_estadoBor"),"Error al enviar. Quedó en pendientes TM.",false);if(btn){btn.disabled=false;btn.textContent='Enviar'}}tm_sendingRow.delete(i)}
-$("#tm_btnBorrador")?.addEventListener("click",()=>{const r=leerTM();if(tm_editIndex>=0){tm_borradores[tm_editIndex]=r;tm_editIndex=-1}else tm_borradores.push(r);const ok=store.set("byc_tm_borradores",tm_borradores);toast($("#tm_estadoEnvio"),ok?"Borrador TM guardado ✅":"Guardado temporal (abrí fuera de WhatsApp)",ok);renderTMBorradores()});
-$("#tm_btnSyncBorradores")?.addEventListener("click",async()=>{if(tm_sendingAll)return;const b=$("#tm_btnSyncBorradores");tm_sendingAll=true;b.disabled=true;b.textContent="Enviando…";const est=$("#tm_estadoBor");if(!tm_borradores.length){toast(est,"No hay borradores TM");b.disabled=false;b.textContent="Sincronizar todos (TM)";tm_sendingAll=false;return}let ok=0,fail=0,rest=[];for(const r of tm_borradores){const ex=await enviarRegistro(r,false);if(ex)ok++;else{fail++;rest.push(r)}}tm_borradores=rest;store.set("byc_tm_borradores",tm_borradores);renderTMBorradores();toast(est,`TM OK ${ok} / Error ${fail}`,fail===0);b.disabled=false;b.textContent="Sincronizar todos (TM)";tm_sendingAll=false});
-$("#tm_btnEnviar")?.addEventListener("click",async()=>{if(tm_sending)return;tm_sending=true;setBtnLoading($("#tm_btnEnviar"),true);const reg=leerTM();await enviarRegistro(reg,true,$("#tm_estadoEnvio"));setTimeout(()=>{tm_sending=false;setBtnLoading($("#tm_btnEnviar"),false,$("#tm_btnEnviar").dataset.label)},500)});
-
-/* ===== ENVÍO (muestra el error real) ===== */
-async function enviarRegistro(reg,showMsg=true){
-  const tgt=reg?(reg._form==="tiempos_muertos"?$("#tm_estadoEnvio"):$("#estadoEnvio")):$("#estadoEnvio");
+/* ====== Envío a GAS ====== */
+async function enviarRegistro(reg, estadoEl, botonEl){
   try{
-    const body=new URLSearchParams({payload:JSON.stringify([reg])});
-    const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
-    const txt=await res.text();
-    if(!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} — ${txt.slice(0,200)}`);
-    let j; try{ j=JSON.parse(txt) }catch{ j={ok:true} }
-    if(!j.ok) throw new Error(j.error||"Respuesta no OK");
-    if(showMsg) toast(tgt,"Enviado ✅");
+    setBtnLoading(botonEl,true);
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/x-www-form-urlencoded"},
+      body: new URLSearchParams({ payload: JSON.stringify([reg]) })
+    });
+    const txt = await res.text();
+    let j; try{ j = JSON.parse(txt) }catch{ j = {ok:true} }
+    if(!res.ok || !j.ok){
+      const msg = !res.ok ? `HTTP ${res.status} ${res.statusText} — ${txt.slice(0,200)}` : (j.error||"Respuesta no OK");
+      toast(estadoEl, "Error: " + msg, false);
+      return false;
+    }
+    toast(estadoEl, "Enviado ✅", true);
     return true;
-  }catch(e){
-    if(showMsg) toast(tgt,String(e),false);
-    const key=(reg&&reg._form==="tiempos_muertos")?"byc_tm_pendientes":"byc_pendientes";
-    const arr=JSON.parse(localStorage.getItem(key)||"[]"); arr.push(reg);
-    localStorage.setItem(key, JSON.stringify(arr));
+  }catch(err){
+    toast(estadoEl, String(err), false);
     return false;
+  }finally{
+    setBtnLoading(botonEl,false,botonEl?.dataset.label);
   }
 }
 
-/* ===== PENDIENTES / SYNC ===== */
-$("#btnEnviarPendientes")?.addEventListener("click",async()=>{const est=$("#estadoSync");if(!pendientes.length&&!tm_pendientes.length)return toast(est,"No hay pendientes");let ok=0,fail=0,nuevos=[],okTM=0,failTM=0,nuevosTM=[];for(const r of pendientes){const ex=await enviarRegistro(r,false);if(ex)ok++;else{fail++;nuevos.push(r)}}for(const r of tm_pendientes){const ex=await enviarRegistro(r,false);if(ex)okTM++;else{failTM++;nuevosTM.push(r)}}pendientes=nuevos;tm_pendientes=nuevosTM;store.set("byc_pendientes",pendientes);store.set("byc_tm_pendientes",tm_pendientes);toast(est,`Viajes OK ${ok}/Err ${fail} — TM OK ${okTM}/Err ${failTM}`,(fail+failTM)===0)});
-$("#btnSync")?.addEventListener("click",async()=>{const est=$("#estadoSync"),tabla=$("#tabla");if(est)est.textContent="Leyendo…";try{const res=await fetch(GAS_URL+"?action=getData");const j=await res.json();if(!j.ok)throw new Error(j.error||"Error");if(est)est.textContent=`Registros: ${j.data.length}`;const headers=(j.headers&&j.headers.length)?j.headers:Object.keys(j.data[0]||{});let html="<table><thead><tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbody>";j.data.forEach(r=>{html+="<tr>"+headers.map(h=>`<td>${r[h]??""}</td>`).join("")+"</tr>"});html+="</tbody></table>";if(tabla)tabla.innerHTML=html}catch(e){if(est)toast(est,String(e),false)}});
-$("#u_guardar")?.addEventListener("click",()=>{const u=$("#u_nombre")?.value.trim();if(!u)return;store.set("byc_user",u);const v1=$("#v_user"),v2=$("#tm_user");if(v1)v1.value=u;if(v2)v2.value=u;alert("Usuario guardado.")});
-$("#u_reparar")?.addEventListener("click",()=>{["byc_user","byc_choferes","byc_camiones","byc_lotes","byc_fincas","byc_borradores","byc_pendientes","byc_tm_borradores","byc_tm_pendientes","byc_is_admin"].forEach(store.del);alert("Listo. Caché reparada. Cerrá y abrí el link otra vez.")});
+/* ====== Acciones ====== */
+$("#btnEnviar").addEventListener("click", async ()=>{
+  await enviarRegistro(leerViaje(), $("#estadoEnvio"), $("#btnEnviar"));
+});
+$("#btnLimpiar").addEventListener("click", ()=>{
+  $$("#viaje input,#viaje textarea").forEach(e=>{
+    if(e.id!=="v_fecha") e.value="";
+  });
+  initOrigenDestino();
+});
+$("#tm_btnEnviar").addEventListener("click", async ()=>{
+  await enviarRegistro(leerTM(), $("#tm_estadoEnvio"), $("#tm_btnEnviar"));
+});
 </script>
 </body>
 </html>
