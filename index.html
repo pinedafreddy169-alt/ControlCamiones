@@ -622,6 +622,20 @@ $("#tm_btnEnviar")?.addEventListener("click", async ()=>{
   setTimeout(()=>{tm_sending=false; setBtnLoading($("#tm_btnEnviar"),false,$("#tm_btnEnviar").dataset.label)},500);
 });
 
+/* ===== VIAJES → Enviar directo ===== */
+let v_sending = false;
+$("#btnEnviar")?.addEventListener("click", async ()=>{
+  if (v_sending) return;
+  v_sending = true;
+  setBtnLoading($("#btnEnviar"), true);
+  const reg = leerViaje();
+  await enviarRegistro(reg, true, $("#estadoEnvio"));
+  setTimeout(()=>{
+    v_sending = false;
+    setBtnLoading($("#btnEnviar"), false, $("#btnEnviar").dataset.label);
+  }, 500);
+});
+
 /* ===== ENVÍO GENERAL ===== */
 async function enviarRegistro(reg,showMsg=true){
   try{
@@ -674,4 +688,3 @@ $("#u_reparar")?.addEventListener("click",()=>{
 </script>
 </body>
 </html>
-
