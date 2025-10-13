@@ -219,12 +219,12 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 
 <script>
 /* ===== CONFIG (TU URL NUEVA) ===== */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxe2OxJIBH0p2-uB5JXWAZ-Moe1Bop7Xoml-rpk4ad-HYUXv21iNC9Vb4sXcXHwQXwm-A/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwvF01Q6QRgYE-WJxIX3TyZ-bFmoD2db0kzzsPVoC4MTRhm1yBM88dmz506eyX0a6qKBA/exec";
 const ADMIN_PASS_NORMALIZED = "admi12345";
 
 /* ===== HELPERS ===== */
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-function normalizePass(p){return (p||"").replace(/\s+/g,"").toLowerCase()}
+function normalizePass(p){return (p||"").replace(/\\s+/g,"").toLowerCase()}
 function todayISO(){const d=new Date();d.setHours(0,0,0,0);return d.toISOString().slice(0,10)}
 function toast(el,msg,ok=true){el.textContent=msg;el.className=ok?'ok':'error';setTimeout(()=>{el.textContent='';el.className='muted'},4000)}
 function setBtnLoading(btn,loading,label){if(!btn)return;if(loading){btn.disabled=true;btn.textContent='Enviando…'}else{btn.disabled=false;btn.textContent=label||btn.dataset.label||'Enviar'}}
