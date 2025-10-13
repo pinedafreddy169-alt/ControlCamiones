@@ -221,8 +221,8 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 
 <script>
 /* ===== CONFIG ===== */
-/* NUEVA URL que me pasaste */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyPFLzEv7s306JE-mbg3dsMP1kiFSZ-j1gCDPeIwidFY7tW2EUJHnAb6Fei9jtBmRJWsw/exec";
+/* NUEVA URL (la que me pasaste) */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzHNutDHQwSxdpUwNDQorcxPpPFEKOM7hCOqf200UGPeOTSZ8Vbc-gh9lwe2ok2PdpLRw/exec";
 const ADMIN_PASS_NORMALIZED = "admi12345";
 
 /* ===== ANTIPEGA GLOBAL ===== */
@@ -243,7 +243,7 @@ const store = {
   del(k){ try{localStorage.removeItem(k)}catch(e){} }
 };
 
-/* ===== DEFAULTS (fincas/lotes/choferes/camiones) ===== */
+/* ===== DEFAULTS ===== */
 const DEFAULTS = {
   choferes: ["Freddy","Tatiana","Javier"],
   camiones: [{camion:"Camión 01", placa:"ABC-123"}],
@@ -522,7 +522,7 @@ window.enviarUno=async i=>{
   const btn=document.getElementById(`btnEnviarBor-${i}`); if(btn){btn.disabled=true;btn.textContent='Enviando…'}
   const r=borradores[i]; const ok=await enviarRegistro(r,false);
   if(ok){borradores.splice(i,1); store.set("byc_borradores",borradores); renderBorradores(); toast($("#estadoBor"),"Borrador enviado ✅")}
-  else {toast($("#estadoBor"),"Error al enviar. Quedó en pendientes.",false); if(btn){btn.disabled=false;btn.textContent='Enviar'}}
+  else {toast($("#estadoBor"),"Sin internet. Quedó en pendientes.",false); if(btn){btn.disabled=false;btn.textContent='Enviar'}}
   sendingRow.delete(i);
 };
 $("#btnBorrador")?.addEventListener("click",()=>{
@@ -593,7 +593,7 @@ window.tm_enviarUno=async i=>{
   const btn=document.getElementById(`tm_btnEnviarBor-${i}`); if(btn){btn.disabled=true;btn.textContent='Enviando…'}
   const r=tm_borradores[i]; const ok=await enviarRegistro(r,false);
   if(ok){tm_borradores.splice(i,1); store.set("byc_tm_borradores",tm_borradores); renderTMBorradores(); toast($("#tm_estadoBor"),"Borrador TM enviado ✅")}
-  else {toast($("#tm_estadoBor"),"Error al enviar. Quedó en pendientes TM.",false); if(btn){btn.disabled=false;btn.textContent='Enviar'}}
+  else {toast($("#tm_estadoBor"),"Sin internet. Quedó en pendientes TM.",false); if(btn){btn.disabled=false;btn.textContent='Enviar'}}
   tm_sendingRow.delete(i);
 };
 
@@ -622,23 +622,24 @@ $("#tm_btnEnviar")?.addEventListener("click", async ()=>{
   setTimeout(()=>{tm_sending=false; setBtnLoading($("#tm_btnEnviar"),false,$("#tm_btnEnviar").dataset.label)},500);
 });
 
-/* ===== ENVÍO GENERAL (mejorado: muestra el error real HTTP) ===== */
-async function enviarRegistro(reg, showMsg = true){
-  const tgt = reg ? (reg._form==="tiempos_muertos" ? $("#tm_estadoEnvio") : $("#estadoEnvio")) : $("#estadoEnvio");
+/* ===== ENVÍO GENERAL ===== */
+async function enviarRegistro(reg,showMsg=true){
   try{
     const body=new URLSearchParams({payload:JSON.stringify([reg])});
-    const res = await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
-    const txt = await res.text();
-    if(!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} • ${txt.slice(0,180)}`);
-    let j; try{j=JSON.parse(txt)}catch{j={ok:true}}
-    if(!j.ok) throw new Error(j.error||"Respuesta no OK");
-    if(showMsg) toast(tgt,"Enviado ✅");
-    return true;
+    const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
+    const txt=await res.text(); let j; try{j=JSON.parse(txt)}catch{j={ok:res.ok,raw:txt}}
+    if(!j.ok) throw new Error(j.error||JSON.stringify(j));
+    if(showMsg){
+      const tgt = reg? (reg._form==="tiempos_muertos" ? $("#tm_estadoEnvio") : $("#estadoEnvio")) : $("#estadoEnvio");
+      toast(tgt,"Enviado ✅");
+    }
+    return true
   }catch(e){
-    if(showMsg) toast(tgt,String(e),false);
+    const tgt = reg? (reg._form==="tiempos_muertos" ? $("#tm_estadoEnvio") : $("#estadoEnvio")) : $("#estadoEnvio");
+    if(showMsg) toast(tgt,"Sin internet. Guardado en pendientes.",false);
     if(reg && reg._form==="tiempos_muertos"){ tm_pendientes.push(reg); store.set("byc_tm_pendientes",tm_pendientes); }
     else { pendientes.push(reg); store.set("byc_pendientes",pendientes); }
-    return false;
+    return false
   }
 }
 
