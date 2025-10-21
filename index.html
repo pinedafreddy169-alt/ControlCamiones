@@ -95,6 +95,19 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
       <div><label>Hora llegada</label><input type="time" id="v_llegada"></div>
     </div>
 
+    <!-- NUEVO: Solicitante del viaje -->
+    <div class="grid3 row">
+      <div>
+        <label>Quién solicita el viaje</label>
+        <select id="v_solicitante"></select>
+      </div>
+      <div>
+        <label>Si es “Otro”, escriba el nombre</label>
+        <input type="text" id="v_solicitante_otro" placeholder="Nombre del solicitante" disabled>
+      </div>
+      <div><label>&nbsp;</label><input type="text" disabled placeholder="Autorizado por defecto"></div>
+    </div>
+
     <div class="row"><label>Observaciones</label><textarea id="v_obs" placeholder="Notas del viaje"></textarea></div>
 
     <div class="actions">
@@ -231,12 +244,12 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 
 <script>
 /* ====== VERSIÓN / ANTIPEGA ====== */
-const APP_VERSION = "2025.10.21-1"; // Cambiar cuando subas una versión
+const APP_VERSION = "2025.10.21-2"; // subir al publicar nueva versión
 const SW_PATH = "./service-worker.js?v="+APP_VERSION;
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyQOsvg9RiNDfCA3WNQiWZLmeVThFCKQfnWq9bkSx5uVxRKF3xFKznsx7qulC8ksYeHsA/exec";
 const ADMIN_PASS_NORMALIZED = "admi12345";
 
-// Forzar bust del manifest para evitar caché vieja
+// Bust del manifest para evitar caché vieja
 (function bumpManifest(){
   const link=document.querySelector('link[rel="manifest"]');
   if(link){
@@ -264,7 +277,16 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
              del(k){try{localStorage.removeItem(k)}catch{}}};
 
 /* ===== DATA BASE ===== */
-const DEFAULTS={choferes:["Freddy","Tatiana","Javier"],camiones:[{camion:"Camión 01",placa:"ABC-123"}],lotesRaw:[
+const DEFAULTS={
+  choferes:["Freddy","Tatiana","Javier"],
+  camiones:[{camion:"Camión 01",placa:"ABC-123"}],
+  solicitantes:[
+    "Braulio","Victor","Juan Perez","Roberto","Jorge","Efrain",
+    "Geovani Jimenez","Leandro Bustos","Vinicio Vonilla","Fabian Esquivel",
+    "Adrian Cruz","Kevin Alvares","Ariel Rubi","Kennet Oporta",
+    "Planta La Bruja","Planta Bajo Cero","Javier Cerdas","Otro"
+  ],
+  lotesRaw:[
 {finca:"Buena Vista",lote:"Lote 001"},{finca:"Buena Vista",lote:"Lote 002"},{finca:"Buena Vista",lote:"Lote 003"},{finca:"Buena Vista",lote:"Lote 005"},{finca:"Buena Vista",lote:"Lote 007"},{finca:"Buena Vista",lote:"Lote 008"},{finca:"Buena Vista",lote:"Lote 009"},{finca:"Buena Vista",lote:"Lote 011"},{finca:"Buena Vista",lote:"Lote 014"},{finca:"Buena Vista",lote:"Lote 015"},{finca:"Buena Vista",lote:"Lote 016"},
 {finca:"Caño Blanco",lote:"Lote 001"},{finca:"Caño Blanco",lote:"Lote 002"},{finca:"Caño Blanco",lote:"Lote 003"},{finca:"Caño Blanco",lote:"Lote 004"},{finca:"Caño Blanco",lote:"Lote 005"},{finca:"Caño Blanco",lote:"Lote 006"},{finca:"Caño Blanco",lote:"Lote 007"},{finca:"Caño Blanco",lote:"Lote 008"},{finca:"Caño Blanco",lote:"Lote 009"},{finca:"Caño Blanco",lote:"Lote 011"},
 {finca:"Chorcha",lote:"Lote 001"},
@@ -277,7 +299,8 @@ const DEFAULTS={choferes:["Freddy","Tatiana","Javier"],camiones:[{camion:"Camió
 {finca:"Pataste",lote:"Lote 001"},{finca:"Pataste",lote:"Lote 002"},{finca:"Pataste",lote:"Lote 003"},{finca:"Pataste",lote:"Lote 004"},{finca:"Pataste",lote:"Lote 006"},{finca:"Pataste",lote:"Lote 007"},{finca:"Pataste",lote:"Lote 008"},
 {finca:"Progreso",lote:"Lote 001"},{finca:"Progreso",lote:"Lote 002"},{finca:"Progreso",lote:"Lote 003"},{finca:"Progreso",lote:"Lote 004"},{finca:"Progreso",lote:"Lote 005"},
 {finca:"Rescate",lote:"Lote 001"},{finca:"Rescate",lote:"Lote 004"},{finca:"Rescate",lote:"Lote 005"},{finca:"Rescate",lote:"Lote 006"},{finca:"Rescate",lote:"Lote 007"},{finca:"Rescate",lote:"Lote 008"},{finca:"Rescate",lote:"Lote 013"},
-{finca:"San Luis",lote:"Lote 001"},{finca:"Tuto",lote:"Lote 001"}]};
+{finca:"San Luis",lote:"Lote 001"},{finca:"Tuto",lote:"Lote 001"}]
+};
 
 function dedupLotes(raw){const ok=(raw||[]).filter(r=>r&&typeof r.finca==="string"&&typeof r.lote==="string");const map=new Map(ok.map(r=>[r.finca+"|"+r.lote,{finca:r.finca.trim(),lote:r.lote.trim()}]));return Array.from(map.values())}
 function safeArray(a,d){return Array.isArray(a)?a:d}
@@ -289,10 +312,11 @@ let pendientes=safeArray(store.get("byc_pendientes",[]),[]);
 let tm_borradores=safeArray(store.get("byc_tm_borradores",[]),[]);
 let tm_pendientes=safeArray(store.get("byc_tm_pendientes",[]),[]);
 let isAdmin=!!store.get("byc_is_admin",false);
+let solicitantes=safeArray(store.get("byc_solicitantes",DEFAULTS.solicitantes),DEFAULTS.solicitantes);
 
 let lotes=dedupLotes(store.get("byc_lotes",DEFAULTS.lotesRaw));
 let fincas=[...new Set(lotes.map(r=>r.finca))].sort();
-store.set("byc_choferes",choferes);store.set("byc_camiones",camiones);store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);
+store.set("byc_choferes",choferes);store.set("byc_camiones",camiones);store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);store.set("byc_solicitantes",solicitantes);
 
 /* ===== TABS ===== */
 $$(".tab").forEach(b=>{b.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
@@ -341,8 +365,27 @@ $("#m_add")?.addEventListener("click",()=>{const c=$("#m_camion")?.value.trim();
 function renderAdminCamiones(){const el=$("#m_lista");if(!el)return;el.innerHTML=camiones.map((c,i)=>`<div class="row grid3"><input value="${c.camion}" disabled><input value="${c.placa}" disabled><button class="danger" onclick="delCamion(${i})">Eliminar</button></div>`).join("")||'<p class="muted">Sin camiones.</p>'}
 window.delCamion=i=>{camiones.splice(i,1);store.set("byc_camiones",camiones);renderAdminCamiones();renderCamiones()};
 
+/* ===== SOLICITANTES (NUEVO) ===== */
+function renderSolicitantes(){
+  const el=$("#v_solicitante");
+  if(!el) return;
+  const opts=solicitantes.map(n=>`<option value="${n}">${n}</option>`).join("");
+  el.innerHTML=opts;
+  // por defecto, el primero
+  if(el.options.length) el.value = el.options[0].value;
+  updateSolicitanteOtro();
+}
+function updateSolicitanteOtro(){
+  const sel=$("#v_solicitante"); const inp=$("#v_solicitante_otro");
+  if(!sel||!inp) return;
+  const isOtro = (sel.value==="Otro");
+  inp.disabled = !isOtro;
+  if(!isOtro) inp.value="";
+}
+$("#v_solicitante")?.addEventListener("change", updateSolicitanteOtro);
+
 /* ===== INICIALIZA ===== */
-renderChoferes();renderChoferList();renderCamiones();renderAdminCamiones?.();
+renderChoferes();renderChoferList();renderCamiones();renderAdminCamiones?.();renderSolicitantes();
 const ffecha=$("#v_fecha");if(ffecha&&!ffecha.value)ffecha.value=todayISO();
 const ftm=$("#tm_fecha");if(ftm&&!ftm.value)ftm.value=todayISO();
 initOrigenDestino();updateAdminUI();
@@ -351,6 +394,9 @@ initOrigenDestino();updateAdminUI();
 function leerViaje(){
   const oText=($("#o_finca")?.value||"")+($("#o_lote")?.value?(" / "+$("#o_lote").value):"");
   const dText=($("#d_finca")?.value||"")+($("#d_lote")?.value?(" / "+$("#d_lote").value):"");
+  const solicitante_base=$("#v_solicitante")?.value||"";
+  const solicitante=(solicitante_base==="Otro")?($("#v_solicitante_otro")?.value||"Otro"):solicitante_base;
+
   return{
     _form:"viaje",
     fecha:$("#v_fecha")?.value||todayISO(),
@@ -365,11 +411,13 @@ function leerViaje(){
     destino_lote:$("#d_lote")?.value,
     salida:$("#v_salida")?.value,
     llegada:$("#v_llegada")?.value,
+    solicitante,                // NUEVO: valor final
+    solicitante_base,           // NUEVO: selección del combo
     observaciones:$("#v_obs")?.value,
     _ts:Date.now()
   }
 }
-$("#btnLimpiar")?.addEventListener("click",()=>{$$("#viaje input,#viaje textarea").forEach(e=>{e.value=""});const ffecha=$("#v_fecha");if(ffecha&&!ffecha.value)ffecha.value=todayISO()});
+$("#btnLimpiar")?.addEventListener("click",()=>{$$("#viaje input,#viaje textarea").forEach(e=>{e.value=""});const ffecha=$("#v_fecha");if(ffecha&&!ffecha.value)ffecha.value=todayISO();renderSolicitantes()});
 
 /* Envío directo del formulario de Viaje */
 let v_sending=false;
@@ -387,7 +435,7 @@ let editIndex=-1;
 function renderBorradores(){
   const cont=$("#tablaBor");if(!cont)return;
   if(!Array.isArray(borradores)||!borradores.length){cont.innerHTML="<p class='muted'>No hay borradores.</p>";return}
-  const cols=["fecha","camion","placa","chofer","origen","destino","salida","llegada","observaciones"];
+  const cols=["fecha","camion","placa","chofer","solicitante","origen","destino","salida","llegada","observaciones"]; // agregado solicitante
   let html="<table><thead><tr>"+cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";
   borradores.forEach((r,i)=>{
     html+="<tr>"+cols.map(c=>`<td>${(r&&r[c])??""}</td>`).join("")+
@@ -408,6 +456,15 @@ window.editarBor=i=>{
   $("#o_finca").value=r.origen_finca||$("#o_finca").value; updateLotes("#o_finca","#o_lote",r.origen_lote);
   $("#d_finca").value=r.destino_finca||$("#d_finca").value; updateLotes("#d_finca","#d_lote",r.destino_lote);
   $("#v_salida").value=r.salida||""; $("#v_llegada").value=r.llegada||"";
+  // NUEVO: solicitante
+  renderSolicitantes();
+  if(r.solicitante_base && solicitantes.includes(r.solicitante_base)){
+    $("#v_solicitante").value = r.solicitante_base;
+  }else if(r.solicitante){
+    $("#v_solicitante").value = "Otro";
+    $("#v_solicitante_otro").disabled = false;
+    $("#v_solicitante_otro").value = r.solicitante;
+  }
   $("#v_obs").value=r.observaciones||"";
   document.querySelector('.tab[data-tab="viaje"]').click()
 }
@@ -578,12 +635,10 @@ function showSW(msg, ok=true){ if(swEstado) { swEstado.textContent = msg + " · 
 
 async function clearPWACaches(){
   try{
-    // 1) Borrar caches
     if('caches' in window){
       const names=await caches.keys();
       await Promise.all(names.map(n=>caches.delete(n)));
     }
-    // 2) Desregistrar SW
     if('serviceWorker' in navigator){
       const regs=await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r=>r.unregister()));
@@ -598,11 +653,8 @@ async function updateSW(){
     const reg = await navigator.serviceWorker.getRegistration();
     if(!reg){ await navigator.serviceWorker.register(SW_PATH); showSW("SW registrado"); return }
     await reg.update();
-    if(reg.waiting){
-      reg.waiting.postMessage({type:"SKIP_WAITING"});
-    }else{
-      showSW("Sin actualización");
-    }
+    if(reg.waiting){ reg.waiting.postMessage({type:"SKIP_WAITING"}); }
+    else{ showSW("Sin actualización"); }
   }catch(e){ showSW("Error SW: "+e.message, false); }
 }
 
@@ -625,24 +677,19 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', async ()=>{
     try{
       const reg = await navigator.serviceWorker.register(SW_PATH);
-      // Si hay worker nuevo, activarlo ya
       function listen(worker){
         if(!worker) return;
         worker.addEventListener('statechange', ()=>{
           if(worker.state==='installed' && navigator.serviceWorker.controller){
-            // nuevo listo -> pedir activación inmediata
             worker.postMessage({type:"SKIP_WAITING"});
           }
         });
       }
       listen(reg.installing); listen(reg.waiting);
-
-      // Cuando cambie el controlador, recargar una sola vez
       let refreshing=false;
       navigator.serviceWorker.addEventListener('controllerchange', ()=>{
         if(refreshing) return; refreshing=true; location.reload();
       });
-
       showSW("App lista");
     }catch(e){ showSW("SW error: "+e.message, false); }
   });
