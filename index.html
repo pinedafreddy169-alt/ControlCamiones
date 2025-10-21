@@ -61,18 +61,9 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
       <div><label>Chofer</label><select id="v_chofer"></select></div>
       <div><label>Camión</label><select id="v_camion"></select></div>
     </div>
-
-    <!-- NUEVO: Quién solicita -->
     <div class="grid2 row">
-      <div>
-        <label>Solicita (quién pide el viaje)</label>
-        <input id="v_solicita" list="solicitantes" placeholder="Ej. Don Leandro">
-        <datalist id="solicitantes"></datalist>
-      </div>
-      <div>
-        <label>Placa (auto)</label>
-        <input type="text" id="v_placa" readonly>
-      </div>
+      <div><label>Placa (auto)</label><input type="text" id="v_placa" readonly></div>
+      <div><label>&nbsp;</label><input type="text" disabled placeholder="Operador eliminado"></div>
     </div>
 
     <div class="row"><strong>Origen</strong></div>
@@ -111,7 +102,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     </div>
     <div class="grid2 row">
       <div><label>Placa (auto)</label><input type="text" id="tm_placa" readonly></div>
-      <div><label>&nbsp;</label><input type="text" disabled placeholder="Rodando eliminado"></div>
+      <div><label>&nbsp;</label><input type="text" disabled placeholder="Operador eliminado"></div>
     </div>
 
     <div class="grid2 row">
@@ -248,14 +239,319 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
              del(k){try{localStorage.removeItem(k)}catch{}}};
 
 /* ===== DATA BASE ===== */
-const DEFAULTS={
-  choferes:["Freddy","Tatiana","Javier"],
-  camiones:[{camion:"Camión 01",placa:"ABC-123"}],
-  solicitantes:["Don Leandro","Don Francisco","Don Luis","Giovanni","Javier","Braulio","Víctor","Viviana","Guillermo","Kevin","Freddy","Tatiana"],
-  lotesRaw:[
-    {finca:"Buena Vista",lote:"Lote 001"},{finca:"Buena Vista",lote:"Lote 002"},{finca:"Buena Vista",lote:"Lote 003"},{finca:"Buena Vista",lote:"Lote 005"},{finca:"Buena Vista",lote:"Lote 007"},{finca:"Buena Vista",lote:"Lote 008"},{finca:"Buena Vista",lote:"Lote 009"},{finca:"Buena Vista",lote:"Lote 011"},{finca:"Buena Vista",lote:"Lote 014"},{finca:"Buena Vista",lote:"Lote 015"},{finca:"Buena Vista",lote:"Lote 016"},
-    {finca:"Caño Blanco",lote:"Lote 001"},{finca:"Caño Blanco",lote:"Lote 002"},{finca:"Caño Blanco",lote:"Lote 003"},{finca:"Caño Blanco",lote:"Lote 004"},{finca:"Caño Blanco",lote:"Lote 005"},{finca:"Caño Blanco",lote:"Lote 006"},{finca:"Caño Blanco",lote:"Lote 007"},{finca:"Caño Blanco",lote:"Lote 008"},{finca:"Caño Blanco",lote:"Lote 009"},{finca:"Caño Blanco",lote:"Lote 011"},
-    {finca:"Chorcha",lote:"Lote 001"},
-    {finca:"Don Cuyo",lote:"Lote 001"},{finca:"Don Cuyo",lote:"Lote 002"},{finca:"Don Cuyo",lote:"Lote 003"},{finca:"Don Cuyo",lote:"Lote 004"},
-    {finca:"Enrique",lote:"Lote 001"},{finca:"Enrique",lote:"Lote 002"},
-    {finca:"Guayabito",lote:"Lote 001"},{finca:"Guayabito",lote:"Lote 002"},{finca:"Guayabito",lote:"Lote 003"},{finca:"Guayabito",lote:"Lote 004
+const DEFAULTS={choferes:["Freddy","Tatiana","Javier"],camiones:[{camion:"Camión 01",placa:"ABC-123"}],lotesRaw:[
+{finca:"Buena Vista",lote:"Lote 001"},{finca:"Buena Vista",lote:"Lote 002"},{finca:"Buena Vista",lote:"Lote 003"},{finca:"Buena Vista",lote:"Lote 005"},{finca:"Buena Vista",lote:"Lote 007"},{finca:"Buena Vista",lote:"Lote 008"},{finca:"Buena Vista",lote:"Lote 009"},{finca:"Buena Vista",lote:"Lote 011"},{finca:"Buena Vista",lote:"Lote 014"},{finca:"Buena Vista",lote:"Lote 015"},{finca:"Buena Vista",lote:"Lote 016"},
+{finca:"Caño Blanco",lote:"Lote 001"},{finca:"Caño Blanco",lote:"Lote 002"},{finca:"Caño Blanco",lote:"Lote 003"},{finca:"Caño Blanco",lote:"Lote 004"},{finca:"Caño Blanco",lote:"Lote 005"},{finca:"Caño Blanco",lote:"Lote 006"},{finca:"Caño Blanco",lote:"Lote 007"},{finca:"Caño Blanco",lote:"Lote 008"},{finca:"Caño Blanco",lote:"Lote 009"},{finca:"Caño Blanco",lote:"Lote 011"},
+{finca:"Chorcha",lote:"Lote 001"},
+{finca:"Don Cuyo",lote:"Lote 001"},{finca:"Don Cuyo",lote:"Lote 002"},{finca:"Don Cuyo",lote:"Lote 003"},{finca:"Don Cuyo",lote:"Lote 004"},
+{finca:"Enrique",lote:"Lote 001"},{finca:"Enrique",lote:"Lote 002"},
+{finca:"Guayabito",lote:"Lote 001"},{finca:"Guayabito",lote:"Lote 002"},{finca:"Guayabito",lote:"Lote 003"},{finca:"Guayabito",lote:"Lote 004"},{finca:"Guayabito",lote:"Lote 005"},{finca:"Guayabito",lote:"Lote 006"},{finca:"Guayabito",lote:"Lote 011"},{finca:"Guayabito",lote:"Lote 012"},{finca:"Guayabito",lote:"Lote 014"},{finca:"Guayabito",lote:"Lote 015"},{finca:"Guayabito",lote:"Lote 017"},{finca:"Guayabito",lote:"Lote 019"},{finca:"Guayabito",lote:"Lote 021"},{finca:"Guayabito",lote:"Lote 022"},{finca:"Guayabito",lote:"Lote 027"},
+{finca:"Los Abuelos",lote:"Lote 001"},{finca:"Los Angeles",lote:"Lote 001"},
+{finca:"Oscar",lote:"Lote 001"},{finca:"Oscar",lote:"Lote 002"},{finca:"Oscar",lote:"Lote 003"},
+{finca:"Pajarilla",lote:"Lote 001"},
+{finca:"Pataste",lote:"Lote 001"},{finca:"Pataste",lote:"Lote 002"},{finca:"Pataste",lote:"Lote 003"},{finca:"Pataste",lote:"Lote 004"},{finca:"Pataste",lote:"Lote 006"},{finca:"Pataste",lote:"Lote 007"},{finca:"Pataste",lote:"Lote 008"},
+{finca:"Progreso",lote:"Lote 001"},{finca:"Progreso",lote:"Lote 002"},{finca:"Progreso",lote:"Lote 003"},{finca:"Progreso",lote:"Lote 004"},{finca:"Progreso",lote:"Lote 005"},
+{finca:"Rescate",lote:"Lote 001"},{finca:"Rescate",lote:"Lote 004"},{finca:"Rescate",lote:"Lote 005"},{finca:"Rescate",lote:"Lote 006"},{finca:"Rescate",lote:"Lote 007"},{finca:"Rescate",lote:"Lote 008"},{finca:"Rescate",lote:"Lote 013"},
+{finca:"San Luis",lote:"Lote 001"},{finca:"Tuto",lote:"Lote 001"}]};
+
+function dedupLotes(raw){const ok=(raw||[]).filter(r=>r&&typeof r.finca==="string"&&typeof r.lote==="string");const map=new Map(ok.map(r=>[r.finca+"|"+r.lote,{finca:r.finca.trim(),lote:r.lote.trim()}]));return Array.from(map.values())}
+function safeArray(a,d){return Array.isArray(a)?a:d}
+
+let choferes=safeArray(store.get("byc_choferes",DEFAULTS.choferes),DEFAULTS.choferes);
+let camiones=safeArray(store.get("byc_camiones",DEFAULTS.camiones),DEFAULTS.camiones);
+let borradores=safeArray(store.get("byc_borradores",[]),[]);
+let pendientes=safeArray(store.get("byc_pendientes",[]),[]);
+let tm_borradores=safeArray(store.get("byc_tm_borradores",[]),[]);
+let tm_pendientes=safeArray(store.get("byc_tm_pendientes",[]),[]);
+let isAdmin=!!store.get("byc_is_admin",false);
+
+let lotes=dedupLotes(store.get("byc_lotes",DEFAULTS.lotesRaw));
+let fincas=[...new Set(lotes.map(r=>r.finca))].sort();
+store.set("byc_choferes",choferes);store.set("byc_camiones",camiones);store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);
+
+/* ===== TABS ===== */
+$$(".tab").forEach(b=>{b.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+["viaje","tm","borradores","choferes","fincas","camiones","sincronizar"].forEach(id=>$("#"+id).hidden=(id!==b.dataset.tab));
+if(b.dataset.tab==="borradores") renderBorradores();
+if(b.dataset.tab==="tm") renderTMBorradores();
+if(b.dataset.tab==="fincas") updateAdminUI();
+if(b.dataset.tab==="choferes") renderChoferList();
+};});
+
+/* ===== CHOFER/CAMIÓN ===== */
+function renderChoferes(){const elV=$("#v_chofer"),elTM=$("#tm_chofer");const opts=choferes.map(n=>`<option value="${n}">${n}</option>`).join("");if(elV)elV.innerHTML=opts;if(elTM)elTM.innerHTML=opts}
+function renderCamiones(){const elV=$("#v_camion"),elTM=$("#tm_camion");const opts=camiones.map(c=>`<option value="${c.camion}">${c.camion}</option>`).join("");if(elV){elV.innerHTML=opts;fillPlacaFromCamion("#v_camion","#v_placa")}if(elTM){elTM.innerHTML=opts;fillPlacaFromCamion("#tm_camion","#tm_placa")}}
+function fillPlacaFromCamion(selCamion,selPlaca){const sc=$(selCamion),sp=$(selPlaca);if(!sc||!sp)return;const f=camiones.find(c=>c.camion===sc.value);sp.value=f?f.placa:""}
+$("#v_camion")?.addEventListener("change",()=>fillPlacaFromCamion("#v_camion","#v_placa"));
+$("#tm_camion")?.addEventListener("change",()=>fillPlacaFromCamion("#tm_camion","#tm_placa"));
+
+/* ===== FINCA → LOTE ===== */
+function buildFincaSelect(sel,defFinca){const s=$(sel);if(!s)return;s.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("");s.value=defFinca&&fincas.includes(defFinca)?defFinca:(fincas[0]||"")}
+function updateLotes(fincaSel,loteSel,defLote){const sF=$(fincaSel),sL=$(loteSel);if(!sF||!sL)return;const arr=lotes.filter(x=>x.finca===sF.value);sL.innerHTML=arr.map(x=>`<option value="${x.lote}">${x.lote}</option>`).join("");sL.value=(defLote&&arr.some(x=>x.lote===defLote))?defLote:(arr[0]?.lote||"")}
+function initOrigenDestino(){buildFincaSelect("#o_finca","Caño Blanco");buildFincaSelect("#d_finca","Caño Blanco");updateLotes("#o_finca","#o_lote");updateLotes("#d_finca","#d_lote");$("#o_finca")?.addEventListener("change",()=>updateLotes("#o_finca","#o_lote"));$("#d_finca")?.addEventListener("change",()=>updateLotes("#d_finca","#d_lote"))}
+
+/* ===== ADMIN FINCAS/LOTES ===== */
+function setAdmin(v){isAdmin=!!v;store.set("byc_is_admin",isAdmin);updateAdminUI()}
+function updateAdminUI(){const st=$("#admin_status");if(st)st.value=isAdmin?"Desbloqueado — administrador":"Bloqueado — solo lectura";const lockBtn=$("#btnLock"),adminBox=$("#f_admin");if(lockBtn)lockBtn.hidden=!isAdmin;if(adminBox)adminBox.hidden=!isAdmin;renderAdminFincasLotes()}
+$("#btnUnlock")?.addEventListener("click",()=>{const ok=normalizePass($("#admin_pass")?.value)===ADMIN_PASS_NORMALIZED;if(!ok){alert("Contraseña incorrecta.");return}$("#admin_pass").value="";setAdmin(true)});
+$("#btnLock")?.addEventListener("click",()=>setAdmin(false));
+
+function renderAdminFincasLotes(){
+  const sel=$("#l_fincaSel");if(sel&&isAdmin){sel.innerHTML=fincas.map(f=>`<option value="${f}">${f}</option>`).join("")}
+  const fList=$("#f_lista");if(fList){fList.innerHTML=fincas.map((f,i)=>`<div class="row grid2"><input value="${f}" disabled>${isAdmin?`<button class="danger" onclick="delFinca(${i})">Eliminar</button>`:""}</div>`).join("")||'<p class="muted">Sin fincas.</p>'}
+  const lList=$("#l_lista");if(lList){let html="";fincas.forEach(f=>{html+=`<h4 style="margin:10px 0 6px">${f}</h4>`;const arr=lotes.filter(x=>x.finca===f);if(!arr.length){html+='<p class="muted">Sin lotes</p>';return}html+='<div class="grid3">'+arr.map(x=>{const key=x.finca+"|"+x.lote;return `<div class="row"><input value="${x.lote}" disabled>${isAdmin?`<button class="danger" onclick="delLote('${key}')">Eliminar</button>`:""}</div>`}).join("")+'</div>'});lList.innerHTML=html}
+}
+window.delLote=key=>{if(!isAdmin)return alert("Solo administrador.");lotes=lotes.filter(x=>(x.finca+"|"+x.lote)!==key);fincas=[...new Set(lotes.map(r=>r.finca))].sort();store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);updateAdminUI();initOrigenDestino()};
+window.delFinca=i=>{if(!isAdmin)return alert("Solo administrador.");const nombre=fincas[i];lotes=lotes.filter(x=>x.finca!==nombre);fincas.splice(i,1);store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);updateAdminUI();initOrigenDestino()};
+$("#f_add")?.addEventListener("click",()=>{if(!isAdmin)return alert("Solo administrador.");const v=$("#f_nueva")?.value.trim();if(!v)return;if(!fincas.includes(v))fincas.push(v);fincas.sort();store.set("byc_fincas",fincas);$("#f_nueva").value="";updateAdminUI();initOrigenDestino()});
+$("#l_add")?.addEventListener("click",()=>{if(!isAdmin)return alert("Solo administrador.");const lote=$("#l_nuevo")?.value.trim();const finca=$("#l_fincaSel")?.value;if(!lote||!finca)return;lotes.push({finca,lote});const map=new Map(lotes.map(r=>[r.finca+"|"+r.lote,r]));lotes=[...map.values()];fincas=[...new Set(lotes.map(r=>r.finca))].sort();store.set("byc_lotes",lotes);store.set("byc_fincas",fincas);$("#l_nuevo").value="";updateAdminUI();initOrigenDestino()});
+
+/* ===== CHOFERES ===== */
+function renderChoferList(){const cont=$("#c_lista");if(!cont)return;if(!choferes.length){cont.innerHTML='<p class="muted">Sin choferes.</p>';return}cont.innerHTML=choferes.map((n,i)=>`<div class="row grid2"><input value="${n}" disabled><button class="danger" onclick="delChofer(${i})">Eliminar</button></div>`).join("")}
+window.delChofer=i=>{choferes.splice(i,1);store.set("byc_choferes",choferes);renderChoferes();renderChoferList()};
+$("#c_add")?.addEventListener("click",()=>{const v=($("#c_nuevo")?.value||"").trim();if(!v){alert("Escribí el nombre del chofer.");return}if(!choferes.includes(v))choferes.push(v);const ok=store.set("byc_choferes",choferes);$("#c_nuevo").value="";renderChoferes();renderChoferList();toast($("#estadoEnvio"),ok?"Chofer agregado ✅":"Agregado temporal (abrí fuera de WhatsApp)",ok)});
+
+/* ===== CAMIONES ===== */
+$("#m_add")?.addEventListener("click",()=>{const c=$("#m_camion")?.value.trim();const p=$("#m_placa")?.value.trim();if(!c||!p)return;camiones.push({camion:c,placa:p});store.set("byc_camiones",camiones);$("#m_camion").value="";$("#m_placa").value="";renderAdminCamiones();renderCamiones()});
+function renderAdminCamiones(){const el=$("#m_lista");if(!el)return;el.innerHTML=camiones.map((c,i)=>`<div class="row grid3"><input value="${c.camion}" disabled><input value="${c.placa}" disabled><button class="danger" onclick="delCamion(${i})">Eliminar</button></div>`).join("")||'<p class="muted">Sin camiones.</p>'}
+window.delCamion=i=>{camiones.splice(i,1);store.set("byc_camiones",camiones);renderAdminCamiones();renderCamiones()};
+
+/* ===== INICIALIZA ===== */
+renderChoferes();renderChoferList();renderCamiones();renderAdminCamiones?.();
+const ffecha=$("#v_fecha");if(ffecha&&!ffecha.value)ffecha.value=todayISO();
+const ftm=$("#tm_fecha");if(ftm&&!ftm.value)ftm.value=todayISO();
+initOrigenDestino();updateAdminUI();
+
+/* ===== VIAJE ===== */
+function leerViaje(){
+  const oText=($("#o_finca")?.value||"")+($("#o_lote")?.value?(" / "+$("#o_lote").value):"");
+  const dText=($("#d_finca")?.value||"")+($("#d_lote")?.value?(" / "+$("#d_lote").value):"");
+  return{
+    _form:"viaje",
+    fecha:$("#v_fecha")?.value||todayISO(),
+    camion:$("#v_camion")?.value,
+    placa:$("#v_placa")?.value,
+    chofer:$("#v_chofer")?.value,
+    origen:oText,
+    destino:dText,
+    origen_finca:$("#o_finca")?.value,
+    origen_lote:$("#o_lote")?.value,
+    destino_finca:$("#d_finca")?.value,
+    destino_lote:$("#d_lote")?.value,
+    salida:$("#v_salida")?.value,
+    llegada:$("#v_llegada")?.value,
+    observaciones:$("#v_obs")?.value,
+    _ts:Date.now()
+  }
+}
+$("#btnLimpiar")?.addEventListener("click",()=>{$$("#viaje input,#viaje textarea").forEach(e=>{e.value=""});const ffecha=$("#v_fecha");if(ffecha&&!ffecha.value)ffecha.value=todayISO()});
+
+/* Envío directo del formulario de Viaje */
+let v_sending=false;
+$("#btnEnviar")?.addEventListener("click", async ()=>{
+  if(v_sending) return;
+  v_sending=true;
+  setBtnLoading($("#btnEnviar"),true);
+  const reg=leerViaje();
+  await enviarRegistro(reg,true,$("#estadoEnvio"));
+  setTimeout(()=>{ v_sending=false; setBtnLoading($("#btnEnviar"),false,$("#btnEnviar").dataset.label) },500);
+});
+
+/* ===== BORRADORES VIAJE ===== */
+let editIndex=-1;
+function renderBorradores(){
+  const cont=$("#tablaBor");if(!cont)return;
+  if(!Array.isArray(borradores)||!borradores.length){cont.innerHTML="<p class='muted'>No hay borradores.</p>";return}
+  const cols=["fecha","camion","placa","chofer","origen","destino","salida","llegada","observaciones"];
+  let html="<table><thead><tr>"+cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";
+  borradores.forEach((r,i)=>{
+    html+="<tr>"+cols.map(c=>`<td>${(r&&r[c])??""}</td>`).join("")+
+      `<td><button class="btn" onclick="editarBor(${i})">Cargar</button>
+           <button class="danger" onclick="eliminarBor(${i})">Eliminar</button>
+           <button class="primary" id="btnEnviarBor-${i}" onclick="enviarUno(${i})" data-label="Enviar">Enviar</button></td></tr>`;
+  });
+  html+="</tbody></table>";
+  cont.innerHTML=html;
+}
+window.editarBor=i=>{
+  const r=borradores[i]||{};
+  editIndex=i;
+  $("#v_fecha").value=r.fecha||todayISO();
+  $("#v_camion").value=r.camion||$("#v_camion").value; fillPlacaFromCamion("#v_camion","#v_placa");
+  $("#v_placa").value=r.placa||"";
+  $("#v_chofer").value=r.chofer||$("#v_chofer").value;
+  $("#o_finca").value=r.origen_finca||$("#o_finca").value; updateLotes("#o_finca","#o_lote",r.origen_lote);
+  $("#d_finca").value=r.destino_finca||$("#d_finca").value; updateLotes("#d_finca","#d_lote",r.destino_lote);
+  $("#v_salida").value=r.salida||""; $("#v_llegada").value=r.llegada||"";
+  $("#v_obs").value=r.observaciones||"";
+  document.querySelector('.tab[data-tab="viaje"]').click()
+}
+window.eliminarBor=i=>{borradores.splice(i,1);store.set("byc_borradores",borradores);renderBorradores()}
+const sendingRow=new Set();let sendingAll=false;
+window.enviarUno=async i=>{
+  if(sendingRow.has(i))return; sendingRow.add(i);
+  const btn=document.getElementById(`btnEnviarBor-${i}`); if(btn){btn.disabled=true;btn.textContent='Enviando…'}
+  const r=borradores[i];
+  const ok=await enviarRegistro(r,false);
+  if(ok){borradores.splice(i,1);store.set("byc_borradores",borradores);renderBorradores();toast($("#estadoBor"),"Borrador enviado ✅")}
+  else {toast($("#estadoBor"),"Error al enviar. Quedó en pendientes.",false); if(btn){btn.disabled=false;btn.textContent='Enviar'}}
+  sendingRow.delete(i)
+}
+$("#btnBorrador")?.addEventListener("click",()=>{
+  const r=leerViaje();
+  if(editIndex>=0){borradores[editIndex]=r; editIndex=-1}
+  else borradores.push(r);
+  const ok=store.set("byc_borradores",borradores);
+  toast($("#estadoEnvio"),ok?"Borrador guardado ✅":"Guardado temporal (abrí fuera de WhatsApp)",ok);
+  renderBorradores()
+});
+$("#btnSyncBorradores")?.addEventListener("click",async()=>{
+  if(sendingAll)return; const b=$("#btnSyncBorradores"); sendingAll=true; b.disabled=true; b.textContent="Enviando…";
+  const est=$("#estadoBor");
+  if(!borradores.length){toast(est,"No hay borradores");b.disabled=false;b.textContent="Sincronizar todos";sendingAll=false;return}
+  let ok=0,fail=0,rest=[];
+  for(const r of borradores){const ex=await enviarRegistro(r,false); if(ex)ok++; else{fail++; rest.push(r)}}
+  borradores=rest; store.set("byc_borradores",borradores); renderBorradores();
+  toast(est,`OK ${ok} / Error ${fail}`,fail===0);
+  b.disabled=false; b.textContent="Sincronizar todos"; sendingAll=false
+});
+
+/* ===== TM ===== */
+function leerTM(){
+  const laborSel=$("#tm_labor")?.value||"";
+  const labor=laborSel==="Otro"?($("#tm_labor_otro")?.value||"Otro"):laborSel;
+  return{
+    _form:"tiempos_muertos",
+    fecha:$("#tm_fecha")?.value||todayISO(),
+    chofer:$("#tm_chofer")?.value,
+    camion:$("#tm_camion")?.value,
+    placa:$("#tm_placa")?.value,
+    inicio:$("#tm_inicio")?.value,
+    fin:$("#tm_fin")?.value,
+    labor,labor_base:laborSel,
+    observaciones:$("#tm_obs")?.value,
+    _ts:Date.now()
+  }
+}
+$("#tm_btnLimpiar")?.addEventListener("click",()=>{$$("#tm input,#tm textarea,#tm select").forEach(e=>{if(e.id!=="tm_user")e.value=""});const ftm=$("#tm_fecha");if(ftm&&!ftm.value)ftm.value=todayISO();$("#tm_labor").value="Esperando personal"});
+
+/* TM borradores */
+let tm_editIndex=-1;
+function renderTMBorradores(){
+  const cont=$("#tm_tablaBor");if(!cont)return;
+  if(!Array.isArray(tm_borradores)||!tm_borradores.length){cont.innerHTML="<p class='muted'>No hay borradores TM.</p>";return}
+  const cols=[["fecha","FECHA"],["chofer","CHOFER"],["camion","CAMIÓN"],["inicio","INICIO"],["fin","FIN"],["labor","LABOR"],["observaciones","OBS"]];
+  let html="<table><thead><tr>"+cols.map(([k,t])=>`<th>${t}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";
+  tm_borradores.forEach((r,i)=>{
+    html+="<tr>"+cols.map(([k])=>`<td>${(r&&r[k])??""}</td>`).join("")+
+      `<td><button class="btn" onclick="tm_editar(${i})">Cargar</button>
+           <button class="danger" onclick="tm_eliminar(${i})">Eliminar</button>
+           <button class="primary" id="tm_btnEnviarBor-${i}" onclick="tm_enviarUno(${i})" data-label="Enviar">Enviar</button></td></tr>`;
+  });
+  html+="</tbody></table>";
+  cont.innerHTML=html
+}
+window.tm_editar=i=>{
+  const r=tm_borradores[i]||{};
+  tm_editIndex=i;
+  $("#tm_fecha").value=r.fecha||todayISO();
+  $("#tm_camion").value=r.camion||$("#tm_camion").value; fillPlacaFromCamion("#tm_camion","#tm_placa");
+  $("#tm_placa").value=r.placa||"";
+  $("#tm_chofer").value=r.chofer||$("#tm_chofer").value;
+  $("#tm_inicio").value=r.inicio||""; $("#tm_fin").value=r.fin||"";
+  $("#tm_labor").value=r.labor_base||r.labor||"Esperando personal";
+  $("#tm_labor_otro").value=(r.labor_base==="Otro")?(r.labor||""):"";
+  $("#tm_obs").value=r.observaciones||"";
+  document.querySelector('.tab[data-tab="tm"]').click()
+}
+window.tm_eliminar=i=>{tm_borradores.splice(i,1);store.set("byc_tm_borradores",tm_borradores);renderTMBorradores()}
+const tm_sendingRow=new Set();let tm_sendingAll=false;let tm_sending=false;
+window.tm_enviarUno=async i=>{
+  if(tm_sendingRow.has(i))return; tm_sendingRow.add(i);
+  const btn=document.getElementById(`tm_btnEnviarBor-${i}`); if(btn){btn.disabled=true;btn.textContent='Enviando…'}
+  const r=tm_borradores[i];
+  const ok=await enviarRegistro(r,false);
+  if(ok){tm_borradores.splice(i,1);store.set("byc_tm_borradores",tm_borradores);renderTMBorradores();toast($("#tm_estadoBor"),"Borrador TM enviado ✅")}
+  else {toast($("#tm_estadoBor"),"Error al enviar. Quedó en pendientes TM.",false); if(btn){btn.disabled=false;btn.textContent='Enviar'}}
+  tm_sendingRow.delete(i)
+}
+$("#tm_btnBorrador")?.addEventListener("click",()=>{
+  const r=leerTM();
+  if(tm_editIndex>=0){tm_borradores[tm_editIndex]=r;tm_editIndex=-1}else tm_borradores.push(r);
+  const ok=store.set("byc_tm_borradores",tm_borradores);
+  toast($("#tm_estadoEnvio"),ok?"Borrador TM guardado ✅":"Guardado temporal (abrí fuera de WhatsApp)",ok);
+  renderTMBorradores()
+});
+$("#tm_btnSyncBorradores")?.addEventListener("click",async()=>{
+  if(tm_sendingAll)return; const b=$("#tm_btnSyncBorradores"); tm_sendingAll=true; b.disabled=true; b.textContent="Enviando…";
+  const est=$("#tm_estadoBor");
+  if(!tm_borradores.length){toast(est,"No hay borradores TM");b.disabled=false;b.textContent="Sincronizar todos (TM)";tm_sendingAll=false;return}
+  let ok=0,fail=0,rest=[];
+  for(const r of tm_borradores){const ex=await enviarRegistro(r,false);if(ex)ok++;else{fail++;rest.push(r)}}
+  tm_borradores=rest; store.set("byc_tm_borradores",tm_borradores); renderTMBorradores();
+  toast(est,`TM OK ${ok} / Error ${fail}`,fail===0);
+  b.disabled=false; b.textContent="Sincronizar todos (TM)"; tm_sendingAll=false
+});
+$("#tm_btnEnviar")?.addEventListener("click",async()=>{
+  if(tm_sending)return; tm_sending=true;
+  setBtnLoading($("#tm_btnEnviar"),true);
+  const reg=leerTM();
+  await enviarRegistro(reg,true,$("#tm_estadoEnvio"));
+  setTimeout(()=>{tm_sending=false;setBtnLoading($("#tm_btnEnviar"),false,$("#tm_btnEnviar").dataset.label)},500)
+});
+
+/* ===== ENVÍO ===== */
+async function enviarRegistro(reg,showMsg=true){
+  const tgt=reg?(reg._form==="tiempos_muertos"?$("#tm_estadoEnvio"):$("#estadoEnvio")):$("#estadoEnvio");
+  try{
+    const body=new URLSearchParams({payload:JSON.stringify([reg])});
+    const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
+    const txt=await res.text();
+    let j; try{ j=JSON.parse(txt) }catch{ j={ok:res.ok} }
+    if(!j.ok) throw new Error(j.error||"Respuesta no OK");
+    if(showMsg) toast(tgt,"Enviado ✅");
+    return true;
+  }catch(e){
+    if(showMsg) toast(tgt,"Sin internet. Guardado en pendientes.",false);
+    const key=(reg&&reg._form==="tiempos_muertos")?"byc_tm_pendientes":"byc_pendientes";
+    const arr=JSON.parse(localStorage.getItem(key)||"[]"); arr.push(reg);
+    localStorage.setItem(key, JSON.stringify(arr));
+    // Mantener arrays en memoria también
+    if(reg && reg._form==="tiempos_muertos"){ tm_pendientes.push(reg); store.set("byc_tm_pendientes", tm_pendientes); }
+    else { pendientes.push(reg); store.set("byc_pendientes", pendientes); }
+    return false;
+  }
+}
+
+/* ===== PENDIENTES / SYNC ===== */
+$("#btnEnviarPendientes")?.addEventListener("click",async()=>{
+  const est=$("#estadoSync");
+  if(!pendientes.length&&!tm_pendientes.length) return toast(est,"No hay pendientes");
+  let ok=0,fail=0,nuevos=[],okTM=0,failTM=0,nuevosTM=[];
+  for(const r of pendientes){const ex=await enviarRegistro(r,false);if(ex)ok++;else{fail++;nuevos.push(r)}}
+  for(const r of tm_pendientes){const ex=await enviarRegistro(r,false);if(ex)okTM++;else{failTM++;nuevosTM.push(r)}}
+  pendientes=nuevos; tm_pendientes=nuevosTM;
+  store.set("byc_pendientes",pendientes); store.set("byc_tm_pendientes",tm_pendientes);
+  toast(est,`Viajes OK ${ok}/Err ${fail} — TM OK ${okTM}/Err ${failTM}`,(fail+failTM)===0)
+});
+$("#btnSync")?.addEventListener("click",async()=>{
+  const est=$("#estadoSync"),tabla=$("#tabla"); if(est)est.textContent="Leyendo…";
+  try{
+    const res=await fetch(GAS_URL+"?action=getData");
+    const j=await res.json();
+    if(!j.ok)throw new Error(j.error||"Error");
+    if(est)est.textContent=`Registros: ${j.data.length}`;
+    const headers=(j.headers&&j.headers.length)?j.headers:Object.keys(j.data[0]||{});
+    let html="<table><thead><tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbody>";
+    j.data.forEach(r=>{html+="<tr>"+headers.map(h=>`<td>${r[h]??""}</td>`).join("")+"</tr>"});
+    html+="</tbody></table>"; if(tabla)tabla.innerHTML=html
+  }catch(e){ if(est)toast(est,String(e),false) }
+});
+
+/* ===== PWA: registrar SW ===== */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(console.error)})
+}
+</script>
+</body>
+</html>
