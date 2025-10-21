@@ -95,7 +95,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
       <div><label>Hora llegada</label><input type="time" id="v_llegada"></div>
     </div>
 
-    <!-- NUEVO: Solicitante del viaje -->
+    <!-- NUEVO: Solicitante del viaje (solo aquí) -->
     <div class="grid3 row">
       <div>
         <label>Quién solicita el viaje</label>
@@ -118,7 +118,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     </div>
   </section>
 
-  <!-- Tiempos muertos -->
+  <!-- Tiempos muertos (SIN solicitante) -->
   <section id="tm" class="card" hidden>
     <div class="grid3 row">
       <div><label>Fecha</label><input type="date" id="tm_fecha"></div>
@@ -244,9 +244,12 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 
 <script>
 /* ====== VERSIÓN / ANTIPEGA ====== */
-const APP_VERSION = "2025.10.21-2"; // subir al publicar nueva versión
+const APP_VERSION = "2025.10.21-3"; // subí al publicar nueva versión
 const SW_PATH = "./service-worker.js?v="+APP_VERSION;
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyQOsvg9RiNDfCA3WNQiWZLmeVThFCKQfnWq9bkSx5uVxRKF3xFKznsx7qulC8ksYeHsA/exec";
+
+// ====== ENDPOINT NUEVO ======
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxKT2l9ZF_0IjfmqzumG5c7LEUapeeIjmUUEEm34lCCWkZ-6W6jmNq2z2vLvVSbSV2z6A/exec";
+
 const ADMIN_PASS_NORMALIZED = "admi12345";
 
 // Bust del manifest para evitar caché vieja
@@ -365,13 +368,12 @@ $("#m_add")?.addEventListener("click",()=>{const c=$("#m_camion")?.value.trim();
 function renderAdminCamiones(){const el=$("#m_lista");if(!el)return;el.innerHTML=camiones.map((c,i)=>`<div class="row grid3"><input value="${c.camion}" disabled><input value="${c.placa}" disabled><button class="danger" onclick="delCamion(${i})">Eliminar</button></div>`).join("")||'<p class="muted">Sin camiones.</p>'}
 window.delCamion=i=>{camiones.splice(i,1);store.set("byc_camiones",camiones);renderAdminCamiones();renderCamiones()};
 
-/* ===== SOLICITANTES (NUEVO) ===== */
+/* ===== SOLICITANTES (NUEVO, solo Viajes) ===== */
 function renderSolicitantes(){
   const el=$("#v_solicitante");
   if(!el) return;
   const opts=solicitantes.map(n=>`<option value="${n}">${n}</option>`).join("");
   el.innerHTML=opts;
-  // por defecto, el primero
   if(el.options.length) el.value = el.options[0].value;
   updateSolicitanteOtro();
 }
@@ -411,8 +413,8 @@ function leerViaje(){
     destino_lote:$("#d_lote")?.value,
     salida:$("#v_salida")?.value,
     llegada:$("#v_llegada")?.value,
-    solicitante,                // NUEVO: valor final
-    solicitante_base,           // NUEVO: selección del combo
+    solicitante,              // NUEVO
+    solicitante_base,         // NUEVO
     observaciones:$("#v_obs")?.value,
     _ts:Date.now()
   }
@@ -435,7 +437,7 @@ let editIndex=-1;
 function renderBorradores(){
   const cont=$("#tablaBor");if(!cont)return;
   if(!Array.isArray(borradores)||!borradores.length){cont.innerHTML="<p class='muted'>No hay borradores.</p>";return}
-  const cols=["fecha","camion","placa","chofer","solicitante","origen","destino","salida","llegada","observaciones"]; // agregado solicitante
+  const cols=["fecha","camion","placa","chofer","solicitante","origen","destino","salida","llegada","observaciones"]; // incluye solicitante
   let html="<table><thead><tr>"+cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";
   borradores.forEach((r,i)=>{
     html+="<tr>"+cols.map(c=>`<td>${(r&&r[c])??""}</td>`).join("")+
@@ -456,7 +458,7 @@ window.editarBor=i=>{
   $("#o_finca").value=r.origen_finca||$("#o_finca").value; updateLotes("#o_finca","#o_lote",r.origen_lote);
   $("#d_finca").value=r.destino_finca||$("#d_finca").value; updateLotes("#d_finca","#d_lote",r.destino_lote);
   $("#v_salida").value=r.salida||""; $("#v_llegada").value=r.llegada||"";
-  // NUEVO: solicitante
+  // Solicitante
   renderSolicitantes();
   if(r.solicitante_base && solicitantes.includes(r.solicitante_base)){
     $("#v_solicitante").value = r.solicitante_base;
