@@ -37,12 +37,24 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 @media print{body{background:#fff;color:#000}.tabs,.actions,.lead{display:none}.card{border:0}}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;border:1px solid var(--border);background:#101525;color:var(--muted)}
 .hr{height:1px;background:var(--border);margin:12px 0}
+.topbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
+.topbar .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.small{font-size:.85rem}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Camiones BYC <span class="badge">Antipega</span></h1>
-  <p class="lead">Viajes, Tiempos muertos, borradores y sincronización con Google Sheets.</p>
+  <div class="topbar">
+    <div>
+      <h1>Camiones BYC <span class="badge">Antipega</span></h1>
+      <p class="lead">Viajes, Tiempos muertos, borradores y sincronización con Google Sheets.</p>
+    </div>
+    <div class="right">
+      <button class="btn" id="btnUpdate">Actualizar app</button>
+      <button class="danger" id="btnAntipega">Antipega: limpiar caché</button>
+      <span id="swEstado" class="muted small"></span>
+    </div>
+  </div>
 
   <div class="tabs">
     <button class="tab active" data-tab="viaje">Registrar viaje</button>
@@ -218,9 +230,21 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 </div>
 
 <script>
-/* ===== CONFIG ===== */
+/* ====== VERSIÓN / ANTIPEGA ====== */
+const APP_VERSION = "2025.10.21-1"; // Cambiar cuando subas una versión
+const SW_PATH = "./service-worker.js?v="+APP_VERSION;
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyQOsvg9RiNDfCA3WNQiWZLmeVThFCKQfnWq9bkSx5uVxRKF3xFKznsx7qulC8ksYeHsA/exec";
 const ADMIN_PASS_NORMALIZED = "admi12345";
+
+// Forzar bust del manifest para evitar caché vieja
+(function bumpManifest(){
+  const link=document.querySelector('link[rel="manifest"]');
+  if(link){
+    const u=new URL(link.getAttribute('href'), location.href);
+    u.searchParams.set('v', APP_VERSION);
+    link.setAttribute('href', u.pathname+u.search);
+  }
+})();
 
 /* ===== SEGURIDAD BÁSICA ===== */
 window.onerror = (m)=>{ try{toast(document.getElementById('estadoEnvio')||document.body, "Error: "+m, false)}catch{}; return true; };
@@ -232,6 +256,7 @@ function normalizePass(p){return (p||"").replace(/\s+/g,"").toLowerCase()}
 function todayISO(){const d=new Date();d.setHours(0,0,0,0);return d.toISOString().slice(0,10)}
 function toast(el,msg,ok=true){el.textContent=msg;el.className=ok?'ok':'error';setTimeout(()=>{el.textContent='';el.className='muted'},3500)}
 function setBtnLoading(btn,loading,label){if(!btn)return;if(loading){btn.disabled=true;btn.textContent='Enviando…'}else{btn.disabled=false;btn.textContent=label||btn.dataset.label||'Enviar'}}
+function qsSet(url, key, val){const u=new URL(url, location.href);u.searchParams.set(key, val);return u.toString()}
 
 /* ===== STORE ===== */
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},
@@ -505,7 +530,7 @@ async function enviarRegistro(reg,showMsg=true){
   const tgt=reg?(reg._form==="tiempos_muertos"?$("#tm_estadoEnvio"):$("#estadoEnvio")):$("#estadoEnvio");
   try{
     const body=new URLSearchParams({payload:JSON.stringify([reg])});
-    const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
+    const res=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body, cache:"no-store"});
     const txt=await res.text();
     let j; try{ j=JSON.parse(txt) }catch{ j={ok:res.ok} }
     if(!j.ok) throw new Error(j.error||"Respuesta no OK");
@@ -516,7 +541,6 @@ async function enviarRegistro(reg,showMsg=true){
     const key=(reg&&reg._form==="tiempos_muertos")?"byc_tm_pendientes":"byc_pendientes";
     const arr=JSON.parse(localStorage.getItem(key)||"[]"); arr.push(reg);
     localStorage.setItem(key, JSON.stringify(arr));
-    // Mantener arrays en memoria también
     if(reg && reg._form==="tiempos_muertos"){ tm_pendientes.push(reg); store.set("byc_tm_pendientes", tm_pendientes); }
     else { pendientes.push(reg); store.set("byc_pendientes", pendientes); }
     return false;
@@ -537,7 +561,7 @@ $("#btnEnviarPendientes")?.addEventListener("click",async()=>{
 $("#btnSync")?.addEventListener("click",async()=>{
   const est=$("#estadoSync"),tabla=$("#tabla"); if(est)est.textContent="Leyendo…";
   try{
-    const res=await fetch(GAS_URL+"?action=getData");
+    const res=await fetch(qsSet(GAS_URL+"?action=getData","v",APP_VERSION),{cache:"no-store",headers:{"Cache-Control":"no-store"}});
     const j=await res.json();
     if(!j.ok)throw new Error(j.error||"Error");
     if(est)est.textContent=`Registros: ${j.data.length}`;
@@ -548,9 +572,80 @@ $("#btnSync")?.addEventListener("click",async()=>{
   }catch(e){ if(est)toast(est,String(e),false) }
 });
 
-/* ===== PWA: registrar SW ===== */
+/* ===== ANTIPEGA (Service Worker) ===== */
+const swEstado=$("#swEstado");
+function showSW(msg, ok=true){ if(swEstado) { swEstado.textContent = msg + " · v"+APP_VERSION; swEstado.className = ok ? "ok small" : "error small"; setTimeout(()=>{swEstado.textContent="";swEstado.className="muted small"},4000);} }
+
+async function clearPWACaches(){
+  try{
+    // 1) Borrar caches
+    if('caches' in window){
+      const names=await caches.keys();
+      await Promise.all(names.map(n=>caches.delete(n)));
+    }
+    // 2) Desregistrar SW
+    if('serviceWorker' in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r=>r.unregister()));
+    }
+    showSW("Caché PWA limpia"); 
+  }catch(e){ showSW("Error limpiando caché", false); }
+}
+
+async function updateSW(){
+  if(!('serviceWorker' in navigator)) return showSW("SW no soportado", false);
+  try{
+    const reg = await navigator.serviceWorker.getRegistration();
+    if(!reg){ await navigator.serviceWorker.register(SW_PATH); showSW("SW registrado"); return }
+    await reg.update();
+    if(reg.waiting){
+      reg.waiting.postMessage({type:"SKIP_WAITING"});
+    }else{
+      showSW("Sin actualización");
+    }
+  }catch(e){ showSW("Error SW: "+e.message, false); }
+}
+
+$("#btnAntipega")?.addEventListener("click", async ()=>{
+  await clearPWACaches();
+  const u=new URL(location.href);
+  u.searchParams.set('v', APP_VERSION+"-clean");
+  location.replace(u.toString());
+});
+$("#btnUpdate")?.addEventListener("click", updateSW);
+
+// Limpieza automática por query ?reset=1
+(function autoResetIfAsked(){
+  const u=new URL(location.href);
+  if(u.searchParams.get('reset')==="1"){ clearPWACaches().then(()=>location.replace(u.origin+u.pathname)); }
+})();
+
+// Registrar SW con versión y manejar activación inmediata
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(console.error)})
+  window.addEventListener('load', async ()=>{
+    try{
+      const reg = await navigator.serviceWorker.register(SW_PATH);
+      // Si hay worker nuevo, activarlo ya
+      function listen(worker){
+        if(!worker) return;
+        worker.addEventListener('statechange', ()=>{
+          if(worker.state==='installed' && navigator.serviceWorker.controller){
+            // nuevo listo -> pedir activación inmediata
+            worker.postMessage({type:"SKIP_WAITING"});
+          }
+        });
+      }
+      listen(reg.installing); listen(reg.waiting);
+
+      // Cuando cambie el controlador, recargar una sola vez
+      let refreshing=false;
+      navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+        if(refreshing) return; refreshing=true; location.reload();
+      });
+
+      showSW("App lista");
+    }catch(e){ showSW("SW error: "+e.message, false); }
+  });
 }
 </script>
 </body>
