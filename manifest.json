@@ -1,9 +1,7 @@
 {
-  "name": "Camiones BYC — Antipega",
-  "short_name": "Camiones BYC",
-  "description": "Viajes y Tiempos muertos con sincronización a Google Sheets.",
-  "start_url": "./index.html",
-  "scope": "./",
+  "name": "Camiones BYC",
+  "short_name": "Camiones",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#0f1115",
   "theme_color": "#151923",
