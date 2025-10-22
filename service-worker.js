@@ -1,73 +1,129 @@
-/* Camiones BYC — Service Worker Antipega */
-const APP_VERSION = (new URL(location.href)).searchParams.get('v') || '2025.10.21-1';
-const CACHE_NAME = 'byc-cache-v' + APP_VERSION;
-const CORE = [
+// service-worker.js
+// Obtiene versión desde el propio script URL (?v=...)
+const SW_VERSION = (()=>{
+  try { return new URL(self.location.href).searchParams.get('v') || 'v1'; }
+  catch { return 'v1'; }
+})();
+
+const CACHE_NAME = `byc-cache-${SW_VERSION}`;
+const PRECACHE_URLS = [
   './',
-  './index.html?v=' + APP_VERSION,
-  './manifest.json?v=' + APP_VERSION,
+  './index.html',
+  './manifest.json',
+  './offline.html',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];
 
-self.addEventListener('install', (e) => {
-  self.skipWaiting();
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(CORE.map(u => new Request(u, {cache:'reload'}))))
-  );
-});
-
-self.addEventListener('activate', (e) => {
-  e.waitUntil((async()=>{
-    const keys = await caches.keys();
-    await Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
-    await self.clients.claim();
+// Opcional pero recomendado: habilitar navigation preload (mejora tiempos)
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    // Limpia caches viejas
+    const names = await caches.keys();
+    await Promise.all(names.map(n => (n.startsWith('byc-cache-') && n !== CACHE_NAME) ? caches.delete(n) : null));
+    // Intentar habilitar preload
+    if ('navigationPreload' in self.registration) {
+      try { await self.registration.navigationPreload.enable(); } catch {}
+    }
+    self.clients.claim();
   })());
 });
 
-self.addEventListener('message', (e) => {
-  const {type} = e.data || {};
-  if(type === 'SKIP_WAITING'){ self.skipWaiting(); }
+// Precache en install
+self.addEventListener('install', event => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(PRECACHE_URLS);
+    self.skipWaiting();
+  })());
 });
 
-/* Estrategias:
-   - Navegación (HTML): network-first con fallback a caché (evita “pega”).
-   - GET estáticos: stale-while-revalidate.
-   - POST/externos: pasar directo (no cachear).
-*/
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
+// Mensaje desde la página para activar al toque
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Helper
+const isGoogleAppsScript = url =>
+  url.hostname === 'script.google.com' && url.pathname.includes('/macros/');
+
+// Fetch handler
+self.addEventListener('fetch', event => {
+  const req = event.request;
   const url = new URL(req.url);
 
-  // No cachear POST ni llamadas a Apps Script (dejar pasar)
-  if(req.method !== 'GET' || url.hostname.endsWith('googleusercontent.com') || url.hostname.endsWith('google.com')){
-    return; // default fetch
-  }
+  // Navegaciones (tocar la barra o abrir desde ícono): servir index.html
+  if (req.mode === 'navigate') {
+    event.respondWith((async () => {
+      try {
+        const preload = await event.preloadResponse;
+        if (preload) return preload;
 
-  // Navegaciones / HTML -> network-first
-  if (req.mode === 'navigate' || (req.headers.get('accept')||'').includes('text/html')){
-    e.respondWith((async()=>{
-      try{
-        const fresh = await fetch(req, {cache:'no-store'});
+        const net = await fetch(req);
+        // cacheamos última versión de index para usarla offline
         const cache = await caches.open(CACHE_NAME);
-        cache.put(req, fresh.clone());
-        return fresh;
-      }catch{
+        cache.put('./index.html', net.clone());
+        return net;
+      } catch {
+        // sin red → devolvemos shell del cache
         const cache = await caches.open(CACHE_NAME);
-        const cached = await cache.match(req);
-        return cached || caches.match('./index.html?v='+APP_VERSION);
+        const cached = await cache.match('./index.html') || await cache.match('./offline.html');
+        return cached || new Response('Sin conexión y sin cache', { status: 503 });
       }
     })());
     return;
   }
 
-  // Otros GET -> stale-while-revalidate
-  e.respondWith((async()=>{
+  // Misma-origen (íconos, manifest, etc.): Cache-first con revalidación
+  if (url.origin === self.location.origin) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(req);
+      const fetchAndUpdate = fetch(req).then(res => {
+        if (res && res.ok) cache.put(req, res.clone());
+        return res;
+      }).catch(()=> null);
+      return cached || fetchAndUpdate || new Response('Offline', { status: 503 });
+    })());
+    return;
+  }
+
+  // Llamadas a Google Apps Script:
+  // - GET: Network-first (si falla, intento cache previo si lo hubiera)
+  // - POST: lo dejo pasar (tu front ya guarda "pendientes" cuando no hay red)
+  if (isGoogleAppsScript(url)) {
+    if (req.method === 'GET') {
+      event.respondWith((async () => {
+        const cache = await caches.open(CACHE_NAME);
+        try {
+          const net = await fetch(req, { cache: 'no-store' });
+          if (net && net.ok) cache.put(req, net.clone());
+          return net;
+        } catch {
+          const cached = await cache.match(req);
+          return cached || new Response(JSON.stringify({ ok:false, error:'Sin internet (cache vacío)' }), {
+            headers: { 'Content-Type': 'application/json' }, status: 200
+          });
+        }
+      })());
+      return;
+    }
+    // POST → no interceptar (el front se encarga de pendientes)
+    return;
+  }
+
+  // Otros orígenes (si los hubiera): Network-first con fallback cache
+  event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(req);
-    const fetchPromise = fetch(req).then(res=>{
-      if(res && res.ok) cache.put(req, res.clone());
-      return res;
-    }).catch(()=>null);
-    return cached || fetchPromise || fetch(req);
+    try {
+      const net = await fetch(req);
+      if (net && net.ok) cache.put(req, net.clone());
+      return net;
+    } catch {
+      const cached = await cache.match(req);
+      return cached || new Response('Offline', { status: 503 });
+    }
   })());
 });
