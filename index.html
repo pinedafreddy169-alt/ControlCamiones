@@ -51,6 +51,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     </div>
     <div class="right">
       <button class="btn" id="btnUpdate">Actualizar app</button>
+      <button class="btn" id="btnPWAInstall" hidden>Instalar app</button>
       <button class="danger" id="btnAntipega">Antipega: limpiar caché</button>
       <span id="swEstado" class="muted small"></span>
     </div>
@@ -95,7 +96,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
       <div><label>Hora llegada</label><input type="time" id="v_llegada"></div>
     </div>
 
-    <!-- NUEVO: Solicitante del viaje (solo aquí) -->
+    <!-- Solicitante del viaje (solo aquí) -->
     <div class="grid3 row">
       <div>
         <label>Quién solicita el viaje</label>
@@ -118,7 +119,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
     </div>
   </section>
 
-  <!-- Tiempos muertos (SIN solicitante) -->
+  <!-- Tiempos muertos (sin solicitante) -->
   <section id="tm" class="card" hidden>
     <div class="grid3 row">
       <div><label>Fecha</label><input type="date" id="tm_fecha"></div>
@@ -244,15 +245,15 @@ table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px soli
 
 <script>
 /* ====== VERSIÓN / ANTIPEGA ====== */
-const APP_VERSION = "2025.10.21-4";
+const APP_VERSION = "2025.10.21-5"; // subir al publicar nueva versión
 const SW_PATH = "./service-worker.js?v="+APP_VERSION;
 
-// ====== ENDPOINT NUEVO ======
+// ====== ENDPOINT (nuevo tuyo) ======
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxKT2l9ZF_0IjfmqzumG5c7LEUapeeIjmUUEEm34lCCWkZ-6W6jmNq2z2vLvVSbSV2z6A/exec";
 
 const ADMIN_PASS_NORMALIZED = "admi12345";
 
-// Bust del manifest para evitar caché vieja
+/* Bust del manifest para evitar caché vieja */
 (function bumpManifest(){
   const link=document.querySelector('link[rel="manifest"]');
   if(link){
@@ -368,7 +369,7 @@ $("#m_add")?.addEventListener("click",()=>{const c=$("#m_camion")?.value.trim();
 function renderAdminCamiones(){const el=$("#m_lista");if(!el)return;el.innerHTML=camiones.map((c,i)=>`<div class="row grid3"><input value="${c.camion}" disabled><input value="${c.placa}" disabled><button class="danger" onclick="delCamion(${i})">Eliminar</button></div>`).join("")||'<p class="muted">Sin camiones.</p>'}
 window.delCamion=i=>{camiones.splice(i,1);store.set("byc_camiones",camiones);renderAdminCamiones();renderCamiones()};
 
-/* ===== SOLICITANTES (NUEVO, solo Viajes) ===== */
+/* ===== SOLICITANTES (solo Viajes) ===== */
 function renderSolicitantes(){
   const el=$("#v_solicitante");
   if(!el) return;
@@ -413,8 +414,8 @@ function leerViaje(){
     destino_lote:$("#d_lote")?.value,
     salida:$("#v_salida")?.value,
     llegada:$("#v_llegada")?.value,
-    solicitante,              // NUEVO
-    solicitante_base,         // NUEVO
+    solicitante,
+    solicitante_base,
     observaciones:$("#v_obs")?.value,
     _ts:Date.now()
   }
@@ -437,7 +438,7 @@ let editIndex=-1;
 function renderBorradores(){
   const cont=$("#tablaBor");if(!cont)return;
   if(!Array.isArray(borradores)||!borradores.length){cont.innerHTML="<p class='muted'>No hay borradores.</p>";return}
-  const cols=["fecha","camion","placa","chofer","solicitante","origen","destino","salida","llegada","observaciones"]; // incluye solicitante
+  const cols=["fecha","camion","placa","chofer","solicitante","origen","destino","salida","llegada","observaciones"];
   let html="<table><thead><tr>"+cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")+"<th>Acciones</th></tr></thead><tbody>";
   borradores.forEach((r,i)=>{
     html+="<tr>"+cols.map(c=>`<td>${(r&&r[c])??""}</td>`).join("")+
@@ -458,7 +459,6 @@ window.editarBor=i=>{
   $("#o_finca").value=r.origen_finca||$("#o_finca").value; updateLotes("#o_finca","#o_lote",r.origen_lote);
   $("#d_finca").value=r.destino_finca||$("#d_finca").value; updateLotes("#d_finca","#d_lote",r.destino_lote);
   $("#v_salida").value=r.salida||""; $("#v_llegada").value=r.llegada||"";
-  // Solicitante
   renderSolicitantes();
   if(r.solicitante_base && solicitantes.includes(r.solicitante_base)){
     $("#v_solicitante").value = r.solicitante_base;
@@ -631,7 +631,7 @@ $("#btnSync")?.addEventListener("click",async()=>{
   }catch(e){ if(est)toast(est,String(e),false) }
 });
 
-/* ===== ANTIPEGA (Service Worker) ===== */
+/* ===== ANTIPEGA / SW ===== */
 const swEstado=$("#swEstado");
 function showSW(msg, ok=true){ if(swEstado) { swEstado.textContent = msg + " · v"+APP_VERSION; swEstado.className = ok ? "ok small" : "error small"; setTimeout(()=>{swEstado.textContent="";swEstado.className="muted small"},4000);} }
 
@@ -696,7 +696,38 @@ if('serviceWorker' in navigator){
     }catch(e){ showSW("SW error: "+e.message, false); }
   });
 }
+
+/* ===== PWA: BOTÓN INSTALAR (Android/Chrome) ===== */
+let deferredPrompt = null;
+const btnPWA = document.getElementById('btnPWAInstall');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (btnPWA) btnPWA.hidden = false;
+});
+
+btnPWA?.addEventListener('click', async () => {
+  if (!deferredPrompt) { showSW('Instalación no disponible ahora', false); return; }
+  deferredPrompt.prompt();
+  const choice = await deferredPrompt.userChoice;
+  if (choice.outcome === 'accepted') showSW('Instalación iniciada ✅');
+  else showSW('Instalación cancelada', false);
+  deferredPrompt = null;
+  btnPWA.hidden = true;
+});
+
+window.addEventListener('appinstalled', () => { showSW('App instalada ✅'); btnPWA?.remove(); });
+
+// Pista para iOS (Safari)
+(function hintIOS(){
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const inStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (iOS && !inStandalone && isSafari) {
+    showSW('iPhone: Compartir → Agregar a pantalla de inicio');
+  }
+})();
 </script>
 </body>
 </html>
-
