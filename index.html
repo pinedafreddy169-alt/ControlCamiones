@@ -209,7 +209,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2025.11.30-3";
+const APP_VERSION = "2025.11.30-4";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyRyk4YvdnP8aI8tn0F-TdhNTihQxzILbRvT_wV9-K0-5QolLwbdbM1SmlUPvcoIQVl/exec";
 const ADMIN_PASS_NORMALIZED = "admi12345";
 
@@ -377,20 +377,34 @@ $$(".tab").forEach(btn=>{
 function buildFincaSelect(selId,defFinca){
   const s = $(selId);
   if(!s) return;
-  s.innerHTML = fincas.map(f=>`<option value="${f}">${f}</option>`).join("");
+  let html = `<option value="">-- Seleccione --</option>`;
+  html += fincas.map(f=>`<option value="${f}">${f}</option>`).join("");
+  s.innerHTML = html;
   if(defFinca && fincas.includes(defFinca)) s.value = defFinca;
+  else s.value = "";
 }
 
 function updateLotes(fincaSel,loteSel,defLote){
   const sF = $(fincaSel), sL = $(loteSel);
   if(!sF || !sL) return;
-  const arr = lotes.filter(x=>x.finca===sF.value);
-  sL.innerHTML = arr.map(x=>`<option value="${x.lote}">${x.lote}</option>`).join("");
-  if(defLote && arr.some(x=>x.lote===defLote)) sL.value = defLote;
+  const finca = sF.value;
+  let html = `<option value="">-- Seleccione --</option>`;
+  if(finca){
+    const arr = lotes.filter(x=>x.finca===finca);
+    html += arr.map(x=>`<option value="${x.lote}">${x.lote}</option>`).join("");
+  }
+  sL.innerHTML = html;
+  if(defLote && finca){
+    const arr = lotes.filter(x=>x.finca===finca);
+    if(arr.some(x=>x.lote===defLote)) sL.value = defLote;
+    else sL.value = "";
+  }else{
+    sL.value = "";
+  }
 }
 
 function initFincaLote(){
-  buildFincaSelect("#r_finca","Caño Blanco");
+  buildFincaSelect("#r_finca");
   updateLotes("#r_finca","#r_lote");
   $("#r_finca")?.addEventListener("change",()=>updateLotes("#r_finca","#r_lote"));
 }
@@ -524,7 +538,9 @@ function renderTerceros(){
 function renderActividades(){
   const sel = $("#r_actividad");
   if(!sel) return;
-  sel.innerHTML = ACTIVIDADES.map(a=>`<option value="${a}">${a}</option>`).join("");
+  sel.innerHTML =
+    `<option value="">-- Seleccione --</option>` +
+    ACTIVIDADES.map(a=>`<option value="${a}">${a}</option>`).join("");
 }
 function updateActividadOtro(){
   const sel = $("#r_actividad");
@@ -560,10 +576,10 @@ function limpiarFormulario(){
   const f = $("#r_fecha");
   if(f) f.value = todayISO();
 
-  buildFincaSelect("#r_finca","Caño Blanco");
+  buildFincaSelect("#r_finca");
   updateLotes("#r_finca","#r_lote");
 
-  $("#r_actividad").value = ACTIVIDADES[0];
+  $("#r_actividad").value = "";
   $("#r_actividad_otro").value = "";
   updateActividadOtro();
 
@@ -608,11 +624,17 @@ window.editarBor = i=>{
   const r = borradores[i] || {};
   editIndex = i;
   $("#r_fecha").value = r.fecha || todayISO();
-  $("#r_finca").value = r.finca || $("#r_finca").value;
+  $("#r_finca").value = r.finca || "";
   updateLotes("#r_finca","#r_lote",r.lote);
 
-  const base = r.actividad_base || r.actividad || "SIEMBRA";
-  $("#r_actividad").value = ACTIVIDADES.includes(base) ? base : "OTRO";
+  const base = r.actividad_base || r.actividad || "";
+  if(base && ACTIVIDADES.includes(base)){
+    $("#r_actividad").value = base;
+  }else if(base){
+    $("#r_actividad").value = "OTRO";
+  }else{
+    $("#r_actividad").value = "";
+  }
   updateActividadOtro();
   if($("#r_actividad").value === "OTRO"){
     $("#r_actividad_otro").value = r.actividad || "";
@@ -621,8 +643,8 @@ window.editarBor = i=>{
   }
 
   $("#r_cantidad").value = r.cantidadPersonal ?? r.cantidad ?? "";
-  $("#r_tercero").value = r.tercero || $("#r_tercero").value;
-  $("#r_encargado").value = r.encargadoConteo || r.encargado || $("#r_encargado").value;
+  $("#r_tercero").value = r.tercero || "";
+  $("#r_encargado").value = r.encargadoConteo || r.encargado || "";
   document.querySelector('.tab[data-tab="registro"]').click();
 };
 
