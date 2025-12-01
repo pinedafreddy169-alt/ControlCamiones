@@ -209,7 +209,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2025.11.30-2";
+const APP_VERSION = "2025.11.30-3";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyRyk4YvdnP8aI8tn0F-TdhNTihQxzILbRvT_wV9-K0-5QolLwbdbM1SmlUPvcoIQVl/exec";
 const ADMIN_PASS_NORMALIZED = "admi12345";
 
@@ -510,12 +510,16 @@ $("#l_add")?.addEventListener("click",()=>{
 function renderEncargados(){
   const sel = $("#r_encargado");
   if(!sel) return;
-  sel.innerHTML = ENCARGADOS.map(n=>`<option value="${n}">${n}</option>`).join("");
+  sel.innerHTML =
+    `<option value="">-- Seleccione --</option>` +
+    ENCARGADOS.map(n=>`<option value="${n}">${n}</option>`).join("");
 }
 function renderTerceros(){
   const sel = $("#r_tercero");
   if(!sel) return;
-  sel.innerHTML = TERCEROS.map(n=>`<option value="${n}">${n}</option>`).join("");
+  sel.innerHTML =
+    `<option value="">-- Seleccione --</option>` +
+    TERCEROS.map(n=>`<option value="${n}">${n}</option>`).join("");
 }
 function renderActividades(){
   const sel = $("#r_actividad");
@@ -551,17 +555,23 @@ function leerRegistro(){
   };
 }
 
-$("#btnLimpiar")?.addEventListener("click",()=>{
+/* dejar el formulario limpio */
+function limpiarFormulario(){
   const f = $("#r_fecha");
-  if(f) f.value=todayISO();
-  $("#r_cantidad").value="";
+  if(f) f.value = todayISO();
+
+  buildFincaSelect("#r_finca","Caño Blanco");
+  updateLotes("#r_finca","#r_lote");
+
   $("#r_actividad").value = ACTIVIDADES[0];
-  $("#r_actividad_otro").value="";
+  $("#r_actividad_otro").value = "";
   updateActividadOtro();
-  initFincaLote();
+
+  $("#r_cantidad").value = "";
+
   renderTerceros();
   renderEncargados();
-});
+}
 
 /*** BORRADORES ***/
 let editIndex = -1;
@@ -653,25 +663,6 @@ $("#btnBorrador")?.addEventListener("click",()=>{
   renderBorradores();
 });
 
-$("#btnSyncBorradores")?.addEventListener("click",async()=>{
-  if(sendingAll) return;
-  if(!borradores.length){toast($("#estadoBor"),"No hay borradores");return;}
-  const btn=$("#btnSyncBorradores");
-  sendingAll=true;
-  btn.disabled=true;btn.textContent="Enviando…";
-  let ok=0,fail=0,nuevos=[];
-  for(const r of borradores){
-    const ex = await enviarRegistro(r,false,$("#estadoBor"));
-    if(ex) ok++; else{fail++;nuevos.push(r);}
-  }
-  borradores=nuevos;
-  store.set("terc_borradores",borradores);
-  renderBorradores();
-  toast($("#estadoBor"),`OK ${ok} / Error ${fail}`,fail===0);
-  btn.disabled=false;btn.textContent="Sincronizar todos";
-  sendingAll=false;
-});
-
 /*** ENVÍO A APPS SCRIPT ***/
 async function enviarRegistro(reg,showMsg=true,estadoEl){
   try{
@@ -700,13 +691,16 @@ async function enviarRegistro(reg,showMsg=true,estadoEl){
 let sending = false;
 $("#btnEnviar")?.addEventListener("click",async()=>{
   if(sending) return;
-  sending=true;
+  sending = true;
   setBtnLoading($("#btnEnviar"),true);
   const reg = leerRegistro();
-  await enviarRegistro(reg,true,$("#estadoEnvio"));
+  const ok = await enviarRegistro(reg,true,$("#estadoEnvio"));
+  if(ok) limpiarFormulario();
   setBtnLoading($("#btnEnviar"),false,$("#btnEnviar").dataset.label);
-  sending=false;
+  sending = false;
 });
+
+$("#btnLimpiar")?.addEventListener("click", limpiarFormulario);
 
 /*** PENDIENTES & LECTURA DE HOJA ***/
 $("#btnEnviarPendientes")?.addEventListener("click",async()=>{
@@ -749,14 +743,14 @@ window.onunhandledrejection = (ev)=>{toast($("#estadoEnvio"),"Error: "+(ev.reaso
 
 /*** INICIO ***/
 document.getElementById("appVersion").textContent="v"+APP_VERSION;
-const f0=$("#r_fecha"); if(f0 && !f0.value) f0.value=todayISO();
 renderEncargados();
 renderTerceros();
 renderActividades();
-updateActividadOtro();
 initFincaLote();
+updateActividadOtro();
 updateAdminUI();
 renderBorradores();
+limpiarFormulario();
 </script>
 </body>
 </html>
